@@ -1,0 +1,564 @@
+# torch_like User Guide / 用户指南
+
+中文：本文面向使用者，说明如何导入、构造、调用和选择 `torch_like` 中的模型。
+
+English: This guide is for users. It explains how to import, construct, call, and choose models in `torch_like`.
+
+## What `torch_like` Is / `torch_like` 是什么
+
+中文：`torch_like` 是一个本地 PyTorch-native 模型库，主要沉淀高价值模型的统一调用方式。
+
+English: `torch_like` is a local PyTorch-native model library that provides unified access to high-value models.
+
+中文：它不是完整训练平台，也不是论文复现仓库。训练脚本和 runner 只是辅助验证工具。
+
+English: It is not a full training platform or a paper-reproduction repository. Training scripts and runners are auxiliary validation tools.
+
+## Available Model Families / 可用模型家族
+
+### Forecasting / 时间序列预测
+
+Transformer / attention:
+
+- `AST`
+- `Informer`
+- `Autoformer`
+- `FEDformer`
+- `LogTrans`
+- `PatchTST`
+- `ITransformer`
+- `Crossformer`
+- `TimeXer`
+- `DAG`
+
+Exogenous forecasting:
+
+- `TFT`
+- `TiDE`
+
+MLP / decomposition / convolutional mixing:
+
+- `MLCNN`
+- `NBEATS`
+- `NHITS`
+- `DLinear`
+- `SCINet`
+- `TimesNet`
+- `MICN`
+- `TimeMixer`
+- `TSMixer`
+- `ConvTimeNet`
+- `SOFTS`
+
+Graph spatiotemporal forecasting:
+
+- `ASTGCN`
+- `AGCRN`
+- `D2STGNN`
+- `DMSTGCN`
+- `MTGNN`
+- `StemGNN`
+- `GraphWaveNet`
+- `DCRNN`
+- `FCGAGA`
+- `GTS`
+- `STFGNN`
+- `STGODE`
+
+Traffic-specialized dynamic similarity:
+
+- `STDN`
+
+Probabilistic forecasting:
+
+- `DeepAR`
+- `TimeGrad`
+- `ProTran`
+- `PPM`
+
+Dynamical systems forecasting:
+
+- `Koopa`
+
+Frequency-domain forecasting:
+
+- `FreTS`
+
+### RUL / 剩余寿命预测
+
+- `InformerRUL`
+- `AutoformerRUL`
+- `LogTransRUL`
+- `THGNN`
+
+### Detection / 异常检测
+
+- `RTDetector`
+- `AnomalyTransformer`
+- `MEMTO`
+- `GDN`
+- `MTADGAT`
+- `DCDetector`
+
+### Graph / 通用图学习
+
+- `GCN`
+- `GAT`
+- `GNAN`
+- `GraphSAGE`
+- `GIN`
+- `GraphTransformer`
+- `SpikeGraphormer`
+
+### Sequence / 序列建模
+
+- `TransformerDecoder`
+- `GPT`
+- `LRU`
+- `Mamba`
+- `MambaLike`
+- `Caracal`
+- `BERT`
+- `T5`
+
+### Vision / 视觉模型
+
+- `ResNet`
+- `ViT`
+- `DeiT`
+- `UNet`
+- `DeepLabV3`
+- `DETR`
+- `FCN`
+- `DenseNet`
+- `MobileNetV2`
+- `EfficientNet`
+- `SwinTransformer`
+- `ConvNeXt`
+- `GoogLeNet`
+- `InceptionV3`
+- `VGG`
+- `AlexNet`
+- `MLPMixer`
+- `ResNeXt`
+- `SENet`
+
+### Multimodal / 多模态模型
+
+- `CLIP`
+
+中文：`CLIP` 接收图像张量和已经 tokenized 的 `input_ids`，输出归一化 image/text embeddings 以及 image-text similarity logits。框架不绑定 tokenizer，也不自动下载预训练权重。
+English: `CLIP` consumes image tensors and already-tokenized `input_ids`, then returns normalized image/text embeddings and image-text similarity logits. The framework does not bind a tokenizer or download pretrained weights automatically.
+
+### Generative / 生成模型
+
+- `DDPM`
+- `VAE`
+- `DCGAN`
+
+中文：`DDPM` 提供 `q_sample(...)`、`predict_noise(...)`、`loss_step(batch)` 和 `sample(...)`。数据集、FID 评估和长时间训练 runner 不属于模型类职责。
+English: `DDPM` exposes `q_sample(...)`, `predict_noise(...)`, `loss_step(batch)`, and `sample(...)`. Datasets, FID evaluation, and long-running training runners are outside the model class boundary.
+
+中文：`DDPM.sample(...)` 在完整步数下使用随机 DDPM 采样；减少 `num_steps` 时使用确定性 DDIM 更新，避免错误地跨时间步套用相邻后验公式。
+English: `DDPM.sample(...)` uses stochastic DDPM sampling for the full schedule and deterministic DDIM updates when `num_steps` is reduced.
+
+中文：`VAE` 提供 `encode(...)`、`decode(...)`、`reparameterize(...)`、`loss_step(batch)` 和 `sample(...)`。
+English: `VAE` exposes `encode(...)`, `decode(...)`, `reparameterize(...)`, `loss_step(batch)`, and `sample(...)`.
+
+中文：`DCGAN` 提供 `sample(...)`、`discriminate(...)`、`generator_loss(...)` 和 `discriminator_loss(...)`；两个 optimizer 的训练顺序属于 runner 或用户代码。
+English: `DCGAN` exposes `sample(...)`, `discriminate(...)`, `generator_loss(...)`, and `discriminator_loss(...)`; the two-optimizer update schedule belongs in runners or user code.
+
+### Vision Output Protocol / 视觉输出协议
+
+中文：vision 域共享 `make_vision_batch(x, y=None)` 和 `predict(batch)`，但不同任务的输出不同。
+English: The vision domain shares `make_vision_batch(x, y=None)` and `predict(batch)`, while output shapes depend on the task.
+
+- Classification / 分类: returns logits with shape `(batch, num_classes)`.
+- Segmentation / 分割: returns dense logits with shape `(batch, num_classes, height, width)`.
+- Object detection / 目标检测: `DETR` returns `{"pred_logits": (batch, queries, classes + 1), "pred_boxes": (batch, queries, 4)}`. `pred_boxes` uses normalized `cx, cy, w, h`; call `model.post_process(...)` for normalized `xyxy` detections.
+
+## Import Patterns / 导入方式
+
+### Top-level import / 顶层导入
+
+中文：适合交互式使用和快速实验。
+
+English: Best for interactive usage and quick experiments.
+
+```python
+import torch_like as tl
+
+model = tl.PatchTST(
+    enc_in=3,
+    dec_in=3,
+    c_out=3,
+    seq_len=16,
+    label_len=8,
+    pred_len=4,
+)
+```
+
+### Domain import / 按域导入
+
+中文：适合明确知道模型所属任务域时使用。
+
+English: Useful when the task domain is already known.
+
+```python
+from torch_like.models.forecasting import AGCRN
+from torch_like.models.detection import GDN
+```
+
+### Registry construction / Registry 构造
+
+中文：适合配置驱动、CLI 或批量实验。
+
+English: Useful for config-driven code, CLI tools, or batch experiments.
+
+```python
+from torch_like.models import create_model
+
+model = create_model(
+    "Informer",
+    domain="forecasting",
+    enc_in=4,
+    dec_in=4,
+    c_out=4,
+    seq_len=16,
+    label_len=8,
+    pred_len=4,
+)
+```
+
+## Forecasting Usage / 预测模型用法
+
+### Standard forecasting / 标准预测
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.TSMixer(
+    enc_in=3,
+    dec_in=3,
+    c_out=3,
+    seq_len=16,
+    label_len=8,
+    pred_len=4,
+    d_model=16,
+    e_layers=2,
+    d_ff=32,
+)
+
+x_enc = torch.randn(2, 16, 3)
+batch = model.make_forecast_batch(x_enc)
+out = model.predict(batch)
+print(out.shape)  # (2, 4, 3)
+```
+
+中文：`make_forecast_batch` 会在缺省时自动构造 decoder 输入和时间特征占位。
+
+English: `make_forecast_batch` automatically builds decoder inputs and placeholder time features when omitted.
+
+### Exogenous forecasting / 外生变量预测
+
+中文：`TimeXer`、`DAG` 和 `TFT` 支持目标变量与外生变量的双输入协议。
+
+English: `TimeXer`, `DAG`, and `TFT` support the dual-input protocol for target variables and exogenous variables.
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.TimeXer(
+    enc_in=4,
+    dec_in=2,
+    c_out=2,
+    seq_len=16,
+    label_len=8,
+    pred_len=4,
+    d_model=16,
+    n_heads=4,
+    e_layers=2,
+    d_ff=32,
+    patch_len=4,
+)
+
+x_enc = torch.randn(2, 16, 4)
+batch = model.make_forecast_batch(
+    x_enc=x_enc,
+    x_target_enc=x_enc[..., :2],
+    x_exog_enc=x_enc[..., 2:],
+    x_target_dec=torch.randn(2, 12, 2),
+    x_exog_dec=torch.randn(2, 12, 2),
+)
+
+out = model.predict(batch)
+print(out.shape)  # (2, 4, 2)
+```
+
+### Probabilistic forecasting / 概率预测
+
+中文：概率预测模型提供 `predict_distribution`、`sample` 和 `fit_step`。
+
+English: Probabilistic forecasting models expose `predict_distribution`, `sample`, and `fit_step`.
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.DeepAR(
+    enc_in=3,
+    dec_in=3,
+    c_out=3,
+    seq_len=12,
+    label_len=6,
+    pred_len=4,
+    d_model=16,
+    e_layers=2,
+    num_samples=20,
+)
+
+x_enc = torch.randn(2, 12, 3)
+y_true = torch.randn(2, 4, 3)
+batch = model.make_probabilistic_forecast_batch(x_enc=x_enc, y_true=y_true)
+
+mean = model.predict(batch)
+dist = model.predict_distribution(batch)
+samples = model.sample(batch)
+loss = model.fit_step(batch)
+```
+
+## Graph-aware Forecasting / 图感知预测
+
+中文：图时序模型统一支持 `graph_mode` 协议。
+
+English: Graph spatiotemporal models share a unified `graph_mode` protocol.
+
+Supported models / 支持模型:
+
+- `ASTGCN`
+- `AGCRN`
+- `D2STGNN`
+- `DMSTGCN`
+- `MTGNN`
+- `StemGNN`
+- `GraphWaveNet`
+- `DCRNN`
+- `FCGAGA`
+- `GTS`
+- `STFGNN`
+- `STGODE`
+
+Graph modes / 图模式:
+
+- `learned`: 中文：只使用模型学习出的图；English: use only the learned graph.
+- `prior`: 中文：只使用外部邻接矩阵；English: use only the external adjacency.
+- `hybrid`: 中文：学习图与外部图先验加权融合；English: weighted fusion of learned graph and external prior.
+
+```python
+import numpy as np
+import torch
+import torch_like as tl
+
+adj = np.eye(5, dtype=np.float32)
+
+model = tl.D2STGNN(
+    enc_in=5,
+    dec_in=5,
+    c_out=5,
+    seq_len=24,
+    label_len=12,
+    pred_len=6,
+    graph_mode="hybrid",
+    adjacency=adj,
+    prior_weight=0.7,
+)
+
+x = torch.randn(2, 24, 5)
+out = model.predict(model.make_forecast_batch(x))
+```
+
+## Detection Usage / 异常检测用法
+
+中文：检测模型统一使用 `DetectionBatch`，并约定 `fit_step` 返回训练损失，`score_batch` 返回异常分数。
+
+English: Detection models use `DetectionBatch`; `fit_step` returns a training loss and `score_batch` returns anomaly scores.
+
+### RTDetector
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.RTDetector(input_dim=8, seq_len=64)
+x = torch.randn(4, 64, 8)
+batch = model.make_detection_batch(x)
+scores = model.score_batch(batch)
+```
+
+### MEMTO
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.MEMTO(input_dim=4, seq_len=10, d_model=16, n_heads=4, e_layers=1, d_ff=32, mem_size=8)
+x = torch.rand(3, 10, 4)
+batch = model.make_detection_batch(x)
+out = model.predict(batch)
+score = model.score_batch(batch, reduction="mean")
+```
+
+### GDN
+
+中文：`GDN` 是图异常检测代表模型，适合多变量时间序列传感器依赖建模。
+
+English: `GDN` is the graph-anomaly representative for modeling sensor dependencies in multivariate time series.
+
+```python
+import numpy as np
+import torch
+import torch_like as tl
+
+adj = np.eye(8, dtype=np.float32)
+
+model = tl.GDN(
+    input_dim=8,
+    seq_len=64,
+    d_model=32,
+    graph_mode="hybrid",
+    adjacency=adj,
+    prior_weight=0.6,
+)
+
+x = torch.randn(4, 64, 8)
+batch = model.make_detection_batch(x)
+loss = model.fit_step(batch)
+scores = model.score_batch(batch, reduction="mean")
+```
+
+## RUL Usage / RUL 用法
+
+### Transformer-adapter RUL / Transformer 适配器 RUL
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.InformerRUL(enc_in=8, seq_len=64, d_model=32)
+x = torch.randn(4, 64, 8)
+out = model.predict(model.make_rul_batch(x))
+print(out.shape)  # (4,)
+```
+
+### THGNN
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.THGNN(enc_in=8, seq_len=64, d_model=32)
+x = torch.randn(4, 64, 8)
+out = model.predict(model.make_rul_batch(x))
+```
+
+## Sequence Usage / 序列域用法
+
+中文：sequence 域用于 decoder-only、SSM、长上下文和通用序列建模，不强行塞进 forecasting。
+
+English: The sequence domain is for decoder-only, SSM, long-context, and general sequence modeling, instead of forcing these models into forecasting.
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.LRU(vocab_size=128, max_seq_len=32, d_model=32, n_layers=2)
+tokens = torch.randint(0, 128, (2, 16))
+batch = model.make_sequence_batch(tokens)
+logits = model.next_token_logits(batch)
+```
+
+Seq2Seq / 编码器-解码器:
+
+```python
+model = tl.T5(vocab_size=128, max_seq_len=32, d_model=32, n_heads=4, n_layers=2)
+src = torch.randint(1, 128, (2, 12))
+tgt = torch.randint(1, 128, (2, 6))
+batch = model.make_seq2seq_batch(src, tgt)
+logits = model.predict(batch)
+```
+
+## Runner Overview / Runner 概览
+
+中文：runner 是辅助实验工具，用于验证模型能否跑通，不是核心框架边界。
+
+English: Runners are auxiliary experiment tools for validating that models can run; they are not the core framework boundary.
+
+Common runners / 常用 runner:
+
+- `runner/forecast_runner.py`
+- `runner/forecast_comparison_runner.py`
+- `runner/detection_runner.py`
+- `runner/rul_runner.py`
+- `runner/benchmark_compile.py`
+
+Example / 示例:
+
+```powershell
+& 'D:\Project\base\base\Scripts\python.exe' runner/forecast_runner.py --help
+```
+
+## Forecast Data Protocol / 预测数据协议
+
+中文：`ForecastingBatch` 支持传统单输入和目标变量 + 外生变量双输入。
+
+English: `ForecastingBatch` supports both legacy single-input forecasting and target-plus-exogenous dual-input forecasting.
+
+Key fields / 关键字段:
+
+- `x_enc`: encoder input / 编码器输入
+- `x_dec`: decoder input / 解码器输入
+- `x_target_enc`: historical target variables / 历史目标变量
+- `x_exog_enc`: historical exogenous variables / 历史外生变量
+- `x_target_dec`: decoder target-side context / 解码器目标侧上下文
+- `x_exog_dec`: decoder exogenous-side context / 解码器外生侧上下文
+
+中文：数据适配器会校验拆分比例、最小长度、有限数值、目标/外生索引和图邻接形状。非法配置会在创建 loader 前抛出明确的 `ValueError`。
+
+English: Data adapters validate split ratios, minimum lengths, finite values, target/exogenous indices, and graph adjacency shapes. Invalid configurations raise a clear `ValueError` before loaders are created.
+
+中文：三维图数据使用 `(time, nodes, features)`，其中 `target_indices` 和 `exogenous_indices` 先选择最后一个 feature 轴。loader 随后把 `(nodes, features)` 展平为统一的 forecasting 通道，并把节点邻接矩阵扩展为通道级邻接矩阵；原始节点邻接矩阵保存在 bundle 的 `node_adjacency` 元数据中。
+
+English: Three-dimensional graph data uses `(time, nodes, features)`. Target and exogenous indices first select the final feature axis. The loader then flattens `(nodes, features)` into standard forecasting channels and expands node adjacency to channel-level adjacency; the original node adjacency remains available as `node_adjacency` in the bundle metadata.
+
+中文：辅助 runner 默认写入自身的 `results/`，也可以通过配置中的 `results_dir` 或 CLI 的 `--results-dir` 重定向输出。
+
+English: Auxiliary runners write to their local `results/` by default; use config `results_dir` or CLI `--results-dir` to redirect output.
+
+## Development References / 开发参考
+
+- [Development Guide / 开发指南](DEVELOPMENT.md)
+- [Project Structure / 项目结构](PROJECT_STRUCTURE.md)
+- [Sequence Domain Draft / 序列域草案](SEQUENCE_DOMAIN_DRAFT.md)
+
+## Testing / 测试
+
+```powershell
+& 'D:\Project\base\base\Scripts\python.exe' -m unittest discover -s tests
+& 'D:\Project\base\base\Scripts\python.exe' -m ruff check torch_like runner tests examples tools
+& 'D:\Project\base\base\Scripts\python.exe' -m pytest --cov=torch_like --cov-report=term-missing
+```
+
+中文：测试通过不等于论文指标复现，只表示框架接口、导入、registry 和基础 runner 行为有效。
+
+English: Passing tests do not imply paper-score reproduction. They validate framework interfaces, imports, registry behavior, and basic runner behavior.
+
+## Practical Caveats / 实用注意事项
+
+- 中文：新增模型应优先保证 API 一致性和可维护性。
+- English: New models should prioritize API consistency and maintainability.
+- 中文：不要把训练策略误认为模型结构。
+- English: Do not confuse training strategies with model architectures.
+- 中文：外部数据集解析优先留在 runner 或项目外层。
+- English: Dataset-specific parsing should stay in runners or outside the framework.
