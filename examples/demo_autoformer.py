@@ -7,8 +7,10 @@ Tests:
   4. Parameter count
 """
 
-import torch
 import sys
+
+import torch
+
 sys.path.insert(0, "..")
 
 from torch_like.models.forecasting import Autoformer
@@ -31,10 +33,20 @@ print("=" * 64)
 
 # --- Build model ---
 model = Autoformer(
-    enc_in=ENC_IN, dec_in=DEC_IN, c_out=C_OUT,
-    seq_len=SEQ_LEN, label_len=LABEL_LEN, pred_len=PRED_LEN,
-    d_model=256, n_heads=8, e_layers=2, d_layers=1,
-    d_ff=512, moving_avg=25, factor=1, dropout=0.05,
+    enc_in=ENC_IN,
+    dec_in=DEC_IN,
+    c_out=C_OUT,
+    seq_len=SEQ_LEN,
+    label_len=LABEL_LEN,
+    pred_len=PRED_LEN,
+    d_model=256,
+    n_heads=8,
+    e_layers=2,
+    d_layers=1,
+    d_ff=512,
+    moving_avg=25,
+    factor=1,
+    dropout=0.05,
 )
 print(f"\nModel parameters: {model.param_count():,}")
 print(f"dtype: {next(model.parameters()).dtype}")

@@ -97,6 +97,19 @@ Paths / 路径:
 
 English: Generated artifacts should not become part of the framework API.
 
+### 6. Packaging layer / 打包分发层
+
+Paths / 路径:
+
+- `pyproject.toml`
+- `tools/build_package.ps1`
+- `tools/verify_package_install.ps1`
+- `dist/` (generated and ignored / 生成并忽略)
+
+中文：打包层把核心 `torch_like/` 包构建为可由其他 Python 环境安装的 wheel。runner、测试、示例和本地数据不进入分发包。
+
+English: The packaging layer builds the core `torch_like/` package into a wheel installable by other Python environments. Runners, tests, examples, and local data are excluded from distributions.
+
 ## Registry Boundary / 注册边界
 
 中文：registry 只注册可复用模型，不注册训练脚本、数据集脚本或一次性实验。
@@ -114,6 +127,10 @@ Current domains / 当前域:
 - `multimodal`
 - `generative`
 - `diagnosis`
+- `tabular`
+- `recommendation`
+- `audio`
+- `reinforcement`
 
 ## Import Boundary / 导入边界
 

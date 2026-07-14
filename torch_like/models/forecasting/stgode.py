@@ -132,7 +132,10 @@ class STGODE(ForecastingModel):
         self.input_proj = nn.Conv2d(1, d_model, kernel_size=(1, 1))
         self.start_temporal = nn.Conv2d(d_model, d_model, kernel_size=(1, 3), padding=(0, 1))
         self.blocks = nn.ModuleList(
-            [ODEBlock(channels=d_model, dropout=dropout, num_steps=ode_steps, step_size=ode_step_size) for _ in range(e_layers)]
+            [
+                ODEBlock(channels=d_model, dropout=dropout, num_steps=ode_steps, step_size=ode_step_size)
+                for _ in range(e_layers)
+            ]
         )
         self.temporal_head = nn.Linear(seq_len, pred_len)
         self.output_proj = nn.Identity() if c_out == enc_in else nn.Linear(enc_in, c_out)
@@ -142,7 +145,11 @@ class STGODE(ForecastingModel):
         learned_physical = learned_physical.to(device=device, dtype=dtype)
         learned_semantic = learned_semantic.to(device=device, dtype=dtype)
         prior_adj = None if self.prior_adjacency is None else self.prior_adjacency.to(device=device, dtype=dtype)
-        prior_sem = None if self.prior_semantic_adjacency is None else self.prior_semantic_adjacency.to(device=device, dtype=dtype)
+        prior_sem = (
+            None
+            if self.prior_semantic_adjacency is None
+            else self.prior_semantic_adjacency.to(device=device, dtype=dtype)
+        )
         if self.graph_mode == "learned":
             return learned_physical, learned_semantic
         if self.graph_mode == "prior":

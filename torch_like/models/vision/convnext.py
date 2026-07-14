@@ -115,7 +115,7 @@ class ConvNeXt(VisionModel):
                         for _ in range(depth)
                     ]
                 )
-                for dim, depth in zip(dims, depths)
+                for dim, depth in zip(dims, depths, strict=True)
             ]
         )
         self.norm = nn.LayerNorm(dims[-1])
@@ -143,7 +143,7 @@ class ConvNeXt(VisionModel):
     def forward_features(self, x: torch.Tensor) -> torch.Tensor:
         if x.dim() != 4:
             raise ValueError("ConvNeXt expects x with shape (batch, channels, height, width)")
-        for downsample, stage in zip(self.downsample_layers, self.stages):
+        for downsample, stage in zip(self.downsample_layers, self.stages, strict=True):
             x = downsample(x)
             x = stage(x)
         x = x.mean(dim=(-2, -1))

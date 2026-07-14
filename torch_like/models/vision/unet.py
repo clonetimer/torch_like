@@ -55,7 +55,9 @@ class Up(nn.Module):
             self.up = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=False)
             self.conv = DoubleConv(in_channels, out_channels)
         else:
-            self.up = nn.ConvTranspose2d(in_channels - out_channels, in_channels - out_channels, kernel_size=2, stride=2)
+            self.up = nn.ConvTranspose2d(
+                in_channels - out_channels, in_channels - out_channels, kernel_size=2, stride=2
+            )
             self.conv = DoubleConv(in_channels, out_channels)
 
     def forward(self, x: torch.Tensor, skip: torch.Tensor) -> torch.Tensor:
@@ -107,7 +109,10 @@ class UNet(VisionModel):
         self.inc = DoubleConv(in_channels, channels[0])
         self.downs = nn.ModuleList([Down(channels[idx - 1], channels[idx]) for idx in range(1, depth)])
         self.ups = nn.ModuleList(
-            [Up(channels[idx + 1] + channels[idx], channels[idx], bilinear=bilinear) for idx in range(depth - 2, -1, -1)]
+            [
+                Up(channels[idx + 1] + channels[idx], channels[idx], bilinear=bilinear)
+                for idx in range(depth - 2, -1, -1)
+            ]
         )
         self.dropout = nn.Dropout2d(dropout) if dropout > 0 else nn.Identity()
         self.out_conv = nn.Conv2d(channels[0], num_classes, kernel_size=1)
@@ -130,7 +135,7 @@ class UNet(VisionModel):
         for down in self.downs:
             skips.append(down(skips[-1]))
         x = skips[-1]
-        for up, skip in zip(self.ups, reversed(skips[:-1])):
+        for up, skip in zip(self.ups, reversed(skips[:-1]), strict=True):
             x = up(x, skip)
         return self.dropout(x)
 

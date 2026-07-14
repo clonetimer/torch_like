@@ -3,10 +3,10 @@
 import torch.nn as nn
 
 from torch_like.models.forecasting.common import ForecastingConfig, ForecastingModel
-from torch_like.nn.embedding import DataEmbedding
-from torch_like.nn.attention import ProbSparseAttention, FullAttention
-from torch_like.nn.encoder import Encoder, EncoderLayer, ConvLayer
+from torch_like.nn.attention import FullAttention, ProbSparseAttention
 from torch_like.nn.decoder import Decoder, DecoderLayer
+from torch_like.nn.embedding import DataEmbedding
+from torch_like.nn.encoder import ConvLayer, Encoder, EncoderLayer
 
 
 class Informer(ForecastingModel):
@@ -61,7 +61,9 @@ class Informer(ForecastingModel):
         AttnCls = ProbSparseAttention if attn == "prob" else FullAttention
 
         enc_attn_layers, enc_conv_layers = [], []
-        self_attn_args = dict(mask_flag=False, factor=factor, attention_dropout=dropout, output_attention=output_attention)
+        self_attn_args = dict(
+            mask_flag=False, factor=factor, attention_dropout=dropout, output_attention=output_attention
+        )
         cross_attn_args = dict(mask_flag=False, attention_dropout=dropout, output_attention=output_attention)
 
         for i in range(e_layers):
@@ -71,7 +73,9 @@ class Informer(ForecastingModel):
             if distil and i < e_layers - 1:
                 enc_conv_layers.append(ConvLayer(d_model))
 
-        self.encoder = Encoder(enc_attn_layers, conv_layers=enc_conv_layers if distil else None, norm_layer=nn.LayerNorm(d_model))
+        self.encoder = Encoder(
+            enc_attn_layers, conv_layers=enc_conv_layers if distil else None, norm_layer=nn.LayerNorm(d_model)
+        )
 
         dec_layers = []
         for _ in range(d_layers):
@@ -86,7 +90,9 @@ class Informer(ForecastingModel):
                     activation=activation,
                 )
             )
-        self.decoder = Decoder(dec_layers, norm_layer=nn.LayerNorm(d_model), projection=nn.Linear(d_model, c_out, bias=True))
+        self.decoder = Decoder(
+            dec_layers, norm_layer=nn.LayerNorm(d_model), projection=nn.Linear(d_model, c_out, bias=True)
+        )
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
         enc_out = self.enc_embedding(x_enc, x_mark_enc)

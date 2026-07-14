@@ -4,9 +4,10 @@ Adapted from Informer official implementation.
 Generates temporal features (minute, hour, day, week, month) from timestamps.
 """
 
+from abc import ABC, abstractmethod
+
 import numpy as np
 import pandas as pd
-from abc import ABC, abstractmethod
 from pandas.tseries import offsets
 from pandas.tseries.frequencies import to_offset
 

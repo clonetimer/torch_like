@@ -1,26 +1,42 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "torch_like"
-version = "0.2.0"
-description = "PyTorch-native model library for forecasting, detection, graph, sequence, vision, multimodal, and generative models"
+dynamic = ["version"]
+description = "PyTorch-native multi-domain model library with consistent task APIs and registry-based construction"
+readme = { file = "README.md", content-type = "text/markdown" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
+keywords = ["pytorch", "deep-learning", "model-library", "time-series", "graph-neural-networks"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "torch>=2.0.0",
     "numpy>=1.20.0",
-    "matplotlib>=3.3.0",
     "pandas>=1.3.0",
     "scikit-learn>=1.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "black>=22.0",
     "pytest>=7.0",
     "pytest-cov>=7.0",
     "ruff>=0.15.0",
+]
+build = [
+    "build>=1.2.0",
+    "twine>=5.0.0",
 ]
 
 [tool.pytest.ini_options]
@@ -39,8 +55,11 @@ line-length = 120
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F"]
+select = ["E4", "E7", "E9", "F", "I", "B"]
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["torch_like*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "torch_like.__version__" }

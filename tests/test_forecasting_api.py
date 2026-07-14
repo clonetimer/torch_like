@@ -1,60 +1,82 @@
 import unittest
 
-import torch
 import numpy as np
+import torch
 
 from torch_like.models import create_model
-from torch_like.nn.attention import AutoCorrelation
-from torch_like.models.thgnn import THGNN
 from torch_like.models.forecasting import (
     AGCRN,
     AST,
     ASTGCN,
-    ConvTimeNet,
-    Crossformer,
-    DAG,
     D2STGNN,
+    DAG,
     DCRNN,
-    DeepAR,
-    DLinear,
     DMSTGCN,
-    FEDformer,
     FCGAGA,
-    FreTS,
     GTS,
-    ForecastingConfig,
-    GraphWaveNet,
-    Informer,
-    ITransformer,
-    Koopa,
-    InformerRUL,
-    LogTrans,
     MICN,
     MLCNN,
     MTGNN,
     NBEATS,
     NHITS,
-    PatchTST,
     PPM,
-    ProTran,
-    SCINet,
     SOFTS,
-    RULConfig,
     STDN,
     STFGNN,
     STGODE,
-    StemGNN,
     TFT,
+    ConvTimeNet,
+    Crossformer,
+    DeepAR,
+    DLinear,
+    FEDformer,
+    ForecastingConfig,
+    FreTS,
+    GraphWaveNet,
+    Informer,
+    InformerRUL,
+    ITransformer,
+    Koopa,
+    LogTrans,
+    ModernTCN,
+    PatchTST,
+    ProTran,
+    RULConfig,
+    SCINet,
+    StemGNN,
+    TiDE,
     TimeGrad,
     TimeMixer,
-    TSMixer,
     TimesNet,
-    TiDE,
     TimeXer,
+    TSMixer,
 )
+from torch_like.models.thgnn import THGNN
+from torch_like.nn.attention import AutoCorrelation, FullAttention
 
 
 class ForecastingApiTests(unittest.TestCase):
+    def test_moderntcn_predict_and_gradient_api(self):
+        model = ModernTCN(
+            enc_in=3,
+            dec_in=3,
+            c_out=2,
+            seq_len=16,
+            label_len=8,
+            pred_len=4,
+            d_model=8,
+            e_layers=1,
+            d_ff=16,
+            patch_size=4,
+            patch_stride=2,
+            kernel_size=5,
+        )
+        batch = model.make_forecast_batch(torch.randn(2, 16, 3))
+        output = model.predict(batch)
+        output.square().mean().backward()
+        self.assertEqual(output.shape, (2, 4, 2))
+        self.assertTrue(any(parameter.grad is not None for parameter in model.parameters()))
+
     def test_make_forecast_batch_adapts_different_decoder_dimension(self):
         model = Informer(
             enc_in=4,
@@ -102,6 +124,30 @@ class ForecastingApiTests(unittest.TestCase):
         denied = torch.zeros(1, 1, 4, 4, dtype=torch.bool)
         out, _ = attention(queries, keys, values, attn_mask=denied)
         self.assertTrue(torch.equal(out, torch.zeros_like(out)))
+
+    def test_full_attention_sdpa_matches_reference(self):
+        attention = FullAttention(mask_flag=True, attention_dropout=0.0, output_attention=False).eval()
+        queries = torch.randn(2, 4, 2, 3)
+        keys = torch.randn(2, 5, 2, 3)
+        values = torch.randn(2, 5, 2, 4)
+        mask = torch.ones(2, 1, 4, 5, dtype=torch.bool)
+        mask[..., -1] = False
+
+        output, weights = attention(queries, keys, values, attn_mask=mask)
+        scores = torch.einsum("blhe,bshe->bhls", queries, keys) / (queries.shape[-1] ** 0.5)
+        scores = scores.masked_fill(~mask, -torch.inf)
+        expected_weights = torch.softmax(scores, dim=-1)
+        expected = torch.einsum("bhls,bshd->blhd", expected_weights, values)
+
+        self.assertIsNone(weights)
+        torch.testing.assert_close(output, expected)
+
+    def test_full_attention_can_still_return_weights(self):
+        attention = FullAttention(mask_flag=False, attention_dropout=0.0, output_attention=True).eval()
+        queries = torch.randn(1, 4, 2, 3)
+        output, weights = attention(queries, queries, queries)
+        self.assertEqual(output.shape, queries.shape)
+        self.assertEqual(weights.shape, (1, 2, 4, 4))
 
     def test_lazy_model_param_count_before_and_after_initialization(self):
         model = TiDE(
@@ -485,9 +531,7 @@ class ForecastingApiTests(unittest.TestCase):
             dropout=0.1,
         )
         adjacency = np.eye(4, dtype=np.float32)
-        model = AGCRN.from_config(
-            {**cfg.__dict__, "graph_mode": "hybrid", "adjacency": adjacency, "prior_weight": 0.6}
-        )
+        model = AGCRN.from_config({**cfg.__dict__, "graph_mode": "hybrid", "adjacency": adjacency, "prior_weight": 0.6})
         x_enc = torch.randn(2, cfg.seq_len, cfg.enc_in)
         out = model.predict(model.make_forecast_batch(x_enc))
         self.assertEqual(out.shape, (2, cfg.pred_len, cfg.c_out))
@@ -529,9 +573,7 @@ class ForecastingApiTests(unittest.TestCase):
             dropout=0.1,
         )
         adjacency = np.eye(4, dtype=np.float32)
-        model = DCRNN.from_config(
-            {**cfg.__dict__, "graph_mode": "prior", "adjacency": adjacency, "diffusion_steps": 2}
-        )
+        model = DCRNN.from_config({**cfg.__dict__, "graph_mode": "prior", "adjacency": adjacency, "diffusion_steps": 2})
         x_enc = torch.randn(2, cfg.seq_len, cfg.enc_in)
         out = model.predict(model.make_forecast_batch(x_enc))
         self.assertEqual(out.shape, (2, cfg.pred_len, cfg.c_out))
@@ -571,9 +613,7 @@ class ForecastingApiTests(unittest.TestCase):
             dropout=0.1,
         )
         adjacency = np.eye(4, dtype=np.float32)
-        model = GTS.from_config(
-            {**cfg.__dict__, "graph_mode": "hybrid", "adjacency": adjacency, "prior_weight": 0.6}
-        )
+        model = GTS.from_config({**cfg.__dict__, "graph_mode": "hybrid", "adjacency": adjacency, "prior_weight": 0.6})
         x_enc = torch.randn(2, cfg.seq_len, cfg.enc_in)
         out = model.predict(model.make_forecast_batch(x_enc))
         learned_adj = model.learned_adjacency()

@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass, field
-from pathlib import Path
 import sys
 import time
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -17,6 +17,15 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import torch_like as tl
 from runner.common import average_total, build_run_payload, resolve_results_dir, save_json
 from runner.compile_utils import CompileConfig, maybe_compile_model
+from runner.performance import (
+    ExecutionConfig,
+    add_execution_args,
+    autocast_context,
+    backward_and_step,
+    create_grad_scaler,
+    execution_config_from_args,
+    move_to_device,
+)
 from runner.rul_data import RULDataConfig, create_rul_loaders
 
 
@@ -28,6 +37,7 @@ class RULRunConfig:
     weight_decay: float = 1e-5
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     compile: CompileConfig = field(default_factory=CompileConfig)
+    execution: ExecutionConfig = field(default_factory=ExecutionConfig)
     results_dir: str | Path | None = None
     model_shared: dict = field(
         default_factory=lambda: {
@@ -41,32 +51,36 @@ class RULRunConfig:
     )
 
 
-def train_epoch(model, loader, optimizer, criterion, device):
+def train_epoch(model, loader, optimizer, criterion, device, execution: ExecutionConfig | None = None, scaler=None):
+    execution = execution or ExecutionConfig()
     model.train()
     total_loss = 0.0
     for x, y in loader:
-        x, y = x.to(device), y.to(device)
-        optimizer.zero_grad()
-        pred = model(x)
-        loss = criterion(pred, y)
-        loss.backward()
-        optimizer.step()
+        x = move_to_device(x, device, execution)
+        y = move_to_device(y, device, execution)
+        with autocast_context(device, execution):
+            pred = model(x)
+            loss = criterion(pred, y)
+        backward_and_step(loss, optimizer, scaler, execution)
         total_loss += loss.item() * x.size(0)
     return average_total(total_loss, len(loader.dataset))
 
 
 @torch.inference_mode()
-def evaluate(model, loader, criterion, device):
+def evaluate(model, loader, criterion, device, execution: ExecutionConfig | None = None):
+    execution = execution or ExecutionConfig()
     model.eval()
     total_loss = 0.0
     all_preds, all_labels = [], []
     for x, y in loader:
-        x, y = x.to(device), y.to(device)
-        pred = model(x)
-        loss = criterion(pred, y)
+        x = move_to_device(x, device, execution)
+        y = move_to_device(y, device, execution)
+        with autocast_context(device, execution):
+            pred = model(x)
+            loss = criterion(pred, y)
         total_loss += loss.item() * x.size(0)
-        all_preds.append(pred.cpu().numpy())
-        all_labels.append(y.cpu().numpy())
+        all_preds.append(pred.float().cpu().numpy())
+        all_labels.append(y.float().cpu().numpy())
     preds = np.concatenate(all_preds)
     labels = np.concatenate(all_labels)
     rmse = float(np.sqrt(np.mean((preds - labels) ** 2)))
@@ -90,6 +104,7 @@ def run_experiment(model_cls, model_name, bundle, train_loader, test_loader, con
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
+    scaler = create_grad_scaler(config.device, config.execution)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.epochs)
 
     history = {"epoch": [], "train_loss": [], "test_loss": [], "test_rmse": []}
@@ -97,8 +112,8 @@ def run_experiment(model_cls, model_name, bundle, train_loader, test_loader, con
     t0 = time.time()
 
     for epoch in range(1, config.epochs + 1):
-        train_loss = train_epoch(model, train_loader, optimizer, criterion, config.device)
-        test_loss, rmse, mae = evaluate(model, test_loader, criterion, config.device)
+        train_loss = train_epoch(model, train_loader, optimizer, criterion, config.device, config.execution, scaler)
+        test_loss, rmse, mae = evaluate(model, test_loader, criterion, config.device, config.execution)
         scheduler.step()
 
         history["epoch"].append(epoch)
@@ -151,7 +166,7 @@ def main(config: RULRunConfig):
     print(f"{'=' * 60}")
     print(f"  {'Model':<18s} {'Params':>10s} {'RMSE':>10s} {'MAE':>10s} {'Time':>8s}")
     print(f"  {'-' * 56}")
-    for r in sorted(results, key=lambda x: x['best_rmse']):
+    for r in sorted(results, key=lambda x: x["best_rmse"]):
         print(
             f"  {r['model']:<18s} {r['params']:>10,} "
             f"{r['best_rmse']:>10.4f} {r['final_mae']:>10.4f} {r['train_time_s']:>7.1f}s"
@@ -180,6 +195,7 @@ def parse_args():
     parser.add_argument("--compile-mode")
     parser.add_argument("--compile-fullgraph", action="store_true")
     parser.add_argument("--compile-dynamic", action="store_true")
+    add_execution_args(parser)
     return parser.parse_args()
 
 
@@ -203,6 +219,7 @@ def cli():
             fullgraph=args.compile_fullgraph,
             dynamic=True if args.compile_dynamic else None,
         ),
+        execution=execution_config_from_args(args),
     )
     main(config)
 

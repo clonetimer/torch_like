@@ -61,7 +61,9 @@ class DMSTGCNBlock(nn.Module):
         self.skip_proj = nn.Conv2d(channels, skip_channels, kernel_size=(1, 1))
         self.norm = nn.BatchNorm2d(channels)
 
-    def forward(self, x: torch.Tensor, dynamic_adj: torch.Tensor, static_adj: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def forward(
+        self, x: torch.Tensor, dynamic_adj: torch.Tensor, static_adj: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         primary = F.relu(self.primary_conv(x))
         auxiliary = F.relu(self.aux_conv(x))
         primary = torch.einsum("bcnt,bnm->bcmt", primary, dynamic_adj)

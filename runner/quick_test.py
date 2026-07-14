@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 """Quick train/inference test for RUL regression on XJTU-SY."""
+
 import os
+
 os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
 
-import time
 import json
+import time
 import traceback as tb
 
 import numpy as np
@@ -31,6 +33,7 @@ MODEL_CONF = dict(enc_in=2, seq_len=SEQ_LEN, d_model=64, n_heads=2, e_layers=1, 
 # ------------------------------------------------------------------
 #  Helpers
 # ------------------------------------------------------------------
+
 
 def log(msg):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
@@ -74,6 +77,7 @@ def evaluate(model, loader, criterion, device):
 #  Main
 # ------------------------------------------------------------------
 
+
 def main():
     if not DATA_ROOT:
         raise ValueError("Set TORCH_LIKE_RUL_DATA_ROOT before running quick_test.py")
@@ -83,23 +87,29 @@ def main():
     # ---- dataset -------------------------------------------------------
     log("Loading datasets...")
     from torch_like.data.dataset_rul import create_train_test_split
+
     train_set, test_set = create_train_test_split(
-        DATA_ROOT, condition=CONDITION, seq_len=SEQ_LEN, stride=STRIDE,
-        train_ratio=0.6, seed=42,
+        DATA_ROOT,
+        condition=CONDITION,
+        seq_len=SEQ_LEN,
+        stride=STRIDE,
+        train_ratio=0.6,
+        seed=42,
     )
     log(f"  Train: {len(train_set):,} samples")
     log(f"  Test:  {len(test_set):,} samples")
 
-    train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True,
-                              num_workers=0, drop_last=True)
-    test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False,
-                             num_workers=0)
+    train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=0, drop_last=True)
+    test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
     # ---- model ---------------------------------------------------------
     log("Creating models...")
     from torch_like.models.forecasting.rul_adapters import (
-        InformerRUL, AutoformerRUL, LogTransRUL,
+        AutoformerRUL,
+        InformerRUL,
+        LogTransRUL,
     )
+
     specs = [
         (InformerRUL, "InformerRUL"),
         (AutoformerRUL, "AutoformerRUL"),
@@ -109,9 +119,9 @@ def main():
     results = []
 
     for cls, name in specs:
-        log(f"\n{'='*55}")
+        log(f"\n{'=' * 55}")
         log(f"  {name}")
-        log(f"{'='*55}")
+        log(f"{'=' * 55}")
 
         model = cls(**MODEL_CONF).to(DEVICE)
         n_params = sum(p.numel() for p in model.parameters())
@@ -124,28 +134,28 @@ def main():
         for epoch in range(1, EPOCHS + 1):
             tr_loss = train_epoch(model, train_loader, opt, criterion, DEVICE)
             te_loss, rmse, mae = evaluate(model, test_loader, criterion, DEVICE)
-            log(f"  Epoch {epoch:2d} | tr={tr_loss:.5f} | te={te_loss:.5f} "
-                f"| RMSE={rmse:.4f} | MAE={mae:.4f}")
+            log(f"  Epoch {epoch:2d} | tr={tr_loss:.5f} | te={te_loss:.5f} | RMSE={rmse:.4f} | MAE={mae:.4f}")
 
         elapsed = time.time() - t0
         log(f"  Done in {elapsed:.1f}s")
-        results.append({
-            "model": name,
-            "params": n_params,
-            "rmse": rmse,
-            "mae": mae,
-            "time_s": round(elapsed, 1),
-        })
+        results.append(
+            {
+                "model": name,
+                "params": n_params,
+                "rmse": rmse,
+                "mae": mae,
+                "time_s": round(elapsed, 1),
+            }
+        )
 
     # ---- summary -------------------------------------------------------
-    log(f"\n{'='*55}")
+    log(f"\n{'=' * 55}")
     log("  XJTU-SY RUL — 3-epoch quick comparison")
-    log(f"{'='*55}")
+    log(f"{'=' * 55}")
     log(f"  {'Model':<18s} {'Params':>10s} {'RMSE':>8s} {'MAE':>8s} {'Time':>7s}")
-    log(f"  {'-'*54}")
+    log(f"  {'-' * 54}")
     for r in sorted(results, key=lambda x: x["rmse"]):
-        log(f"  {r['model']:<18s} {r['params']:>10,} "
-            f"{r['rmse']:>8.4f} {r['mae']:>8.4f} {r['time_s']:>6.1f}s")
+        log(f"  {r['model']:<18s} {r['params']:>10,} {r['rmse']:>8.4f} {r['mae']:>8.4f} {r['time_s']:>6.1f}s")
 
     out = os.path.join(os.path.dirname(__file__), "results", "quick_test.json")
     os.makedirs(os.path.dirname(out), exist_ok=True)

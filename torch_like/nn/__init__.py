@@ -1,19 +1,27 @@
 """torch_like.nn — reusable neural network building blocks."""
 
-from torch_like.nn.embedding import DataEmbedding, TokenEmbedding, PositionalEmbedding, TemporalEmbedding
 from torch_like.nn.attention import (
-    FullAttention,
-    ProbSparseAttention,
     AutoCorrelation,
     AutoCorrelationLayer,
+    FullAttention,
     LogSparseSelfAttention,
+    ProbSparseAttention,
     log_sparse_mask,
 )
-from torch_like.nn.encoder import Encoder, EncoderLayer, ConvLayer
 from torch_like.nn.decoder import Decoder, DecoderLayer
 from torch_like.nn.decomposition import SeriesDecomp
+from torch_like.nn.embedding import DataEmbedding, PositionalEmbedding, TemporalEmbedding, TokenEmbedding
+from torch_like.nn.encoder import ConvLayer, Encoder, EncoderLayer
+from torch_like.models.sequence.kimi_linear import KimiDeltaAttention
+from torch_like.models.sequence.xlstm import mLSTMCell
+from torch_like.models.audio.encodec import ResidualVectorQuantizer
+from torch_like.models.reinforcement.dreamerv3 import DiscreteRSSM
 
 __all__ = [
+    "KimiDeltaAttention",
+    "mLSTMCell",
+    "ResidualVectorQuantizer",
+    "DiscreteRSSM",
     "DataEmbedding",
     "TokenEmbedding",
     "PositionalEmbedding",

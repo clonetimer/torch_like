@@ -50,6 +50,8 @@ English: The compatibility target is the `nn.Module` object model, not every spe
 - English: Detection models use `make_detection_batch(...)`, `fit_step(batch)`, and `score_batch(batch)`.
 - 中文：registry 支持 `create_model(name, domain=..., **kwargs)`。
 - English: The registry supports `create_model(name, domain=..., **kwargs)`.
+- 中文：registry 支持 `list_domains()`、`list_models(...)` 和 `get_model_info(...)`，返回的元数据副本可安全修改。
+- English: The registry exposes `list_domains()`, `list_models(...)`, and `get_model_info(...)`; returned metadata snapshots are safe to modify.
 
 ## 当前模型覆盖 / Current Model Coverage
 
@@ -85,6 +87,7 @@ MLP / decomposition / convolutional mixing:
 - `TimeMixer`
 - `TSMixer`
 - `ConvTimeNet`
+- `ModernTCN`
 - `SOFTS`
 
 Graph spatiotemporal forecasting:
@@ -136,36 +139,78 @@ Frequency-domain forecasting:
 - `GDN`
 - `MTADGAT`
 - `DCDetector`
+- `OmniAnomaly`
+- `TranAD`
+- `USAD`
 
 ### Graph / 通用图学习
 
 - `GCN`
+- `DGI`
+- `GraphCL`
+- `GraphMAE`
 - `GAT`
+- `GATv2`
 - `GNAN`
 - `GraphSAGE`
 - `GIN`
 - `GraphTransformer`
+- `Graphormer`
+- `GPS`
+- `PNA`
+- `GCNII`
 - `SpikeGraphormer`
 
 ### Sequence / Long-Context Modeling / 序列与长上下文建模
 
 - `TransformerDecoder`
+- `TransformerXL`
+- `Performer`
+- `Reformer`
+- `RetNet`
+- `KimiLinear`
+- `xLSTM`
 - `GPT`
+- `LLaMA`
+- `Mixtral`
 - `LRU`
 - `Mamba`
 - `MambaLike`
 - `Caracal`
+- `S4`
+- `Hyena`
 - `BERT`
 - `T5`
+
+`KimiLinear` is a lightweight, randomly initialized Kimi Delta Attention reference model. The package exposes
+`KimiDeltaAttention` with `parallel`, `chunkwise`, and recurrent `forward_step(...)` paths, but does not bundle
+the official 48B checkpoint, FlashKDA kernels, or claim their throughput.
+
+`xLSTM` provides the matrix-memory mLSTM path with stabilized exponential gates and explicit recurrent state.
+It is a portable reference implementation and does not bundle the official xLSTM CUDA kernels or pretrained weights.
+
+### Diagnosis / 故障诊断
+
+- `InceptionTime`
+- `ROCKET`
 
 ### Vision / 视觉模型
 
 - `ResNet`
 - `ViT`
+- `MAE`
+- `SimCLR`
+- `BYOL`
+- `DINO`
+- `MoCo`
+- `SAM`
 - `DeiT`
 - `UNet`
 - `DeepLabV3`
 - `DETR`
+- `RTDETR`
+- `GroundingDINO`
+- `Mask2Former`
 - `FCN`
 - `DenseNet`
 - `MobileNetV2`
@@ -183,18 +228,123 @@ Frequency-domain forecasting:
 ### Multimodal / 多模态模型
 
 - `CLIP`
+- `SigLIP`
+- `BLIP`
+- `LLaVA`
+- `BLIP2`
 
 ### Generative / 生成模型
 
 - `DDPM`
 - `VAE`
 - `DCGAN`
+- `DiT`
+- `ControlNet`
+- `LatentDiffusion`
+- `PixelCNN`
+- `RectifiedFlow`
+- `RealNVP`
+- `VQVAE`
+
+### Tabular / 表格模型
+
+- `TabNet`
+- `NODE`
+- `FTTransformer`
+
+### Recommendation / 推荐系统
+
+- `NCF`
+- `DeepFM`
+- `DCN`
+- `BERT4Rec`
+
+### Audio / 音频与语音
+
+- `Wav2Vec2`
+- `EnCodec`
+- `Conformer`
+- `HuBERT`
+- `Whisper`
+- `AudioSpectrogramTransformer`
 
 ## 安装 / Installation
 
 ```powershell
 & 'D:\Project\base\base\Scripts\python.exe' -m pip install -e .
 ```
+
+中文：上面的命令用于开发环境。若要在其他 Python 环境中安装固定版本，应先构建 wheel，再安装 `dist/` 中的文件。
+
+English: The command above is for development. To install an immutable build in another Python environment, build a wheel and install the file under `dist/`.
+
+```powershell
+& .\tools\build_package.ps1 -Python 'D:\Project\base\base\Scripts\python.exe'
+& 'D:\Path\To\OtherPython\python.exe' -m pip install .\dist\torch_like-0.2.0-py3-none-any.whl
+```
+
+中文：完整构建、隔离验收、升级和卸载说明见 [Packaging Guide / 打包安装指南](docs/PACKAGING.md)。
+
+English: See the [Packaging Guide / 打包安装指南](docs/PACKAGING.md) for build, isolated verification, upgrade, and uninstall instructions.
+
+## 离线部署 / Offline Deployment
+
+中文：离线部署不能只复制 `torch_like` wheel，除非目标环境已经安装兼容版本的 PyTorch、NumPy、pandas 和 scikit-learn。推荐在一台与目标机器操作系统、CPU 架构和 Python 版本一致的联网机器上准备完整 wheelhouse。
+
+English: Do not copy only the `torch_like` wheel unless the target already has compatible PyTorch, NumPy, pandas, and scikit-learn installations. Prepare a complete wheelhouse on an online machine matching the target operating system, CPU architecture, and Python version.
+
+### 1. 联网机器准备离线包 / Prepare on an Online Machine
+
+```powershell
+New-Item -ItemType Directory -Force .\offline_bundle\wheelhouse
+
+# Build torch_like first.
+& .\tools\build_package.ps1 -Python 'D:\Project\base\base\Scripts\python.exe'
+
+# Download torch_like and all transitive dependencies into one directory.
+& 'D:\Project\base\base\Scripts\python.exe' -m pip download `
+  --dest .\offline_bundle\wheelhouse `
+  .\dist\torch_like-0.2.0-py3-none-any.whl
+
+Compress-Archive -Path .\offline_bundle\wheelhouse -DestinationPath .\torch_like-offline.zip -Force
+```
+
+中文：如果目标机器需要特定 CUDA 版本，应先按照 PyTorch 官方安装选择器确定对应 wheel 源，并把匹配的 PyTorch wheel 下载到同一个 `wheelhouse`。不要在 CPU、CUDA 版本或 Python ABI 不一致的机器上直接复用 wheelhouse。
+
+English: For a target requiring a specific CUDA build, use the official PyTorch installation selector to identify the matching wheel source and download that PyTorch wheel into the same `wheelhouse`. Do not reuse a wheelhouse across incompatible CPU architectures, CUDA builds, or Python ABIs.
+
+### 2. 离线机器安装 / Install on the Offline Machine
+
+```powershell
+Expand-Archive .\torch_like-offline.zip -DestinationPath .\torch_like-offline -Force
+
+& 'D:\Path\To\OfflinePython\python.exe' -m pip install `
+  --no-index `
+  --find-links .\torch_like-offline\wheelhouse `
+  torch_like
+```
+
+### 3. 验证安装 / Verify the Installation
+
+```powershell
+& 'D:\Path\To\OfflinePython\python.exe' -m pip check
+& 'D:\Path\To\OfflinePython\python.exe' -c `
+  "import torch, torch_like as tl; print(torch.__version__); print(tl.__version__); print(tl.list_domains())"
+```
+
+中文：若目标环境已经预装全部依赖，可以只复制 `torch_like-*.whl` 并使用 `pip install --no-deps`；此模式不会检查或安装缺失依赖，应由部署方负责兼容性验证。
+
+English: If every dependency is already installed on the target, copy only `torch_like-*.whl` and use `pip install --no-deps`. This mode neither checks nor installs missing dependencies, so the deployer owns compatibility verification.
+
+## 名称与许可提示 / Naming and Licensing Notice
+
+中文：`torch_like` 是独立项目，不隶属于、不受 PyTorch Foundation 或 Linux Foundation 赞助或认可。PyTorch 及其相关标识是其权利人的商标。本项目当前适合内部研究和本地使用；在公开发布、注册包名或商业分发前，应完成商标名称审查、项目许可证选择、第三方代码来源清单和专利审查。
+
+English: `torch_like` is an independent project and is not affiliated with, sponsored by, or endorsed by the PyTorch Foundation or Linux Foundation. PyTorch and related marks are trademarks of their respective owners. Project-owned code is provided under Apache-2.0. Trademark clearance, third-party provenance records, and patent review remain necessary before public or commercial distribution.
+
+中文：项目贡献者有权授权的代码采用 [Apache License 2.0](LICENSE)。该许可证不授予 PyTorch 商标使用权，也不会覆盖第三方代码、模型权重或数据集各自的许可义务。
+
+English: Code that project contributors are entitled to license is provided under the [Apache License 2.0](LICENSE). This license grants no rights to PyTorch trademarks and does not replace the separate license obligations of third-party code, model weights, or datasets.
 
 ## 快速开始 / Quick Start
 
@@ -223,7 +373,11 @@ print(out.shape)  # (2, 4, 3)
 ### Registry 构造 / Registry Construction
 
 ```python
-from torch_like.models import create_model
+from torch_like.models import create_model, get_model_info, list_domains, list_models
+
+print(list_domains())
+print(list_models("forecasting").keys())
+print(get_model_info("ITransformer", domain="forecasting"))
 
 model = create_model(
     "ITransformer",
@@ -308,6 +462,26 @@ Common entry points / 常用入口:
 - `runner/rul_runner.py`
 - `runner/benchmark_compile.py`
 
+## 性能路径 / Performance Paths
+
+中文：`torch_like` 优先复用 PyTorch 原生性能能力，而不是维护自定义 CUDA 内核。`FullAttention`、`GPT`、`LLaMA` 以及复用 LLaMA 注意力的 `Mixtral` 已接入 `scaled_dot_product_attention`；当调用者要求返回注意力权重时，`FullAttention` 会保留可观测的显式计算路径。
+
+English: `torch_like` reuses native PyTorch performance primitives instead of maintaining custom CUDA kernels. `FullAttention`, `GPT`, `LLaMA`, and `Mixtral` through its shared LLaMA attention use `scaled_dot_product_attention`; `FullAttention` retains the explicit path when attention weights are requested.
+
+中文：辅助 runner 通过 `ExecutionConfig` 统一控制 AMP、异步 CUDA 搬运和 `zero_grad(set_to_none=True)`，通过 `CompileConfig` 可选启用 `Module.compile()`。这些选项默认不改变现有 FP32 行为。
+
+English: Auxiliary runners use `ExecutionConfig` for AMP, asynchronous CUDA transfers, and `zero_grad(set_to_none=True)`, with optional `Module.compile()` through `CompileConfig`. Defaults preserve existing FP32 behavior.
+
+```powershell
+& 'D:\Project\base\base\Scripts\python.exe' runner/forecast_runner.py `
+  --dataset-type ett_hour --root-path .\data --data-path ETTh1.csv `
+  --amp --amp-dtype bfloat16 --compile --compile-mode reduce-overhead
+```
+
+中文：自回归生成的 KV cache 尚未纳入本轮优化；当前 `generate(...)` 仍会重新计算完整前缀。
+
+English: Autoregressive KV caching is not part of this optimization batch; current `generate(...)` methods still recompute the full prefix.
+
 ## 文档 / Documentation
 
 - [User Guide / 用户指南](docs/USER_GUIDE.md)
@@ -331,6 +505,7 @@ Common entry points / 常用入口:
 ```powershell
 & 'D:\Project\base\base\Scripts\python.exe' -m unittest discover -s tests
 & 'D:\Project\base\base\Scripts\python.exe' -m ruff check torch_like runner tests examples tools
+& 'D:\Project\base\base\Scripts\python.exe' -m ruff format --check torch_like runner tests examples tools
 & 'D:\Project\base\base\Scripts\python.exe' -m pytest --cov=torch_like --cov-report=term-missing
 ```
 
@@ -340,6 +515,59 @@ English: Tests cover direct imports, registry construction, task batches, predic
 
 ## 当前状态 / Current Status
 
-中文：框架已具备多任务模型库骨架，重点覆盖 forecasting、probabilistic forecasting、detection、RUL、graph、sequence、vision、multimodal 和 generative。后续新增模型应优先保持 API 一致性，而不是追求实验脚本数量。
+中文：框架已具备多任务模型库骨架，覆盖 forecasting、diagnosis、detection、graph、RUL、sequence、vision、multimodal、generative、tabular、recommendation、audio 和 reinforcement。后续新增模型应优先保持 API 一致性，而不是追求实验脚本数量。
 
-English: The framework now provides a multi-task model-library skeleton covering forecasting, probabilistic forecasting, detection, RUL, graph, sequence, vision, multimodal, and generative domains. Future additions should prioritize API consistency over accumulating experiment scripts.
+English: The framework now provides a multi-task model-library skeleton covering forecasting, diagnosis, detection, graph, RUL, sequence, vision, multimodal, generative, tabular, recommendation, audio, and reinforcement domains. Future additions should prioritize API consistency over accumulating experiment scripts.
+
+高价值模型候选、证据等级和正式收录决策见 [`docs/MODEL_CANDIDATE_POOL.md`](docs/MODEL_CANDIDATE_POOL.md)。
+
+See [`docs/MODEL_CANDIDATE_POOL.md`](docs/MODEL_CANDIDATE_POOL.md) for the evidence-graded candidate pool and formal admission decisions.
+
+## Recently Added Domains / 新增领域
+
+Reinforcement Learning / 强化学习:
+
+- `DQN`
+- `ActorCritic`
+- `PPOActorCritic`
+- `SACActorCritic`
+- `TD3ActorCritic`
+- `DecisionTransformer`
+- `DreamerV3`
+
+English: reinforcement models expose reusable `nn.Module` cores such as Q values, policy logits, value functions, action evaluation, TD loss, PPO clipped loss, SAC twin-Q stochastic continuous-control losses, TD3 deterministic actor-critic losses, and Decision Transformer return-conditioned trajectory prediction. Environment stepping, offline dataset loading, replay buffers, rollout collection, exploration schedules, target-network updates, entropy-temperature tuning, and benchmark protocols remain outside the core framework.
+
+Recommendation / 推荐系统:
+
+- `LightGCN`
+- `SASRec`
+- `BERT4Rec`
+
+English: `LightGCN` adds graph collaborative filtering with BPR-style ranking loss and full-sort scoring; `SASRec` adds self-attentive sequential recommendation for next-item prediction; `BERT4Rec` adds bidirectional masked-item prediction for item sequences. Negative sampling, candidate generation, ranking metrics, and online serving remain outside model classes.
+
+Tabular / 表格学习:
+
+- `TabTransformer`
+- `SAINT`
+- `NODE`
+
+English: `TabTransformer` adds contextual categorical embeddings for mixed tabular prediction; `SAINT` adds column and optional row attention over tabular tokens; `NODE` adds differentiable oblivious decision-tree ensembles for tabular classification and regression. Data cleaning, categorical encoding policy, missing-value handling, augmentation, contrastive pre-training loops, and benchmark protocol remain outside model classes.
+
+Vision / 视觉检测:
+
+- `YOLO`
+- `GroundingDINO`
+
+English: `YOLO` adds a single-stage real-time detection skeleton with anchor-grid predictions, objectness scores, class logits, normalized boxes, and `post_process(...)`. `GroundingDINO` adds language-grounded open-vocabulary detection with text-token alignment logits, grounded objectness scores, normalized boxes, and `post_process(...)`. Tokenizers, phrase parsing, NMS policy, COCO/LVIS evaluation, Grounded-SAM orchestration, and training recipes remain outside model classes.
+
+English: `SAM` adds promptable segmentation through `encode_image(...)`, `encode_prompts(...)`, `predict_masks(...)`, and `forward(..., points=..., boxes=..., masks=...)`. Official checkpoint loading, interactive annotation tools, and SAM/SAM2 training recipes remain outside model classes.
+中文：`SAM` 提供点、框、mask 提示驱动的分割模型接口；官方权重下载、交互标注工具和 SAM/SAM2 训练流程不属于核心模型类。
+
+English: `Mask2Former` adds universal segmentation through query masks, class logits, semantic-logit composition, and `post_process(...)`. Hungarian matching, panoptic fusion, dataset-specific target formatting, and benchmark evaluation remain outside model classes.
+
+Multimodal / 多模态:
+
+- `BLIP`
+- `BLIP2`
+
+English: `BLIP` adds image-text fusion, image-text matching logits, and caption language-model logits on top of dual-encoder retrieval features. `BLIP2` adds a Q-Former bridge from image tokens to language-prefix features. Tokenizers, large language model weights, synthetic captions, filtering pipelines, and BLIP/BLIP-2 pre-training schedules remain outside model classes.

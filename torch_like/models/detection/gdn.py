@@ -119,7 +119,11 @@ class GDN(DetectionModel):
 
     def _resolve_adjacency(self, device: torch.device, dtype: torch.dtype) -> torch.Tensor:
         learned_adj = self.graph().to(device=device, dtype=dtype)
-        prior_adj = None if self.prior_adjacency is None else self._normalize(self.prior_adjacency.to(device=device, dtype=dtype))
+        prior_adj = (
+            None
+            if self.prior_adjacency is None
+            else self._normalize(self.prior_adjacency.to(device=device, dtype=dtype))
+        )
         if self.graph_mode == "learned":
             return learned_adj
         if self.graph_mode == "prior":

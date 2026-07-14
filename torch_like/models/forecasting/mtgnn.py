@@ -184,7 +184,9 @@ class MTGNN(ForecastingModel):
             self.skip_convs.append(nn.Conv2d(conv_channels, skip_channels, kernel_size=(1, 1)))
             self.gconv1.append(MixProp(conv_channels, residual_channels, gcn_depth, dropout, prop_alpha))
             self.gconv2.append(MixProp(conv_channels, residual_channels, gcn_depth, dropout, prop_alpha))
-            self.norms.append(nn.LayerNorm([residual_channels, self.num_nodes, 1], elementwise_affine=layer_norm_affine))
+            self.norms.append(
+                nn.LayerNorm([residual_channels, self.num_nodes, 1], elementwise_affine=layer_norm_affine)
+            )
             receptive_field += (7 - 1) * dilation
             dilation *= dilation_exponential
         self.receptive_field = receptive_field
@@ -245,6 +247,7 @@ class MTGNN(ForecastingModel):
             self.gconv1,
             self.gconv2,
             self.norms,
+            strict=True,
         ):
             residual = x
             filt = torch.tanh(filter_conv(x))
@@ -253,7 +256,7 @@ class MTGNN(ForecastingModel):
             skip = skip + skip_conv(x[..., -1:])
             x = gconv1(x, adj) + gconv2(x, adj.transpose(0, 1))
             x = residual_conv(x)
-            x = x + residual[..., -x.size(3):]
+            x = x + residual[..., -x.size(3) :]
             x = self._apply_norm(x, norm)
 
         x = self.skipE(x) + skip

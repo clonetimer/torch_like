@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -12,7 +12,8 @@ import torch
 
 from runner.compile_utils import CompileConfig
 from runner.detection_data import DetectionDataConfig
-from runner.detection_runner import DetectionRunConfig, main as detection_main
+from runner.detection_runner import DetectionRunConfig
+from runner.detection_runner import main as detection_main
 
 
 def parse_args():

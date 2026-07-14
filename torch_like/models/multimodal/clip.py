@@ -65,7 +65,9 @@ class CLIP(MultimodalModel):
         if d_model % vision_heads != 0 or d_model % text_heads != 0:
             raise ValueError("d_model must be divisible by both vision_heads and text_heads")
         if min(vocab_size, max_text_len, d_model, embed_dim, vision_layers, text_layers) <= 0:
-            raise ValueError("vocab_size, max_text_len, d_model, embed_dim, vision_layers, and text_layers must be positive")
+            raise ValueError(
+                "vocab_size, max_text_len, d_model, embed_dim, vision_layers, and text_layers must be positive"
+            )
 
         self.vocab_size = vocab_size
         self.image_size = image_size
@@ -125,11 +127,22 @@ class CLIP(MultimodalModel):
 
     @classmethod
     def clip_tiny(cls, **kwargs) -> "CLIP":
-        return cls(d_model=128, embed_dim=128, vision_layers=2, vision_heads=4, text_layers=2, text_heads=4, d_ff=512, **kwargs)
+        return cls(
+            d_model=128, embed_dim=128, vision_layers=2, vision_heads=4, text_layers=2, text_heads=4, d_ff=512, **kwargs
+        )
 
     @classmethod
     def clip_base(cls, **kwargs) -> "CLIP":
-        return cls(d_model=512, embed_dim=512, vision_layers=12, vision_heads=8, text_layers=12, text_heads=8, d_ff=2048, **kwargs)
+        return cls(
+            d_model=512,
+            embed_dim=512,
+            vision_layers=12,
+            vision_heads=8,
+            text_layers=12,
+            text_heads=8,
+            d_ff=2048,
+            **kwargs,
+        )
 
     def _init_weights(self) -> None:
         nn.init.trunc_normal_(self.cls_token, std=0.02)
@@ -149,7 +162,9 @@ class CLIP(MultimodalModel):
         if image.dim() != 4:
             raise ValueError("CLIP expects image with shape (batch, channels, height, width)")
         if image.size(-2) != self.image_size or image.size(-1) != self.image_size:
-            raise ValueError(f"Expected image size {self.image_size}x{self.image_size}, got {image.size(-2)}x{image.size(-1)}")
+            raise ValueError(
+                f"Expected image size {self.image_size}x{self.image_size}, got {image.size(-2)}x{image.size(-1)}"
+            )
         tokens = self.patch_embed(image)
         cls = self.cls_token.expand(image.size(0), -1, -1)
         tokens = torch.cat([cls, tokens], dim=1) + self.visual_pos_embed

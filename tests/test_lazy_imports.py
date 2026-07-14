@@ -41,6 +41,20 @@ class LazyImportTests(unittest.TestCase):
         output = self.run_python(code).splitlines()
         self.assertEqual(output, ["PatchTST", "THGNN", "LRU"])
 
+    def test_model_zoo_bootstraps_on_first_mapping_access(self):
+        code = textwrap.dedent(
+            """
+            import sys
+            import torch_like
+
+            print("torch_like.models.forecasting" in sys.modules)
+            print(len(torch_like.model_zoo["forecasting"]) > 0)
+            print("torch_like.models.forecasting" in sys.modules)
+            """
+        )
+        output = self.run_python(code).splitlines()
+        self.assertEqual(output, ["False", "True", "True"])
+
 
 if __name__ == "__main__":
     unittest.main()

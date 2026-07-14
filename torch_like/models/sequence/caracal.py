@@ -180,7 +180,9 @@ class Caracal(SequenceModel):
             raise ValueError("SequenceBatch.labels is required for loss_step")
         logits = self.next_token_logits(batch)
         if batch.labels.shape != batch.input_ids.shape:
-            raise ValueError(f"Caracal expects labels with shape {tuple(batch.input_ids.shape)}, got {tuple(batch.labels.shape)}")
+            raise ValueError(
+                f"Caracal expects labels with shape {tuple(batch.input_ids.shape)}, got {tuple(batch.labels.shape)}"
+            )
         return self.causal_lm_loss(logits, batch.labels)
 
     @torch.no_grad()

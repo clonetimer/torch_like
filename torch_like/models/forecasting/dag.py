@@ -66,8 +66,12 @@ class DAG(ForecastingModel):
         self.target_proj = nn.Linear(c_out, d_model)
         self.hist_exog_proj = nn.LazyLinear(d_model)
         self.future_exog_proj = nn.LazyLinear(d_model)
-        self.target_encoder = nn.GRU(d_model, d_model, num_layers=e_layers, batch_first=True, dropout=dropout if e_layers > 1 else 0.0)
-        self.exog_encoder = nn.GRU(d_model, d_model, num_layers=e_layers, batch_first=True, dropout=dropout if e_layers > 1 else 0.0)
+        self.target_encoder = nn.GRU(
+            d_model, d_model, num_layers=e_layers, batch_first=True, dropout=dropout if e_layers > 1 else 0.0
+        )
+        self.exog_encoder = nn.GRU(
+            d_model, d_model, num_layers=e_layers, batch_first=True, dropout=dropout if e_layers > 1 else 0.0
+        )
         self.temporal_attn = nn.MultiheadAttention(d_model, n_heads, dropout=dropout, batch_first=True)
         self.channel_gate = nn.Sequential(
             nn.Linear(d_model * 2, d_ff),
@@ -106,7 +110,9 @@ class DAG(ForecastingModel):
         if batch.x_mark_dec is not None and batch.x_mark_dec.numel() > 0:
             mark_future = batch.x_mark_dec[:, -self.pred_len :, :]
         else:
-            mark_future = torch.zeros(batch.x_enc.size(0), self.pred_len, 0, device=batch.x_enc.device, dtype=batch.x_enc.dtype)
+            mark_future = torch.zeros(
+                batch.x_enc.size(0), self.pred_len, 0, device=batch.x_enc.device, dtype=batch.x_enc.dtype
+            )
 
         exog_future = exog_dec[:, -self.pred_len :, :]
         if mark_future.numel() > 0:
@@ -127,9 +133,13 @@ class DAG(ForecastingModel):
         target_tokens = self.target_proj(target_enc)
         target_encoded, _ = self.target_encoder(target_tokens)
         if exog_enc.size(-1) == 0:
-            exog_enc = torch.zeros(target_enc.size(0), target_enc.size(1), 1, device=target_enc.device, dtype=target_enc.dtype)
+            exog_enc = torch.zeros(
+                target_enc.size(0), target_enc.size(1), 1, device=target_enc.device, dtype=target_enc.dtype
+            )
         if exog_future.size(-1) == 0:
-            exog_future = torch.zeros(target_enc.size(0), self.pred_len, 1, device=target_enc.device, dtype=target_enc.dtype)
+            exog_future = torch.zeros(
+                target_enc.size(0), self.pred_len, 1, device=target_enc.device, dtype=target_enc.dtype
+            )
         exog_encoded, _ = self.exog_encoder(self.hist_exog_proj(exog_enc))
         future_query = self.future_exog_proj(exog_future)
         temporal_context, _ = self.temporal_attn(future_query, exog_encoded, exog_encoded, need_weights=False)

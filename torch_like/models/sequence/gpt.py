@@ -11,8 +11,9 @@ from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
-from torch_like.models.sequence.common import SequenceBatch, SequenceConfig, SequenceModel
+from torch_like.models.sequence.common import SequenceBatch, SequenceConfig, SequenceModel, causal_sdpa_mask
 
 
 @dataclass
@@ -46,15 +47,21 @@ class CausalSelfAttention(nn.Module):
         k = k.transpose(1, 2)
         v = v.transpose(1, 2)
 
-        scores = (q @ k.transpose(-2, -1)) / (self.head_dim ** 0.5)
-        if causal_mask is None:
-            causal_mask = torch.triu(torch.ones(seq_len, seq_len, device=x.device, dtype=torch.bool), diagonal=1)
-        scores = scores.masked_fill(causal_mask.view(1, 1, seq_len, seq_len), torch.finfo(scores.dtype).min)
-        if attention_mask is not None:
-            key_padding_mask = ~attention_mask.bool()
-            scores = scores.masked_fill(key_padding_mask.view(batch_size, 1, 1, seq_len), torch.finfo(scores.dtype).min)
-        attn = self.attn_drop(torch.softmax(scores, dim=-1))
-        out = attn @ v
+        attn_mask, is_causal = causal_sdpa_mask(
+            attention_mask,
+            causal_mask,
+            batch_size=batch_size,
+            seq_len=seq_len,
+            device=x.device,
+        )
+        out = F.scaled_dot_product_attention(
+            q,
+            k,
+            v,
+            attn_mask=attn_mask,
+            dropout_p=self.attn_drop.p if self.training else 0.0,
+            is_causal=is_causal,
+        )
         out = out.transpose(1, 2).contiguous().view(batch_size, seq_len, d_model)
         return self.resid_drop(self.out_proj(out))
 
@@ -176,7 +183,9 @@ class GPT(SequenceModel):
             raise ValueError("SequenceBatch.labels is required for GPT loss_step")
         logits = self.next_token_logits(batch)
         if batch.labels.shape != batch.input_ids.shape:
-            raise ValueError(f"GPT expects labels with shape {tuple(batch.input_ids.shape)}, got {tuple(batch.labels.shape)}")
+            raise ValueError(
+                f"GPT expects labels with shape {tuple(batch.input_ids.shape)}, got {tuple(batch.labels.shape)}"
+            )
         return self.causal_lm_loss(logits, batch.labels)
 
     @torch.no_grad()

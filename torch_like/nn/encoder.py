@@ -46,8 +46,7 @@ class EncoderLayer(nn.Module):
     module receives (B, L, H, D) tensors.
     """
 
-    def __init__(self, attention, d_model, n_heads, d_ff=None,
-                 dropout=0.1, activation="gelu"):
+    def __init__(self, attention, d_model, n_heads, d_ff=None, dropout=0.1, activation="gelu"):
         super().__init__()
         d_ff = d_ff or 4 * d_model
         self.attention = attention
@@ -105,9 +104,7 @@ class Encoder(nn.Module):
 
     def forward(self, x, attn_mask=None):
         if self.conv_layers is not None:
-            for i, (attn_layer, conv_layer) in enumerate(
-                zip(self.attn_layers, self.conv_layers)
-            ):
+            for attn_layer, conv_layer in zip(self.attn_layers, self.conv_layers, strict=False):
                 x = attn_layer(x, attn_mask=attn_mask)
                 x = conv_layer(x)
 

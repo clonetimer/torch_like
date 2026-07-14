@@ -133,7 +133,12 @@ class ASTGCN(ForecastingModel):
             self.register_buffer("prior_adjacency", None)
         self.input_proj = nn.Conv2d(1, d_model, kernel_size=(1, 1))
         self.blocks = nn.ModuleList(
-            [ASTGCNBlock(num_nodes=enc_in, in_channels=d_model, hidden_channels=d_model, seq_len=seq_len, dropout=dropout) for _ in range(e_layers)]
+            [
+                ASTGCNBlock(
+                    num_nodes=enc_in, in_channels=d_model, hidden_channels=d_model, seq_len=seq_len, dropout=dropout
+                )
+                for _ in range(e_layers)
+            ]
         )
         self.readout = nn.Sequential(
             nn.Conv2d(d_model, d_model, kernel_size=(1, 1)),

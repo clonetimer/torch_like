@@ -146,7 +146,9 @@ class T5(Seq2SeqModel):
         if decoder_attention_mask is None:
             decoder_attention_mask = decoder_input_ids.ne(self.pad_token_id)
         tgt_len = decoder_input_ids.size(1)
-        causal_mask = torch.triu(torch.ones(tgt_len, tgt_len, device=decoder_input_ids.device, dtype=torch.bool), diagonal=1)
+        causal_mask = torch.triu(
+            torch.ones(tgt_len, tgt_len, device=decoder_input_ids.device, dtype=torch.bool), diagonal=1
+        )
         hidden = self.decoder_embeddings(decoder_input_ids)
         memory_key_padding_mask = ~attention_mask.bool() if attention_mask is not None else None
         decoded = self.decoder(

@@ -178,7 +178,10 @@ class Koopa(ForecastingModel):
 
         self.revin = RevIN(enc_in) if use_revin else None
         self.blocks = nn.ModuleList(
-            [KoopaBlock(enc_in=enc_in, d_model=hidden_dim, pred_len=pred_len, dropout=dropout, modes=modes) for _ in range(blocks)]
+            [
+                KoopaBlock(enc_in=enc_in, d_model=hidden_dim, pred_len=pred_len, dropout=dropout, modes=modes)
+                for _ in range(blocks)
+            ]
         )
         self.block_weights = nn.Parameter(torch.zeros(blocks))
         self.output_proj = nn.Identity() if c_out == enc_in else nn.Linear(enc_in, c_out)

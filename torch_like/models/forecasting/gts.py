@@ -132,7 +132,10 @@ class GTS(ForecastingModel):
 
         self.input_proj = nn.Linear(1, d_model)
         self.cells = nn.ModuleList(
-            [GTSGRUCell(input_dim=d_model, hidden_dim=d_model, k_steps=diffusion_steps, dropout=dropout) for _ in range(e_layers)]
+            [
+                GTSGRUCell(input_dim=d_model, hidden_dim=d_model, k_steps=diffusion_steps, dropout=dropout)
+                for _ in range(e_layers)
+            ]
         )
         self.readout = nn.Sequential(
             nn.Linear(seq_len * d_model, max(d_model, pred_len * 2)),

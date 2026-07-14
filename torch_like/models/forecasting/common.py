@@ -84,8 +84,8 @@ def _make_default_decoder_input(
     x_enc: torch.Tensor,
     x_target_enc: Optional[torch.Tensor],
 ) -> torch.Tensor:
-    label_len = getattr(model, "label_len")
-    pred_len = getattr(model, "pred_len")
+    label_len = model.label_len
+    pred_len = model.pred_len
     dec_in = int(model.config().get("dec_in", x_enc.size(-1)))
     source = x_target_enc if x_target_enc is not None and x_target_enc.size(-1) == dec_in else x_enc
     if source.size(-1) > dec_in:

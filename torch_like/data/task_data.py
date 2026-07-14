@@ -335,8 +335,12 @@ def create_forecast_loaders(config: ForecastDataConfig, device: str | None = Non
         drop_last=len(bundle.train_set) >= config.batch_size,
         **loader_kwargs,
     )
-    val_loader = DataLoader(bundle.val_set, batch_size=config.batch_size, shuffle=False, drop_last=False, **loader_kwargs)
-    test_loader = DataLoader(bundle.test_set, batch_size=config.batch_size, shuffle=False, drop_last=False, **loader_kwargs)
+    val_loader = DataLoader(
+        bundle.val_set, batch_size=config.batch_size, shuffle=False, drop_last=False, **loader_kwargs
+    )
+    test_loader = DataLoader(
+        bundle.test_set, batch_size=config.batch_size, shuffle=False, drop_last=False, **loader_kwargs
+    )
     return bundle, train_loader, val_loader, test_loader
 
 

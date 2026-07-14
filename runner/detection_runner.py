@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass, field
-from pathlib import Path
 import sys
 import time
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -17,6 +17,15 @@ import torch_like as tl
 from runner.common import average_total, build_run_payload, print_epoch_metrics, resolve_results_dir, save_json
 from runner.compile_utils import CompileConfig, maybe_compile_model
 from runner.detection_data import DetectionDataConfig, create_detection_loaders
+from runner.performance import (
+    ExecutionConfig,
+    add_execution_args,
+    autocast_context,
+    backward_and_step,
+    create_grad_scaler,
+    execution_config_from_args,
+    move_to_device,
+)
 
 
 @dataclass
@@ -26,28 +35,31 @@ class DetectionRunConfig:
     lr: float = 1e-3
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     compile: CompileConfig = field(default_factory=CompileConfig)
+    execution: ExecutionConfig = field(default_factory=ExecutionConfig)
     model_specs: list[dict] | None = None
     results_dir: str | Path | None = None
 
 
-def train_epoch(model, loader, optimizer, device):
+def train_epoch(model, loader, optimizer, device, execution: ExecutionConfig | None = None, scaler=None):
+    execution = execution or ExecutionConfig()
     model.train()
     total = 0.0
     count = 0
     for batch in loader:
         windows = batch[0] if isinstance(batch, (tuple, list)) else batch
-        det_batch = model.make_detection_batch(windows.to(device))
-        loss = model.fit_step(det_batch)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        windows = move_to_device(windows, device, execution)
+        det_batch = model.make_detection_batch(windows)
+        with autocast_context(device, execution):
+            loss = model.fit_step(det_batch)
+        backward_and_step(loss, optimizer, scaler, execution)
         total += loss.item() * windows.size(0)
         count += windows.size(0)
     return average_total(total, count)
 
 
 @torch.inference_mode()
-def evaluate(model, loader, device):
+def evaluate(model, loader, device, execution: ExecutionConfig | None = None):
+    execution = execution or ExecutionConfig()
     model.eval()
     losses = []
     labels = []
@@ -57,8 +69,11 @@ def evaluate(model, loader, device):
             labels.append(batch_labels.cpu())
         else:
             windows = batch
-        det_batch = model.make_detection_batch(windows.to(device))
-        scores = model.score_batch(det_batch, reduction="mean").cpu()
+        windows = move_to_device(windows, device, execution)
+        det_batch = model.make_detection_batch(windows)
+        with autocast_context(device, execution):
+            scores = model.score_batch(det_batch, reduction="mean")
+        scores = scores.float().cpu()
         losses.append(scores)
     result = {"scores": torch.cat(losses).numpy()}
     if labels:
@@ -98,7 +113,9 @@ def default_model_specs(config: DetectionRunConfig, input_dim: int):
     ]
 
 
-def run_experiment(model_cls, model_name: str, model_kwargs: dict, bundle, train_loader, test_loader, config: DetectionRunConfig):
+def run_experiment(
+    model_cls, model_name: str, model_kwargs: dict, bundle, train_loader, test_loader, config: DetectionRunConfig
+):
     print(f"\n{'=' * 60}")
     print(f"  {model_name}")
     print(f"{'=' * 60}")
@@ -106,6 +123,7 @@ def run_experiment(model_cls, model_name: str, model_kwargs: dict, bundle, train
     model = model_cls(**model_kwargs).to(config.device)
     model = maybe_compile_model(model, config.compile)
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.lr, weight_decay=1e-5)
+    scaler = create_grad_scaler(config.device, config.execution)
     n_params = sum(p.numel() for p in model.parameters())
     print(f"  Parameters: {n_params:,}")
     print(f"  Train windows: {len(train_loader.dataset):,}")
@@ -114,11 +132,11 @@ def run_experiment(model_cls, model_name: str, model_kwargs: dict, bundle, train
     history = []
     t0 = time.time()
     for epoch in range(1, config.epochs + 1):
-        train_loss = train_epoch(model, train_loader, optimizer, config.device)
+        train_loss = train_epoch(model, train_loader, optimizer, config.device, config.execution, scaler)
         history.append({"epoch": epoch, "train_loss": train_loss})
         print_epoch_metrics(epoch, config.epochs, train_loss=train_loss)
 
-    eval_result = evaluate(model, test_loader, config.device)
+    eval_result = evaluate(model, test_loader, config.device, config.execution)
     elapsed = time.time() - t0
     score_mean = float(np.mean(eval_result["scores"]))
     score_std = float(np.std(eval_result["scores"]))
@@ -190,6 +208,7 @@ def parse_args():
     parser.add_argument("--compile-mode")
     parser.add_argument("--compile-fullgraph", action="store_true")
     parser.add_argument("--compile-dynamic", action="store_true")
+    add_execution_args(parser)
     return parser.parse_args()
 
 
@@ -215,6 +234,7 @@ def cli():
             fullgraph=args.compile_fullgraph,
             dynamic=True if args.compile_dynamic else None,
         ),
+        execution=execution_config_from_args(args),
     )
     main(config)
 

@@ -1,17 +1,47 @@
 """Sequence domain base interfaces."""
 
+from torch_like.models.registry import register_model_catalog
 from torch_like.models.sequence.bert import BERT, BERTConfig
 from torch_like.models.sequence.caracal import Caracal
 from torch_like.models.sequence.common import Seq2SeqBatch, Seq2SeqModel, SequenceBatch, SequenceConfig, SequenceModel
 from torch_like.models.sequence.gpt import GPT, GPTConfig
+from torch_like.models.sequence.hyena import Hyena, HyenaConfig
+from torch_like.models.sequence.kimi_linear import KimiDeltaAttention, KimiLinear, KimiLinearConfig
+from torch_like.models.sequence.llama import LLaMA, LLaMAConfig
 from torch_like.models.sequence.lru import LRU
 from torch_like.models.sequence.mamba import Mamba
 from torch_like.models.sequence.mamba_like import MambaLike
+from torch_like.models.sequence.mixtral import Mixtral, MixtralConfig
+from torch_like.models.sequence.performer import Performer, PerformerConfig
+from torch_like.models.sequence.reformer import Reformer, ReformerConfig
+from torch_like.models.sequence.retnet import RetNet, RetNetConfig
+from torch_like.models.sequence.s4 import S4, S4Config
 from torch_like.models.sequence.t5 import T5, T5Config
 from torch_like.models.sequence.transformer_decoder import TransformerDecoder
-from torch_like.models.registry import register_model_catalog
+from torch_like.models.sequence.transformer_xl import TransformerXL, TransformerXLConfig
+from torch_like.models.sequence.xlstm import mLSTMCell, xLSTM, xLSTMConfig
 
 model_zoo = {
+    "Hyena": {
+        "cls": Hyena,
+        "family": "implicit_long_convolution",
+        "layer": "General sequence modeling",
+        "integration_level": "paper_aligned",
+        "supports": ["next_token", "generation", "fft_convolution", "data_controlled_gating", "long_context"],
+        "paper": "Hyena Hierarchy: Towards Larger Convolutional Language Models (ICML 2023)",
+        "description": "Implicit long convolution interleaved with data-controlled multiplicative gating",
+        "complexity": "O(B * D * L log L) FFT-based causal long convolution",
+    },
+    "S4": {
+        "cls": S4,
+        "family": "state_space",
+        "layer": "General sequence modeling",
+        "integration_level": "paper_aligned_portable_scan",
+        "supports": ["next_token", "generation", "state_space", "dplr", "long_context"],
+        "paper": "Efficiently Modeling Long Sequences with Structured State Spaces (ICLR 2022)",
+        "description": "DPLR structured state-space sequence backbone with portable recurrent discretization",
+        "complexity": "O(B * L * D * S^2) portable recurrent scan without custom CUDA kernels",
+    },
     "TransformerDecoder": {
         "cls": TransformerDecoder,
         "family": "causal_decoder",
@@ -22,6 +52,66 @@ model_zoo = {
         "description": "Causal decoder-only Transformer baseline for sequence-domain expansion",
         "complexity": "O(B * L^2 * D) causal self-attention over sequence length L and hidden width D",
     },
+    "TransformerXL": {
+        "cls": TransformerXL,
+        "family": "memory_augmented_transformer",
+        "layer": "General sequence modeling",
+        "integration_level": "framework_oriented",
+        "supports": ["causal_mask", "next_token", "generation", "segment_memory", "long_context"],
+        "paper": "Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context (ACL 2019)",
+        "description": "Causal Transformer language model with reusable segment-level hidden-state memory",
+        "complexity": "O(B * L * (L + M) * D) attention over current length L and memory length M",
+    },
+    "Performer": {
+        "cls": Performer,
+        "family": "linear_attention_transformer",
+        "layer": "General sequence modeling",
+        "integration_level": "framework_oriented",
+        "supports": ["next_token", "generation", "linear_attention", "random_features", "long_context"],
+        "paper": "Rethinking Attention with Performers (ICLR 2021)",
+        "description": "Decoder-only Performer with positive random-feature linear attention and causal prefix sums",
+        "complexity": "O(B * L * H * F * D_head) linear attention over sequence length L and random features F",
+    },
+    "Reformer": {
+        "cls": Reformer,
+        "family": "efficient_attention_transformer",
+        "layer": "General sequence modeling",
+        "integration_level": "framework_oriented_lsh",
+        "supports": ["next_token", "generation", "lsh_attention", "local_attention", "long_context"],
+        "paper": "Reformer: The Efficient Transformer (ICLR 2020)",
+        "description": "Decoder-only Reformer-style model with bucketed LSH causal attention",
+        "complexity": "O(B * H * L * bucket_size * D) intended sparse attention; current dense mask materializes O(L^2)",
+    },
+    "RetNet": {
+        "cls": RetNet,
+        "family": "retentive_recurrent",
+        "layer": "General sequence modeling",
+        "integration_level": "paper_aligned_portable",
+        "supports": ["next_token", "generation", "parallel_retention", "recurrent_state", "long_context"],
+        "paper": "Retentive Network: A Successor to Transformer for Large Language Models (2023)",
+        "description": "Multi-scale retention model with equivalent parallel training and recurrent inference paths",
+        "complexity": "O(B * H * L^2 * D_head) parallel reference path; O(B * H * D_head^2) recurrent state per token",
+    },
+    "KimiLinear": {
+        "cls": KimiLinear,
+        "family": "gated_delta_linear_attention",
+        "layer": "General sequence modeling",
+        "integration_level": "paper_aligned_reference",
+        "supports": ["next_token", "generation", "linear_attention", "recurrent_state", "chunkwise", "long_context"],
+        "paper": "Kimi Linear: An Expressive, Efficient Attention Architecture (2025)",
+        "description": "Lightweight Kimi Delta Attention model with fine-grained gated delta-rule memory",
+        "complexity": "O(B * L * H * D_head^2) portable scan; optimized FlashKDA kernels are not bundled",
+    },
+    "xLSTM": {
+        "cls": xLSTM,
+        "family": "matrix_memory_recurrent",
+        "layer": "General sequence modeling",
+        "integration_level": "paper_aligned_mlstm_reference",
+        "supports": ["next_token", "generation", "matrix_memory", "exponential_gating", "recurrent_state", "long_context"],
+        "paper": "xLSTM: Extended Long Short-Term Memory (NeurIPS 2024)",
+        "description": "mLSTM residual backbone with matrix memory, stabilized exponential gates, and recurrent inference",
+        "complexity": "O(B * L * H * D_head^2) portable recurrent scan without official CUDA kernels",
+    },
     "GPT": {
         "cls": GPT,
         "family": "causal_decoder",
@@ -31,6 +121,43 @@ model_zoo = {
         "paper": "Improving Language Understanding by Generative Pre-Training (2018) / GPT-2 Language Models are Unsupervised Multitask Learners (2019)",
         "description": "GPT-style decoder-only Transformer language model with pre-norm blocks and tied token embeddings",
         "complexity": "O(B * L^2 * D) causal self-attention over sequence length L and hidden width D",
+    },
+    "LLaMA": {
+        "cls": LLaMA,
+        "family": "causal_decoder",
+        "layer": "General sequence modeling",
+        "integration_level": "framework_oriented",
+        "supports": [
+            "causal_mask",
+            "next_token",
+            "generation",
+            "rope",
+            "rms_norm",
+            "swiglu",
+            "grouped_query_attention",
+        ],
+        "paper": "LLaMA: Open and Efficient Foundation Language Models (2023)",
+        "description": "LLaMA-style decoder-only language model with RoPE, RMSNorm, SwiGLU, and optional grouped-query attention",
+        "complexity": "O(B * L^2 * D) causal self-attention over sequence length L and hidden width D",
+    },
+    "Mixtral": {
+        "cls": Mixtral,
+        "family": "sparse_moe_decoder",
+        "layer": "General sequence modeling",
+        "integration_level": "framework_oriented",
+        "supports": [
+            "causal_mask",
+            "next_token",
+            "generation",
+            "rope",
+            "rms_norm",
+            "swiglu",
+            "sparse_moe",
+            "top_k_routing",
+        ],
+        "paper": "Mixtral of Experts (arXiv 2024)",
+        "description": "Mixtral-style sparse MoE decoder with LLaMA attention and top-k routed SwiGLU experts",
+        "complexity": "O(B * L^2 * D + B * L * top_k * D * expert_ffn) attention plus sparse expert routing",
     },
     "LRU": {
         "cls": LRU,
@@ -103,9 +230,31 @@ __all__ = [
     "Seq2SeqBatch",
     "Seq2SeqModel",
     "TransformerDecoder",
+    "TransformerXLConfig",
+    "TransformerXL",
+    "PerformerConfig",
+    "Performer",
+    "ReformerConfig",
+    "Reformer",
+    "RetNetConfig",
+    "RetNet",
+    "KimiLinearConfig",
+    "KimiDeltaAttention",
+    "KimiLinear",
+    "xLSTMConfig",
+    "mLSTMCell",
+    "xLSTM",
     "GPTConfig",
     "GPT",
+    "LLaMAConfig",
+    "LLaMA",
+    "MixtralConfig",
+    "Mixtral",
     "LRU",
+    "S4Config",
+    "S4",
+    "HyenaConfig",
+    "Hyena",
     "Mamba",
     "MambaLike",
     "Caracal",

@@ -180,7 +180,9 @@ class TimeXer(ForecastingModel):
         exog_tokens = self._prepare_exog_tokens(x_exog_enc, x_mark_enc, target_dim)
         for layer in self.encoder_layers:
             target_tokens = layer(target_tokens, exog_tokens)
-        target_tokens = target_tokens.reshape(-1, target_dim, target_tokens.size(1), target_tokens.size(2)).permute(0, 1, 3, 2)
+        target_tokens = target_tokens.reshape(-1, target_dim, target_tokens.size(1), target_tokens.size(2)).permute(
+            0, 1, 3, 2
+        )
         out = self.head(target_tokens).transpose(1, 2)
 
         if self.use_norm and means is not None and stdev is not None:

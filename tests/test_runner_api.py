@@ -7,25 +7,32 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-import torch_like as tl
 
+import torch_like as tl
+from runner.benchmark_compile import BENCHMARK_MODELS, benchmark_one
+from runner.checkpoints import load_checkpoint, save_checkpoint
+from runner.common import average_total, build_run_payload
+from runner.compile_utils import CompileConfig, maybe_compile_model
+from runner.detection_data import DetectionDataConfig, load_detection_data
+from runner.detection_runner import DetectionRunConfig, default_model_specs
+from runner.detection_runner import main as run_detection_main
+from runner.forecast_comparison_runner import ForecastComparisonConfig
+from runner.forecast_comparison_runner import default_model_specs as forecast_default_model_specs
+from runner.forecast_comparison_runner import main as run_forecast_comparison_main
+from runner.forecast_data import ForecastDataConfig, create_forecast_loaders, load_forecast_data
 from runner.forecast_runner import (
     ForecastRunConfig,
     _make_decoder_input,
     _to_forecasting_batch,
+)
+from runner.forecast_runner import (
     main as run_forecast_main,
 )
-from runner.forecast_comparison_runner import ForecastComparisonConfig, default_model_specs as forecast_default_model_specs, main as run_forecast_comparison_main
-from runner.benchmark_compile import BENCHMARK_MODELS, benchmark_one
-from runner.compile_utils import CompileConfig, maybe_compile_model
-from runner.common import average_total, build_run_payload
-from runner.checkpoints import load_checkpoint, save_checkpoint
-from runner.detection_data import DetectionDataConfig, load_detection_data
-from runner.detection_runner import DetectionRunConfig, default_model_specs, main as run_detection_main
-from runner.forecast_data import ForecastDataConfig, create_forecast_loaders, load_forecast_data
+from runner.performance import ExecutionConfig, autocast_context, create_grad_scaler, move_to_device
 from runner.report import load_result_jsons, summarize_results
 from runner.rul_data import RULDataConfig, create_rul_loaders
-from runner.rul_runner import RULRunConfig, run_experiment as run_rul_experiment
+from runner.rul_runner import RULRunConfig
+from runner.rul_runner import run_experiment as run_rul_experiment
 from torch_like.utils.tools import EarlyStopping, dotdict
 
 
@@ -53,6 +60,25 @@ class RunnerApiTests(unittest.TestCase):
         compiled = maybe_compile_model(model, CompileConfig(enabled=False))
         self.assertIs(compiled, model)
 
+    def test_compile_helper_prefers_module_compile(self):
+        model = nn.Linear(2, 1)
+        with patch.object(model, "compile") as module_compile:
+            compiled = maybe_compile_model(model, CompileConfig(enabled=True, backend="eager"))
+        self.assertIs(compiled, model)
+        module_compile.assert_called_once_with(fullgraph=False, backend="eager")
+
+    def test_execution_config_validates_amp_dtype(self):
+        with self.assertRaises(ValueError):
+            ExecutionConfig(amp_dtype="float32")
+
+    def test_execution_helpers_on_cpu(self):
+        config = ExecutionConfig(mixed_precision=True, amp_dtype="bfloat16")
+        tensor = move_to_device(torch.randn(2, 2), "cpu", config)
+        with autocast_context("cpu", config):
+            output = nn.Linear(2, 2)(tensor)
+        self.assertEqual(output.dtype, torch.bfloat16)
+        self.assertIsNone(create_grad_scaler("cpu", config))
+
     def test_load_esa_style_csv(self):
         tmp = self.tmp_path / "runner_csv"
         tmp.mkdir(exist_ok=True)
@@ -69,7 +95,9 @@ class RunnerApiTests(unittest.TestCase):
         )
         df.to_csv(train_path, index=False)
         df.to_csv(test_path, index=False)
-        cfg = DetectionDataConfig(train_path=str(train_path), test_path=str(test_path), max_train_rows=3, max_test_rows=3)
+        cfg = DetectionDataConfig(
+            train_path=str(train_path), test_path=str(test_path), max_train_rows=3, max_test_rows=3
+        )
         bundle = load_detection_data(cfg)
         self.assertEqual(bundle.train_data.shape, (3, 2))
         self.assertEqual(bundle.test_data.shape, (3, 2))

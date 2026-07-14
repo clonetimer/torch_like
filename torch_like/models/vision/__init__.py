@@ -2,27 +2,104 @@
 
 from torch_like.models.registry import register_model_catalog
 from torch_like.models.vision.alexnet import AlexNet, AlexNetConfig
+from torch_like.models.vision.byol import BYOL, BYOLConfig
 from torch_like.models.vision.common import VisionBatch, VisionConfig, VisionModel
 from torch_like.models.vision.convnext import ConvNeXt, ConvNeXtConfig
-from torch_like.models.vision.deit import DeiT, DeiTConfig
 from torch_like.models.vision.deeplabv3 import DeepLabV3, DeepLabV3Config
-from torch_like.models.vision.detr import DETR, DETRConfig
+from torch_like.models.vision.deit import DeiT, DeiTConfig
 from torch_like.models.vision.densenet import DenseNet, DenseNetConfig
+from torch_like.models.vision.detr import DETR, DETRConfig
+from torch_like.models.vision.rtdetr import RTDETR, RTDETRConfig
+from torch_like.models.vision.dino import DINO, DINOConfig
 from torch_like.models.vision.efficientnet import EfficientNet, EfficientNetConfig
 from torch_like.models.vision.fcn import FCN, FCNConfig
 from torch_like.models.vision.googlenet import GoogLeNet, GoogLeNetConfig
+from torch_like.models.vision.grounding_dino import GroundingDINO, GroundingDINOConfig
 from torch_like.models.vision.inception_v3 import InceptionV3, InceptionV3Config
+from torch_like.models.vision.mae import MAE, MAEConfig
+from torch_like.models.vision.mask2former import Mask2Former, Mask2FormerConfig
 from torch_like.models.vision.mlp_mixer import MLPMixer, MLPMixerConfig
 from torch_like.models.vision.mobilenetv2 import MobileNetV2, MobileNetV2Config
+from torch_like.models.vision.moco import MoCo, MoCoConfig
 from torch_like.models.vision.resnet import ResNet, ResNetConfig
 from torch_like.models.vision.resnext import ResNeXt, ResNeXtConfig
-from torch_like.models.vision.senet import SELayer, SEBottleneck, SENet, SENetConfig
+from torch_like.models.vision.sam import SAM, SAMConfig
+from torch_like.models.vision.senet import SEBottleneck, SELayer, SENet, SENetConfig
+from torch_like.models.vision.simclr import SimCLR, SimCLRConfig
 from torch_like.models.vision.swin_transformer import SwinTransformer, SwinTransformerConfig
 from torch_like.models.vision.unet import UNet, UNetConfig
 from torch_like.models.vision.vgg import VGG, VGGConfig
 from torch_like.models.vision.vit import ViT, ViTConfig
+from torch_like.models.vision.yolo import YOLO, YOLOConfig
 
 model_zoo = {
+    "MAE": {
+        "cls": MAE,
+        "family": "masked_image_modeling",
+        "layer": "Vision / self-supervised representation",
+        "integration_level": "paper_aligned",
+        "supports": ["patch_embedding", "masked_reconstruction", "self_supervised", "backbone_features"],
+        "paper": "Masked Autoencoders Are Scalable Vision Learners (CVPR 2022)",
+        "description": "Asymmetric visible-patch encoder and lightweight pixel-reconstruction decoder",
+        "complexity": "O(B * visible_patches^2 * D + B * all_patches^2 * decoder_dim)",
+    },
+    "SAM": {
+        "cls": SAM,
+        "family": "promptable_segmentation",
+        "layer": "Vision / promptable segmentation",
+        "integration_level": "framework_oriented",
+        "supports": ["point_prompts", "box_prompts", "mask_prompts", "multimask_output", "mask_quality"],
+        "paper": "Segment Anything (ICCV 2023)",
+        "description": "SAM-style image encoder, prompt encoder, and mask decoder for point/box/mask guided segmentation",
+        "complexity": "O(B * P^2 * D + B * Q * P * D) image-token encoding plus prompt-conditioned mask decoding",
+    },
+    "SimCLR": {
+        "cls": SimCLR,
+        "family": "contrastive_visual_representation",
+        "layer": "Vision / self-supervised representation",
+        "integration_level": "framework_oriented",
+        "supports": ["self_supervised", "image_representation", "projection_head", "contrastive_loss"],
+        "paper": "A Simple Framework for Contrastive Learning of Visual Representations (ICML 2020)",
+        "description": "Visual encoder with projection head and NT-Xent style augmented-view loss",
+        "complexity": "O(B * H * W * CNN depth + B^2 * projection_dim) encoder plus pairwise contrastive logits",
+    },
+    "BYOL": {
+        "cls": BYOL,
+        "family": "bootstrap_visual_representation",
+        "layer": "Vision / self-supervised representation",
+        "integration_level": "framework_oriented",
+        "supports": ["self_supervised", "image_representation", "projection_head", "predictor", "ema_target"],
+        "paper": "Bootstrap Your Own Latent: A New Approach to Self-Supervised Learning (NeurIPS 2020)",
+        "description": "Online/target visual encoders with predictor head and EMA target updates",
+        "complexity": "O(B * H * W * CNN depth) two-view online/target representation learning",
+    },
+    "DINO": {
+        "cls": DINO,
+        "family": "self_distillation_visual_representation",
+        "layer": "Vision / self-supervised representation",
+        "integration_level": "framework_oriented",
+        "supports": ["self_supervised", "image_representation", "teacher_student", "ema_target", "self_distillation"],
+        "paper": "Emerging Properties in Self-Supervised Vision Transformers (ICCV 2021)",
+        "description": "ViT-style DINO student/teacher self-distillation with EMA teacher and centering",
+        "complexity": "O(B * P^2 * D) student/teacher ViT attention over image patches P",
+    },
+    "MoCo": {
+        "cls": MoCo,
+        "family": "momentum_contrast_visual_representation",
+        "layer": "Vision / self-supervised representation",
+        "integration_level": "framework_oriented",
+        "supports": [
+            "self_supervised",
+            "image_representation",
+            "projection_head",
+            "contrastive_loss",
+            "momentum_encoder",
+            "queue",
+        ],
+        "paper": "Momentum Contrast for Unsupervised Visual Representation Learning (CVPR 2020)",
+        "description": "Query/key visual encoders with momentum key updates and a negative feature queue",
+        "complexity": "O(B * H * W * CNN depth + B * queue_size * projection_dim) momentum contrast logits",
+    },
     "ResNet": {
         "cls": ResNet,
         "family": "convolutional_residual",
@@ -83,6 +160,58 @@ model_zoo = {
         "description": "DETR-style detector with CNN features, Transformer encoder-decoder, object queries, and normalized boxes",
         "complexity": "O(B * HW^2 * D + B * queries * HW * D) transformer detection backbone",
     },
+    "RTDETR": {
+        "cls": RTDETR,
+        "family": "real_time_detection_transformer",
+        "layer": "Object detection",
+        "integration_level": "paper_aligned_reference",
+        "supports": ["object_detection", "real_time", "end_to_end", "multi_scale", "query_selection", "post_process"],
+        "paper": "DETRs Beat YOLOs on Real-time Object Detection (CVPR 2024) / RT-DETRv2 (2024)",
+        "description": "RT-DETRv2-style detector with AIFI hybrid encoding and confidence-based query selection",
+        "complexity": "Multi-scale CNN plus deepest-scale self-attention and query-to-memory decoding",
+    },
+    "YOLO": {
+        "cls": YOLO,
+        "family": "single_stage_object_detection",
+        "layer": "Vision / object detection",
+        "integration_level": "framework_oriented",
+        "supports": ["object_detection", "single_stage", "anchor_grid", "objectness", "real_time_detection"],
+        "paper": "YOLOv3: An Incremental Improvement (2018)",
+        "description": "YOLO-style single-stage detector with anchor-grid objectness, class logits, and normalized boxes",
+        "complexity": "O(B * H * W * CNN depth + B * grid^2 * anchors * classes) single-stage detection",
+    },
+    "GroundingDINO": {
+        "cls": GroundingDINO,
+        "family": "open_vocabulary_object_detection",
+        "layer": "Vision / language-grounded object detection",
+        "integration_level": "framework_oriented",
+        "supports": [
+            "open_vocabulary_detection",
+            "text_grounding",
+            "object_queries",
+            "token_alignment",
+            "object_detection",
+        ],
+        "paper": "Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection",
+        "description": "GroundingDINO-style language-conditioned detector with image/text tokens, object queries, token alignment logits, and normalized boxes",
+        "complexity": "O(B * HW^2 * D + B * text_len^2 * D + B * queries * (HW + text_len) * D)",
+    },
+    "Mask2Former": {
+        "cls": Mask2Former,
+        "family": "universal_image_segmentation",
+        "layer": "Vision / segmentation",
+        "integration_level": "framework_oriented",
+        "supports": [
+            "universal_segmentation",
+            "mask_classification",
+            "mask_queries",
+            "semantic_segmentation",
+            "instance_segmentation",
+        ],
+        "paper": "Masked-attention Mask Transformer for Universal Image Segmentation (CVPR 2022)",
+        "description": "Mask2Former-style query mask classifier with pixel features, query masks, class logits, and semantic-logit composition",
+        "complexity": "O(B * HW * CNN depth + B * queries * HW * D) query-mask segmentation",
+    },
     "FCN": {
         "cls": FCN,
         "family": "fully_convolutional_segmentation",
@@ -128,7 +257,13 @@ model_zoo = {
         "family": "hierarchical_vision_transformer",
         "layer": "Vision / image classification",
         "integration_level": "framework_oriented",
-        "supports": ["window_attention", "shifted_window", "patch_merging", "image_classification", "backbone_features"],
+        "supports": [
+            "window_attention",
+            "shifted_window",
+            "patch_merging",
+            "image_classification",
+            "backbone_features",
+        ],
         "paper": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows (ICCV 2021)",
         "description": "Hierarchical vision Transformer backbone/classifier with shifted local-window attention",
         "complexity": "O(B * windows * window_size^2 * D) local-window attention with hierarchical stages",
@@ -138,7 +273,13 @@ model_zoo = {
         "family": "modern_convnet",
         "layer": "Vision / image classification",
         "integration_level": "framework_oriented",
-        "supports": ["depthwise_convolution", "large_kernel", "layer_scale", "image_classification", "backbone_features"],
+        "supports": [
+            "depthwise_convolution",
+            "large_kernel",
+            "layer_scale",
+            "image_classification",
+            "backbone_features",
+        ],
         "paper": "A ConvNet for the 2020s (CVPR 2022)",
         "description": "Modernized ConvNet backbone/classifier with large-kernel depthwise blocks and LayerNorm MLP design",
         "complexity": "O(B * H * W * depthwise large-kernel stages) convolutional vision backbone",
@@ -225,6 +366,18 @@ __all__ = [
     "ResNet",
     "ViTConfig",
     "ViT",
+    "MAEConfig",
+    "MAE",
+    "SimCLRConfig",
+    "SimCLR",
+    "BYOLConfig",
+    "BYOL",
+    "DINOConfig",
+    "DINO",
+    "MoCoConfig",
+    "MoCo",
+    "SAMConfig",
+    "SAM",
     "DeiTConfig",
     "DeiT",
     "UNetConfig",
@@ -233,6 +386,14 @@ __all__ = [
     "DeepLabV3",
     "DETRConfig",
     "DETR",
+    "RTDETRConfig",
+    "RTDETR",
+    "YOLOConfig",
+    "YOLO",
+    "GroundingDINOConfig",
+    "GroundingDINO",
+    "Mask2FormerConfig",
+    "Mask2Former",
     "FCNConfig",
     "FCN",
     "DenseNetConfig",

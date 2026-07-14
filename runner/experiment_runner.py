@@ -14,7 +14,5 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    default = RULRunConfig(
-        data=RULDataConfig(root_dir=args.root_dir, condition=args.condition)
-    )
+    default = RULRunConfig(data=RULDataConfig(root_dir=args.root_dir, condition=args.condition))
     main(default)

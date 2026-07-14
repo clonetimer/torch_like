@@ -166,12 +166,16 @@ class TFT(ForecastingModel):
         history = batch.x_enc
         future = batch.x_dec[:, -self.pred_len :, :] if batch.x_dec is not None and batch.x_dec.numel() > 0 else None
         if future is None:
-            future = torch.zeros(history.size(0), self.pred_len, self.dec_in, device=history.device, dtype=history.dtype)
+            future = torch.zeros(
+                history.size(0), self.pred_len, self.dec_in, device=history.device, dtype=history.dtype
+            )
         if future.size(-1) != self.dec_in:
             if future.size(-1) > self.dec_in:
                 future = future[..., : self.dec_in]
             else:
-                pad = torch.zeros(*future.shape[:-1], self.dec_in - future.size(-1), device=future.device, dtype=future.dtype)
+                pad = torch.zeros(
+                    *future.shape[:-1], self.dec_in - future.size(-1), device=future.device, dtype=future.dtype
+                )
                 future = torch.cat([future, pad], dim=-1)
 
         static = None
@@ -251,7 +255,9 @@ class TFT(ForecastingModel):
         future_encoded, _ = self.future_lstm(future_tokens, state)
         temporal = self.post_lstm_gate(torch.cat([hist_encoded, future_encoded], dim=1))
         query = temporal[:, -self.pred_len :, :]
-        attended, attn_weights = self.attention(query, temporal, temporal, need_weights=True, average_attn_weights=False)
+        attended, attn_weights = self.attention(
+            query, temporal, temporal, need_weights=True, average_attn_weights=False
+        )
         self._last_attention = attn_weights.detach()
         decoded = self.post_attention_gate(attended + query)
         decoded = self.positionwise(decoded, context=context)

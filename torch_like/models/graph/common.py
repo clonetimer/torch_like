@@ -72,9 +72,7 @@ def graph_mean_pool(
     weights = out.new_ones((batch_size, num_nodes))
     if node_mask is not None:
         if node_mask.shape != (batch_size, num_nodes):
-            raise ValueError(
-                f"node_mask must have shape ({batch_size}, {num_nodes}), got {tuple(node_mask.shape)}"
-            )
+            raise ValueError(f"node_mask must have shape ({batch_size}, {num_nodes}), got {tuple(node_mask.shape)}")
         weights = node_mask.to(device=out.device, dtype=out.dtype)
 
     if batch_index is None:

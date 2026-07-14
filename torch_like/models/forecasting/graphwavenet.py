@@ -26,8 +26,12 @@ class GraphWaveNetBlock(nn.Module):
     def __init__(self, channels: int, skip_channels: int, kernel_size: int, dilation: int, dropout: float):
         super().__init__()
         padding = (kernel_size - 1) * dilation
-        self.filter_conv = nn.Conv2d(channels, channels, kernel_size=(1, kernel_size), dilation=(1, dilation), padding=(0, padding))
-        self.gate_conv = nn.Conv2d(channels, channels, kernel_size=(1, kernel_size), dilation=(1, dilation), padding=(0, padding))
+        self.filter_conv = nn.Conv2d(
+            channels, channels, kernel_size=(1, kernel_size), dilation=(1, dilation), padding=(0, padding)
+        )
+        self.gate_conv = nn.Conv2d(
+            channels, channels, kernel_size=(1, kernel_size), dilation=(1, dilation), padding=(0, padding)
+        )
         self.residual_proj = nn.Conv2d(channels, channels, kernel_size=(1, 1))
         self.skip_proj = nn.Conv2d(channels, skip_channels, kernel_size=(1, 1))
         self.norm = nn.BatchNorm2d(channels)

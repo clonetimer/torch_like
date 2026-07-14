@@ -91,7 +91,9 @@ class _TransformerDecoderLayer(nn.Module):
 
 
 class _Projector(nn.Module):
-    def __init__(self, enc_in: int, seq_len: int, hidden_dim: int, hidden_layers: int, output_dim: int, kernel_size: int = 3):
+    def __init__(
+        self, enc_in: int, seq_len: int, hidden_dim: int, hidden_layers: int, output_dim: int, kernel_size: int = 3
+    ):
         super().__init__()
         padding = kernel_size // 2
         self.series_conv = nn.Conv1d(
@@ -141,9 +143,15 @@ class RTDetector(DetectionModel):
         self.seq_len = seq_len
         self.model_dim = 2 * input_dim
         self.pos_encoder = _PositionalEncoding(self.model_dim, dropout, seq_len)
-        encoder_layer = _TransformerEncoderLayer(self.model_dim, nhead=input_dim, dim_feedforward=ff_dim, dropout=dropout)
-        decoder_layer1 = _TransformerDecoderLayer(self.model_dim, nhead=input_dim, dim_feedforward=ff_dim, dropout=dropout)
-        decoder_layer2 = _TransformerDecoderLayer(self.model_dim, nhead=input_dim, dim_feedforward=ff_dim, dropout=dropout)
+        encoder_layer = _TransformerEncoderLayer(
+            self.model_dim, nhead=input_dim, dim_feedforward=ff_dim, dropout=dropout
+        )
+        decoder_layer1 = _TransformerDecoderLayer(
+            self.model_dim, nhead=input_dim, dim_feedforward=ff_dim, dropout=dropout
+        )
+        decoder_layer2 = _TransformerDecoderLayer(
+            self.model_dim, nhead=input_dim, dim_feedforward=ff_dim, dropout=dropout
+        )
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=1)
         self.transformer_decoder1 = nn.TransformerDecoder(decoder_layer1, num_layers=1)
         self.transformer_decoder2 = nn.TransformerDecoder(decoder_layer2, num_layers=1)
@@ -191,7 +199,9 @@ class RTDetector(DetectionModel):
         tgt = tgt * tau + result
         return tgt.permute(1, 0, 2), memory
 
-    def _decode_phase(self, decoder: nn.Module, src: torch.Tensor, conditioning: torch.Tensor, tgt: torch.Tensor) -> torch.Tensor:
+    def _decode_phase(
+        self, decoder: nn.Module, src: torch.Tensor, conditioning: torch.Tensor, tgt: torch.Tensor
+    ) -> torch.Tensor:
         decoded = decoder(*self._encode(src, conditioning, tgt)).squeeze(0)
         decoded = decoded * self._std_enc.squeeze(1) + self._mean_enc.squeeze(1)
         decoded = decoded.unsqueeze(0)

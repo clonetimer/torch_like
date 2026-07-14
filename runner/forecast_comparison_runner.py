@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass, field
-from pathlib import Path
 import sys
 import time
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import torch
 
@@ -230,9 +230,7 @@ def run_experiment(spec: dict, train_loader, val_loader, test_loader, config: Fo
     t0 = time.time()
     for epoch in range(1, config.epochs + 1):
         train_loss = train_epoch(model, train_loader, optimizer, criterion, config.device, config.data.label_len)
-        val_loss, val_rmse, val_mae = evaluate(
-            model, val_loader, criterion, config.device, config.data.label_len
-        )
+        val_loss, val_rmse, val_mae = evaluate(model, val_loader, criterion, config.device, config.data.label_len)
         history.append(
             {
                 "epoch": epoch,
@@ -247,9 +245,7 @@ def run_experiment(spec: dict, train_loader, val_loader, test_loader, config: Fo
             f"train_loss={train_loss:.6f} val_loss={val_loss:.6f} val_rmse={val_rmse:.6f}"
         )
 
-    test_loss, test_rmse, test_mae = evaluate(
-        model, test_loader, criterion, config.device, config.data.label_len
-    )
+    test_loss, test_rmse, test_mae = evaluate(model, test_loader, criterion, config.device, config.data.label_len)
     elapsed = time.time() - t0
     print(f"  Done in {elapsed:.1f}s | test_rmse={test_rmse:.6f} | test_mae={test_mae:.6f}")
     return {
@@ -273,7 +269,9 @@ def main(config: ForecastComparisonConfig):
         feature_dim = sample[0].shape[-1]
         out_dim = sample[1].shape[-1]
     adjacency = bundle.extra.get("adjacency")
-    specs = config.model_specs or default_model_specs(config, feature_dim=feature_dim, out_dim=out_dim, adjacency=adjacency)
+    specs = config.model_specs or default_model_specs(
+        config, feature_dim=feature_dim, out_dim=out_dim, adjacency=adjacency
+    )
 
     results = []
     skipped = []
@@ -303,7 +301,9 @@ def main(config: ForecastComparisonConfig):
     clean = [{k: v for k, v in r.items() if k != "history"} for r in results]
     save_json(
         out_path,
-        build_run_payload(config=config, history=[], extra={**bundle.extra, "task": "forecasting", "skipped": skipped}, results=clean),
+        build_run_payload(
+            config=config, history=[], extra={**bundle.extra, "task": "forecasting", "skipped": skipped}, results=clean
+        ),
     )
     print(f"\n  Results saved to: {out_path}")
     return results

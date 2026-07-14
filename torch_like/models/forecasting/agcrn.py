@@ -156,7 +156,11 @@ class AGCRN(ForecastingModel):
 
     def _resolve_adjacency(self, device: torch.device, dtype: torch.dtype) -> torch.Tensor:
         learned_adj = self.graph().to(device=device, dtype=dtype)
-        prior_adj = None if self.prior_adjacency is None else self._normalize(self.prior_adjacency.to(device=device, dtype=dtype))
+        prior_adj = (
+            None
+            if self.prior_adjacency is None
+            else self._normalize(self.prior_adjacency.to(device=device, dtype=dtype))
+        )
         if self.graph_mode == "learned":
             return learned_adj
         if self.graph_mode == "prior":
@@ -190,10 +194,7 @@ class AGCRN(ForecastingModel):
 
         adj = self._resolve_adjacency(x_enc.device, x_enc.dtype)
         batch_size = x_enc.size(0)
-        states = [
-            x_enc.new_zeros(batch_size, self.num_nodes, cell.hidden_dim)
-            for cell in self.cells
-        ]
+        states = [x_enc.new_zeros(batch_size, self.num_nodes, cell.hidden_dim) for cell in self.cells]
         for step in range(x_enc.size(1)):
             layer_input = x_enc[:, step, :].unsqueeze(-1)
             for idx, cell in enumerate(self.cells):

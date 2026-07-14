@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import inspect
 from dataclasses import asdict, is_dataclass
 from functools import wraps
-import inspect
 from typing import Any, Dict
 
 import torch.nn as nn

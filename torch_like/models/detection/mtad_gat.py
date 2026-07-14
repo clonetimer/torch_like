@@ -92,7 +92,10 @@ class MTADGAT(DetectionModel):
         self.feature_pos = nn.Parameter(torch.zeros(1, input_dim, d_model))
         self.temporal_pos = nn.Parameter(torch.zeros(1, seq_len, d_model))
         self.blocks = nn.ModuleList(
-            [FeatureTemporalGATBlock(d_model=d_model, n_heads=n_heads, d_ff=d_ff, dropout=dropout) for _ in range(e_layers)]
+            [
+                FeatureTemporalGATBlock(d_model=d_model, n_heads=n_heads, d_ff=d_ff, dropout=dropout)
+                for _ in range(e_layers)
+            ]
         )
         self.gru = nn.GRU(d_model, d_model, num_layers=1, batch_first=True)
         self.forecast_head = nn.Sequential(

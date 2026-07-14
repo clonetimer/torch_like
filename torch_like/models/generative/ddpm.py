@@ -84,7 +84,9 @@ class DDPM(GenerativeModel):
     ):
         super().__init__()
         if min(in_channels, image_size, d_model, num_timesteps, num_blocks, time_dim) <= 0:
-            raise ValueError("in_channels, image_size, d_model, num_timesteps, num_blocks, and time_dim must be positive")
+            raise ValueError(
+                "in_channels, image_size, d_model, num_timesteps, num_blocks, and time_dim must be positive"
+            )
         if not 0 < beta_start < beta_end < 1:
             raise ValueError("expected 0 < beta_start < beta_end < 1")
 
@@ -143,7 +145,9 @@ class DDPM(GenerativeModel):
                 if module.bias is not None:
                     nn.init.zeros_(module.bias)
 
-    def q_sample(self, x_start: torch.Tensor, timesteps: torch.Tensor, noise: torch.Tensor | None = None) -> torch.Tensor:
+    def q_sample(
+        self, x_start: torch.Tensor, timesteps: torch.Tensor, noise: torch.Tensor | None = None
+    ) -> torch.Tensor:
         if noise is None:
             noise = torch.randn_like(x_start)
         sqrt_alpha = _extract(self.sqrt_alphas_cumprod, timesteps, x_start.shape).to(x_start.device)

@@ -221,7 +221,7 @@ class DETR(VisionModel):
         scores, labels = probs.max(dim=-1)
 
         detections: list[dict[str, torch.Tensor]] = []
-        for sample_scores, sample_labels, sample_boxes in zip(scores, labels, boxes):
+        for sample_scores, sample_labels, sample_boxes in zip(scores, labels, boxes, strict=True):
             keep = sample_scores >= score_threshold
             sample_scores = sample_scores[keep]
             sample_labels = sample_labels[keep]

@@ -86,6 +86,10 @@ torch_like/
     vision/
     multimodal/
     generative/
+    tabular/
+    recommendation/
+    audio/
+    reinforcement/
     diagnosis/
     rul.py
     registry.py
@@ -112,8 +116,11 @@ Required locations / 必改位置:
 
 - `torch_like/models/<domain>/__init__.py`
 - `torch_like/models/__init__.py`
-- `torch_like/__init__.py`
 - `tests/test_registry.py`
+
+中文：`torch_like/__init__.py` 的顶层短入口由 `torch_like.models.MODEL_EXPORTS` 自动派生，不再手工维护第二份模型清单。
+
+English: Top-level shortcuts in `torch_like/__init__.py` are derived from `torch_like.models.MODEL_EXPORTS`; do not maintain a second model list there.
 
 Example / 示例:
 
@@ -134,6 +141,8 @@ model_zoo = {
 
 Metadata rules / 元数据规则:
 
+- 中文：内置 catalog 的八个字段 `cls`、`family`、`layer`、`integration_level`、`supports`、`paper`、`description`、`complexity` 全部必填。
+- English: Built-in catalogs must provide all eight fields: `cls`, `family`, `layer`, `integration_level`, `supports`, `paper`, `description`, and `complexity`.
 - 中文：`family` 表示模型家族。
 - English: `family` identifies the model family.
 - 中文：`layer` 表示文档分层。
@@ -142,6 +151,8 @@ Metadata rules / 元数据规则:
 - English: `supports` lists capability tags.
 - 中文：`integration_level` 当前统一使用 `framework_oriented`。
 - English: `integration_level` currently uses `framework_oriented`.
+- 中文：`register_model_catalog(...)` 会先验证完整 catalog，再原子写入；不要直接修改内部 `MODEL_ZOO`。
+- English: `register_model_catalog(...)` validates the complete catalog before an atomic write; do not mutate internal `MODEL_ZOO` directly.
 
 ## Task Interfaces / 任务接口
 
@@ -254,6 +265,10 @@ Contract / 合同:
 - English: Models that support autoregressive generation may additionally implement `generate(...)`.
 - 中文：`GPT` 表示 GPT/GPT-2 风格 decoder-only LM；tokenizer、RLHF、采样策略库和预训练权重不属于模型类职责。
 - English: `GPT` represents a GPT/GPT-2-style decoder-only LM; tokenizers, RLHF, sampling-policy libraries, and pretrained weights are outside the model class boundary.
+- 中文：`LLaMA` 表示现代 decoder-only LLM 结构；RoPE、RMSNorm、SwiGLU 和 GQA 属于模型结构，tokenizer、chat template、权重转换和推理服务不属于模型类职责。
+- English: `LLaMA` represents a modern decoder-only LLM architecture; RoPE, RMSNorm, SwiGLU, and GQA belong in the model, while tokenizers, chat templates, checkpoint conversion, and serving policy remain outside model classes.
+- 中文：`Mixtral` 表示稀疏 MoE decoder-only LLM；top-k router、experts 和 router logits 属于模型结构，专家并行、负载均衡训练策略、量化和服务调度不属于模型类职责。
+- English: `Mixtral` represents a sparse MoE decoder-only LLM; the top-k router, experts, and router logits belong in the model, while expert parallelism, load-balancing training policy, quantization, and serving schedulers remain outside model classes.
 - 中文：T5 这类 encoder-decoder 模型应使用 `Seq2SeqModel` 和 `make_seq2seq_batch(...)`，不要伪装成 decoder-only next-token 模型。
 - English: Encoder-decoder models such as T5 should use `Seq2SeqModel` and `make_seq2seq_batch(...)`, not masquerade as decoder-only next-token models.
 
@@ -275,7 +290,7 @@ Forecasting / 时间序列预测:
 
 - Transformer / attention: `AST`, `Informer`, `Autoformer`, `FEDformer`, `LogTrans`, `PatchTST`, `ITransformer`, `Crossformer`, `TimeXer`, `DAG`
 - Exogenous forecasting: `TFT`, `TiDE`
-- MLP / decomposition / convolutional mixing: `MLCNN`, `NBEATS`, `NHITS`, `DLinear`, `SCINet`, `TimesNet`, `MICN`, `TimeMixer`, `TSMixer`, `ConvTimeNet`, `SOFTS`
+- MLP / decomposition / convolutional mixing: `MLCNN`, `NBEATS`, `NHITS`, `DLinear`, `SCINet`, `TimesNet`, `MICN`, `TimeMixer`, `TSMixer`, `ConvTimeNet`, `ModernTCN`, `SOFTS`
 - Dynamical systems: `Koopa`
 - Frequency-domain forecasting: `FreTS`
 - Graph spatiotemporal: `ASTGCN`, `AGCRN`, `D2STGNN`, `DMSTGCN`, `MTGNN`, `StemGNN`, `GraphWaveNet`, `DCRNN`, `FCGAGA`, `GTS`, `STFGNN`, `STGODE`
@@ -289,6 +304,9 @@ Detection / 异常检测:
 - `GDN`
 - `MTADGAT`
 - `DCDetector`
+- `OmniAnomaly`
+- `TranAD`
+- `USAD`
 
 RUL / 剩余寿命:
 
@@ -300,17 +318,36 @@ RUL / 剩余寿命:
 Graph / 通用图:
 
 - `GCN`
+- `DGI`
+- `GraphCL`
+- `GraphMAE`
 - `GAT`
+- `GATv2`
 - `GNAN`
 - `GraphSAGE`
 - `GIN`
 - `GraphTransformer`
+- `Graphormer`
+- `GPS`
+- `PNA`
+- `GCNII`
 - `SpikeGraphormer`
 
 Sequence / 序列:
 
+- `S4`
+- `Hyena`
+
 - `TransformerDecoder`
+- `TransformerXL`
+- `Performer`
+- `Reformer`
+- `RetNet`
+- `KimiLinear` (`paper_aligned_reference`; portable KDA scan, no bundled FlashKDA kernel or 48B checkpoint)
+- `xLSTM` (`paper_aligned_mlstm_reference`; matrix-memory path only, no sLSTM or official CUDA kernels)
 - `GPT`
+- `LLaMA`
+- `Mixtral`
 - `LRU`
 - `Mamba`
 - `MambaLike`
@@ -322,10 +359,19 @@ Vision / 视觉:
 
 - `ResNet`
 - `ViT`
+- `MAE`
+- `SimCLR`
+- `BYOL`
+- `DINO`
+- `MoCo`
+- `SAM`
 - `DeiT`
 - `UNet`
 - `DeepLabV3`
 - `DETR`
+- `RTDETR` (`paper_aligned_reference`; AIFI hybrid encoder and confidence-based query selection)
+- `GroundingDINO`
+- `Mask2Former`
 - `FCN`
 - `DenseNet`
 - `MobileNetV2`
@@ -343,33 +389,110 @@ Vision / 视觉:
 Multimodal / 多模态:
 
 - `CLIP`
+- `SigLIP`
+- `BLIP`
+- `BLIP2`
+- `LLaVA`
+
+Diagnosis / 故障诊断:
+
+- `InceptionTime`
+- `ROCKET`
 
 Multimodal output protocol / 多模态输出协议:
 
 - Image-text dual encoders should expose `encode_image(...)`, `encode_text(...)`, and `predict(batch)`.
+- Self-supervised vision models may expose `fit_step(batch)` and reconstruction outputs while retaining `VisionBatch`.
+- Paper checkpoints and external tokenizers remain optional integrations, not implicit model-construction side effects.
 - `predict(batch)` may return a dict with embeddings and similarity logits.
 - Tokenization, dataset pairing, large-scale pretraining, and retrieval evaluation belong outside the model class.
+- Visual instruction models such as `LLaVA` may expose `encode_image_tokens(...)`, projector helpers, causal `lm_logits`, and `generate(...)`; tokenizer, chat template, external LLM checkpoint mapping, and serving policy remain outside model classes.
+- Q-Former bridge models such as `BLIP2` may expose query features, language-prefix projections, image-text matching logits, and caption logits while keeping external LLM checkpoints, tokenizers, prompt templates, and pretraining schedules outside model classes.
 
 Generative / 生成:
 
 - `DDPM`
 - `VAE`
 - `DCGAN`
+- `DiT`
+- `ControlNet`
+- `LatentDiffusion`
+- `PixelCNN`
+- `RectifiedFlow`
+- `RealNVP`
+- `VQVAE`
+
+Tabular / 表格:
+
+- `TabNet`
+- `NODE`
+- `FTTransformer`
+
+Recommendation / 推荐系统:
+
+- `NCF`
+- `DeepFM`
+- `DCN`
+- `BERT4Rec`
+
+Audio / 音频与语音:
+
+- `Wav2Vec2`
+- `EnCodec` (`paper_aligned_reference`; bandwidth-scalable RVQ without pretrained weights or entropy model)
+- `Conformer`
+- `HuBERT`
+- `Whisper`
+- `AudioSpectrogramTransformer`
 
 Generative output protocol / 生成模型输出协议:
 
 - Diffusion models should expose forward noising, noise prediction, loss, and sampling helpers.
 - `DDPM.predict(batch)` returns predicted noise for `batch.x_start`/`batch.timesteps`-compatible tensors.
+- Diffusion Transformer models such as `DiT` should keep the same diffusion helper surface while changing only the denoiser architecture.
+- Latent diffusion models such as `LatentDiffusion` should expose image encode/decode helpers, latent-space diffusion helpers, optional conditioning inputs, and image sampling while keeping tokenizers, external checkpoint loading, guidance policy, and scheduler libraries outside the model class.
+- Controlled diffusion models such as `ControlNet` should expose control encoding and control residual helpers while keeping edge/depth/pose annotators, ControlNet checkpoint conversion, and prompt policy outside the model class.
+- Flow-matching models such as `RectifiedFlow` should expose interpolation, target velocity, velocity prediction, flow-matching loss, and sampling helpers while keeping external ODE solvers, guidance policy, and pretrained checkpoint loading outside the model class.
+- Flow models such as `RealNVP` should expose exact `log_prob(...)`, `inverse(...)`, `sample(...)`, and negative-likelihood `loss_step(batch)`.
+- Autoregressive image models such as `PixelCNN` should expose discrete `log_prob(...)`, sequential `sample(...)`, and cross-entropy `loss_step(batch)`.
+- Discrete latent models such as `VQVAE` should expose `encode(...)`, `quantize(...)`, `decode(...)`, `sample(...)`, and reconstruction plus codebook `loss_step(batch)`.
 - `DDPM.sample(..., num_steps=num_timesteps)` uses ancestral DDPM sampling; reduced `num_steps` uses deterministic DDIM updates.
 - Latent-variable models should expose encode/decode/reparameterization helpers and keep ELBO-style losses inside `loss_step(batch)`.
 - Adversarial models should expose generator/discriminator modules and adversarial loss helpers, but not own optimizer stepping order.
 - Dataset transforms, FID/IS metrics, checkpoint sampling grids, and long-running training loops belong outside the model class.
 
+Tabular protocol / 表格协议:
+
+- Tabular models should use `TabularBatch(x_cont, x_cat=None, y=None)`, `predict(batch)`, and `loss_step(batch)`.
+- Classification uses cross-entropy when `output_dim > 1` and integer labels are provided; regression uses MSE.
+- Feature preprocessing, missing-value imputation, categorical vocabulary fitting, and benchmark splits belong outside model classes.
+
+Recommendation protocol / 推荐协议:
+
+- Recommendation models should use `RecommendationBatch(user_ids=None, item_ids=None, x_cat=None, x_cont=None, y=None)`.
+- Collaborative-filtering models such as `NCF` consume `user_ids` and `item_ids`.
+- CTR models such as `DeepFM` and `DCN` consume categorical fields and optional continuous fields.
+- Sequential models such as `SASRec` and `BERT4Rec` consume item-history sequences through `RecommendationBatch.x_cat`.
+- Negative sampling, candidate generation, feature store lookup, online serving, and ranking metrics belong outside model classes.
+
+Audio protocol / 音频协议:
+
+- Audio models should use `AudioBatch(x, lengths=None, y=None)`, `predict(batch)`, and `loss_step(batch)`.
+- Raw-waveform models such as `Wav2Vec2` consume `(batch, time)` or `(batch, channels, time)`.
+- Neural codecs such as `EnCodec` should expose `encode(...)`, `decode(...)`, bandwidth selection, discrete codes, and reconstruction `loss_step(batch)` while keeping entropy coding and adversarial training orchestration outside the model class.
+- Masked hidden-unit models such as `HuBERT` may expose `extract_features(...)`, `mask_features(...)`, `predict_units(...)`, and `loss_step(batch)`; offline clustering and hidden-unit label generation remain outside model classes.
+- Acoustic-sequence models such as `Conformer` consume `(batch, time, feature_dim)`.
+- Encoder-decoder ASR models such as `Whisper` consume log-mel tensors and decoder token ids, and may expose `encode_audio(...)`, `decode_tokens(...)`, `generate(...)`, and teacher-forcing `loss_step(batch)`.
+- Spectrogram classifiers such as `AudioSpectrogramTransformer` consume `(batch, channels, freq, time)`.
+- Feature extraction pipelines, tokenizers, CTC/beam decoding, augmentation, and ASR metrics belong outside model classes.
+
 Vision output protocol / 视觉输出协议:
 
 - Classification / 分类: return logits `(batch, num_classes)`.
 - Segmentation / 分割: return dense logits `(batch, num_classes, height, width)`.
+- Universal segmentation / 通用分割: query-mask models such as `Mask2Former` may return `pred_logits`, `pred_masks`, and composed `semantic_logits`; target assignment, matching, and panoptic fusion remain outside model classes.
 - Object detection / 目标检测: return a dict with `pred_logits` and `pred_boxes`; do not move matcher/loss/COCO evaluation into the model class.
+- Open-vocabulary detection / 开放词表检测: language-grounded detectors such as `GroundingDINO` may return `token_logits`, `objectness`, and normalized `pred_boxes`; tokenizers, phrase parsing, NMS, Grounded-SAM orchestration, and benchmark evaluation remain outside model classes.
+- Promptable segmentation / 提示分割: `SAM`-style models should expose `encode_image(...)`, `encode_prompts(...)`, `predict_masks(...)`, and `forward(..., points=..., boxes=..., masks=...)`; checkpoint loading, annotation UI, video memory, and training recipes remain outside the model class.
 
 ## Adding a New Model / 新增模型流程
 
@@ -383,8 +506,8 @@ Vision output protocol / 视觉输出协议:
    English: Implement task helper methods or reuse base defaults.
 5. 中文：接入 domain `__init__.py` 的 `model_zoo`。
    English: Register it in the domain `model_zoo`.
-6. 中文：接入 `torch_like.models` 和 `torch_like` 顶层 lazy exports。
-   English: Add lazy exports in `torch_like.models` and top-level `torch_like`.
+6. 中文：接入 `torch_like.models` 的 lazy export；`torch_like` 顶层入口会自动同步。
+   English: Add the lazy export to `torch_like.models`; the top-level `torch_like` shortcut synchronizes automatically.
 7. 中文：补测试。
    English: Add tests.
 8. 中文：同步双语文档。
@@ -438,6 +561,30 @@ English: Runner checkpoints load explicitly with `weights_only=True` and validat
 
 English: All public runner configs expose an optional `results_dir`; tests and embedded callers should use an isolated directory, while CLIs accept `--results-dir`.
 
+## 性能实现规范 / Performance Implementation Rules
+
+中文：性能优化必须优先组合 PyTorch 的公共原语，并保持模型输出协议稳定。不要仅为可能的速度收益引入未经基准验证的自定义算子。
+
+English: Performance work should compose public PyTorch primitives while preserving model output contracts. Do not add custom operators for speculative speedups without benchmarks.
+
+- 中文：标准点积注意力优先使用 `torch.nn.functional.scaled_dot_product_attention`；只有需要返回权重或算法语义不同的注意力保留显式实现。
+- English: Standard dot-product attention should prefer `torch.nn.functional.scaled_dot_product_attention`; explicit implementations remain for returned weights or genuinely different algorithms.
+- 中文：顶层模型编译优先调用 `nn.Module.compile()`，旧版 PyTorch 才回退到 `torch.compile(model, ...)`。
+- English: Top-level compilation should prefer `nn.Module.compile()`, falling back to `torch.compile(model, ...)` for older PyTorch versions.
+- 中文：AMP、GradScaler、异步搬运和梯度清零属于 runner 执行策略，不得写入模型构造参数或 registry 元数据。
+- English: AMP, GradScaler, asynchronous transfers, and gradient clearing are runner execution policies, not model constructor arguments or registry metadata.
+- 中文：任何性能改造至少需要数值一致性测试、默认配置 smoke test 和目标设备基准；不能用单次首轮延迟评价 compile。
+- English: Every performance change needs numerical-consistency tests, a default-config smoke test, and a target-device benchmark; compile must not be judged by first-call latency.
+- 中文：KV cache 会改变生成状态协议，应作为独立功能设计，不与无状态注意力优化混合提交。
+- English: KV caching changes the generation-state protocol and should be designed separately from stateless attention optimization.
+
+References / 参考:
+
+- [PyTorch Performance Tuning Guide](https://docs.pytorch.org/tutorials/recipes/recipes/tuning_guide.html)
+- [PyTorch `torch.compile`](https://docs.pytorch.org/docs/stable/generated/torch.compile.html)
+- [PyTorch AMP](https://docs.pytorch.org/docs/stable/amp.html)
+- [PyTorch Scaled Dot Product Attention](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention)
+
 Runner may / runner 可以:
 
 - 中文：加载数据。
@@ -465,6 +612,7 @@ Run / 运行:
 ```powershell
 & 'D:\Project\base\base\Scripts\python.exe' -m unittest discover -s tests
 & 'D:\Project\base\base\Scripts\python.exe' -m ruff check torch_like runner tests examples tools
+& 'D:\Project\base\base\Scripts\python.exe' -m ruff format --check torch_like runner tests examples tools
 & 'D:\Project\base\base\Scripts\python.exe' -m pytest --cov=torch_like --cov-report=term-missing
 ```
 
@@ -480,8 +628,25 @@ Minimum tests for a new model / 新模型最低测试:
 - English: Output shape.
 - 中文：顶层导出。
 - English: Top-level export.
+- 中文：catalog 元数据字段完整且 capability tag 不重复。
+- English: Catalog metadata is complete and capability tags contain no duplicates.
 - 中文：如果是 detection，测试 `fit_step` 和 `score_batch`。
 - English: For detection models, test `fit_step` and `score_batch`.
+
+## Package Build Gate / 包构建门禁
+
+中文：任何影响顶层导出、包发现、依赖或版本号的改动，都必须重新构建 wheel 并执行隔离安装验收。构建产物不得包含 runner、测试、示例或临时数据。
+
+English: Changes to top-level exports, package discovery, dependencies, or versions must rebuild the wheel and pass isolated installation verification. Distribution artifacts must not include runners, tests, examples, or temporary data.
+
+```powershell
+& .\tools\build_package.ps1 -Python 'D:\Project\base\base\Scripts\python.exe'
+& .\tools\verify_package_install.ps1 -Python 'D:\Project\base\base\Scripts\python.exe'
+```
+
+中文：详细流程见 [Packaging Guide / 打包安装指南](PACKAGING.md)。
+
+English: See the [Packaging Guide / 打包安装指南](PACKAGING.md) for the complete workflow.
 
 ## Documentation Rule / 文档规则
 
@@ -509,3 +674,87 @@ English: Implementations in `torch_like` prioritize framework usability and API 
 中文：如果某个新模型需要大量训练策略、数据集假设或外部依赖才能成立，应优先作为候选记录，而不是立即进入核心库。
 
 English: If a new model depends heavily on training strategies, dataset assumptions, or external dependencies, it should first be recorded as a candidate instead of entering the core library immediately.
+
+## Reinforcement Learning Domain / 强化学习域
+
+Current models / 当前模型:
+
+- `DQN`
+- `ActorCritic`
+- `PPOActorCritic`
+- `SACActorCritic`
+- `TD3ActorCritic`
+- `DecisionTransformer`
+- `DreamerV3` (`paper_aligned_core`; discrete RSSM, symlog world-model losses, and latent imagination)
+
+Protocol / 协议:
+
+- Reinforcement models should inherit `ReinforcementModel`.
+- World-model agents should expose observation and imagination transitions separately; environment collection and replay remain external.
+- Batches should use `ReinforcementBatch(states, actions=None, rewards=None, next_states=None, dones=None, returns=None, returns_to_go=None, timesteps=None, attention_mask=None, advantages=None, old_log_probs=None)`.
+- Value-based models should expose `q_values(...)`, action selection helpers, and TD-style losses.
+- Policy-gradient models should expose policy logits, value functions, action evaluation, and scalar `loss_step(batch)` helpers.
+- Maximum-entropy continuous-control models should expose Gaussian policy sampling, twin-Q evaluation, actor loss, and critic loss.
+- Deterministic continuous-control models should expose policy actions, target-policy smoothing, twin-Q evaluation, actor loss, and critic loss.
+- Offline trajectory models should expose causal trajectory encoding, return-conditioned action prediction, and masked sequence losses.
+- Environment loops, offline dataset adapters, replay buffers, rollout collectors, target-network updates, advantage estimators, exploration schedules, entropy-temperature tuning, and benchmark evaluation belong outside model classes.
+
+## Recommendation Domain Extension / 推荐系统域扩展
+
+Current additional models / 当前新增模型:
+
+- `LightGCN`
+- `SASRec`
+- `BERT4Rec`
+
+Protocol / 协议:
+
+- Graph collaborative-filtering models may expose `full_sort_scores(...)` and ranking losses such as `bpr_loss(...)`.
+- Sequential recommendation models may use `RecommendationBatch.x_cat` as item-history sequences and expose `next_item_logits(...)`.
+- Masked sequential recommendation models may expose `sequence_logits(...)`, `masked_item_logits(...)`, and `score_items(...)`.
+- Negative sampling, candidate generation, feature stores, ranking metrics, and online serving belong outside model classes.
+
+## Tabular Domain Extension / 表格学习域扩展
+
+Current additional models / 当前新增模型:
+
+- `TabTransformer`
+- `SAINT`
+- `NODE`
+
+Protocol / 协议:
+
+- Contextual categorical models may expose `contextual_embeddings(...)`.
+- Feature-token models should expose `tokenize(...)` and `forward_features(...)` when these helpers are meaningful.
+- Neural tree ensemble models may expose `tree_outputs(...)` and `feature_importance()`.
+- Data cleaning, categorical encoding policy, missing-value handling, augmentation, contrastive pre-training loops, calibration, and benchmark protocol belong outside model classes.
+
+## Vision Detection Extension / 视觉检测域扩展
+
+Current additional model / 当前新增模型:
+
+- `YOLO`
+- `GroundingDINO`
+- `Mask2Former`
+
+Protocol / 协议:
+
+- Single-stage detectors may return `pred_logits`, `pred_boxes`, and `objectness`.
+- Detection boxes should be normalized `cx, cy, w, h` before post-processing.
+- Language-grounded detectors may consume already-tokenized text ids and return token-alignment logits instead of fixed class logits.
+- Query-mask segmentation models may return per-query class logits, per-query mask logits, and composed semantic logits.
+- Anchor clustering, assignment, NMS policy, detection losses, COCO evaluation, and training recipes belong outside model classes.
+
+## Multimodal Extension / 多模态域扩展
+
+Current additional model / 当前新增模型:
+
+- `BLIP`
+- `BLIP2`
+
+Protocol / 协议:
+
+- Vision-language generation models may expose image/text encoders, cross-modal `fuse(...)`, image-text matching logits, and caption language-model logits.
+- Q-Former bridge models may expose `qformer_features(...)`, `language_prefix(...)`, and caption logits without owning the external LLM.
+- The framework should consume already-tokenized text ids instead of owning tokenizer logic.
+- Tokenizers, large language model weights, synthetic captions, filtering pipelines, and BLIP/BLIP-2 pre-training schedules belong outside model classes.

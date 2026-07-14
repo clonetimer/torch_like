@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,9 @@ from runner.forecast_comparison_runner import ForecastComparisonConfig, main
 from runner.forecast_data import ForecastDataConfig
 
 
-def load_bearing_series(source_dir: Path, max_files: int = 4, downsample_step: int = 16) -> tuple[np.ndarray, np.ndarray, list[str]]:
+def load_bearing_series(
+    source_dir: Path, max_files: int = 4, downsample_step: int = 16
+) -> tuple[np.ndarray, np.ndarray, list[str]]:
     files = sorted(source_dir.glob("*.csv"), key=lambda p: int(p.stem))[:max_files]
     if not files:
         raise FileNotFoundError(f"No CSV files found under {source_dir}")

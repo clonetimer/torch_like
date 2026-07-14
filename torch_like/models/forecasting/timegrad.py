@@ -192,7 +192,9 @@ class TimeGrad(ProbabilisticForecastingModel):
             raise ValueError("ProbabilisticForecastingBatch.y_true is required for fit_step")
         expected_shape = (batch.x_enc.size(0), self.pred_len, self.c_out)
         if batch.y_true.shape != expected_shape:
-            raise ValueError(f"TimeGrad fit_step expects y_true with shape {expected_shape}, got {tuple(batch.y_true.shape)}")
+            raise ValueError(
+                f"TimeGrad fit_step expects y_true with shape {expected_shape}, got {tuple(batch.y_true.shape)}"
+            )
 
         history_state = self._encode_history(batch.x_enc)
         decoder_context = self._decode_context(batch.x_dec)

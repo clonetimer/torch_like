@@ -1,9 +1,9 @@
 """Forecasting models registry."""
 
-from torch_like.models.forecasting.autoformer import Autoformer
 from torch_like.models.forecasting.agcrn import AGCRN, AGCRNConfig
 from torch_like.models.forecasting.ast import AST
 from torch_like.models.forecasting.astgcn import ASTGCN
+from torch_like.models.forecasting.autoformer import Autoformer
 from torch_like.models.forecasting.common import (
     ForecastingBatch,
     ForecastingConfig,
@@ -14,8 +14,8 @@ from torch_like.models.forecasting.common import (
 )
 from torch_like.models.forecasting.convtimenet import ConvTimeNet, ConvTimeNetConfig
 from torch_like.models.forecasting.crossformer import Crossformer
-from torch_like.models.forecasting.dag import DAG
 from torch_like.models.forecasting.d2stgnn import D2STGNN, D2STGNNConfig
+from torch_like.models.forecasting.dag import DAG
 from torch_like.models.forecasting.dcrnn import DCRNN
 from torch_like.models.forecasting.deepar import DeepAR
 from torch_like.models.forecasting.dlinear import DLinear, DLinearConfig
@@ -23,38 +23,49 @@ from torch_like.models.forecasting.dmstgcn import DMSTGCN
 from torch_like.models.forecasting.fcgaga import FCGAGA
 from torch_like.models.forecasting.fedformer import FEDformer
 from torch_like.models.forecasting.frets import FreTS, FreTSConfig
+from torch_like.models.forecasting.graphwavenet import GraphWaveNet
 from torch_like.models.forecasting.gts import GTS
 from torch_like.models.forecasting.informer import Informer
-from torch_like.models.forecasting.graphwavenet import GraphWaveNet
 from torch_like.models.forecasting.itransformer import ITransformer
 from torch_like.models.forecasting.koopa import Koopa, KoopaConfig
 from torch_like.models.forecasting.logtrans import LogTrans
 from torch_like.models.forecasting.micn import MICN
+from torch_like.models.forecasting.mlcnn import MLCNN
+from torch_like.models.forecasting.moderntcn import ModernTCN, ModernTCNConfig
 from torch_like.models.forecasting.mtgnn import MTGNN
 from torch_like.models.forecasting.nbeats import NBEATS
 from torch_like.models.forecasting.nhits import NHITS, NHITSConfig
-from torch_like.models.forecasting.mlcnn import MLCNN
 from torch_like.models.forecasting.patchtst import PatchTST
 from torch_like.models.forecasting.ppm import PPM
 from torch_like.models.forecasting.protran import ProTran
+from torch_like.models.forecasting.rul_adapters import AutoformerRUL, InformerRUL, LogTransRUL
 from torch_like.models.forecasting.scinet import SCINet
 from torch_like.models.forecasting.softs import SOFTS, SOFTSConfig
-from torch_like.models.forecasting.stemgnn import StemGNN
 from torch_like.models.forecasting.stdn import STDN
+from torch_like.models.forecasting.stemgnn import StemGNN
 from torch_like.models.forecasting.stfgnn import STFGNN
 from torch_like.models.forecasting.stgode import STGODE
-from torch_like.models.forecasting.timegrad import TimeGrad
 from torch_like.models.forecasting.tft import TFT, TFTConfig
 from torch_like.models.forecasting.tide import TiDE, TiDEConfig
-from torch_like.models.forecasting.timexer import TimeXer
+from torch_like.models.forecasting.timegrad import TimeGrad
 from torch_like.models.forecasting.timemixer import TimeMixer
-from torch_like.models.forecasting.tsmixer import TSMixer
 from torch_like.models.forecasting.timesnet import TimesNet
-from torch_like.models.forecasting.rul_adapters import AutoformerRUL, InformerRUL, LogTransRUL
+from torch_like.models.forecasting.timexer import TimeXer
+from torch_like.models.forecasting.tsmixer import TSMixer
 from torch_like.models.registry import register_model_catalog
 from torch_like.models.rul import RULBatch, RULConfig, RULModel
 
 model_zoo = {
+    "ModernTCN": {
+        "cls": ModernTCN,
+        "family": "modern_convolution",
+        "layer": "MLP / decomposition / convolutional mixing",
+        "integration_level": "paper_aligned",
+        "supports": ["large_kernel", "patching", "variable_mixing", "revin"],
+        "paper": "ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis (ICLR 2024)",
+        "description": "Patch-based large-kernel depthwise convolution with feature and variable mixing",
+        "complexity": "O(B * C * D * L * K) large-kernel convolution with linear sequence scaling",
+    },
     "AST": {
         "cls": AST,
         "family": "transformer_attention",
@@ -514,6 +525,8 @@ __all__ = [
     "MLCNN",
     "ConvTimeNetConfig",
     "ConvTimeNet",
+    "ModernTCNConfig",
+    "ModernTCN",
     "SOFTSConfig",
     "SOFTS",
     "ASTGCN",

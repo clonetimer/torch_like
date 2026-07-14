@@ -7,6 +7,65 @@ from torch_like.models import create_model
 
 
 class DetectionApiTests(unittest.TestCase):
+    def test_tranad_self_conditioned_detection_api(self):
+        model = tl.TranAD(input_dim=3, seq_len=8, d_model=8, n_heads=2, e_layers=1, d_ff=16)
+        batch = model.make_detection_batch(torch.randn(2, 8, 3))
+        phase_1, phase_2 = model.reconstruct(batch.x)
+        prediction = model.predict(batch)
+        loss = model.fit_step(batch)
+        score = model.score_batch(batch)
+        loss.backward()
+        self.assertEqual(phase_1.shape, (2, 8, 3))
+        self.assertEqual(phase_2.shape, (2, 8, 3))
+        self.assertEqual(prediction.shape, (2, 3))
+        self.assertEqual(score.shape, (2,))
+
+    def test_usad_dual_autoencoder_detection_api(self):
+        model = create_model(
+            "USAD",
+            domain="detection",
+            input_dim=3,
+            seq_len=10,
+            latent_dim=8,
+            hidden_dim=16,
+        )
+        x = torch.randn(2, 10, 3)
+        batch = model.make_detection_batch(x)
+        w1, w2, w3 = model.reconstruct(x)
+        prediction = model.predict(batch)
+        loss = model.fit_step(batch)
+        score = model.score_batch(batch)
+        self.assertEqual(w1.shape, x.shape)
+        self.assertEqual(w2.shape, x.shape)
+        self.assertEqual(w3.shape, x.shape)
+        self.assertEqual(prediction.shape, (2, 3))
+        self.assertEqual(score.shape, (2,))
+        self.assertEqual(loss.dim(), 0)
+
+    def test_omni_anomaly_variational_recurrent_detection_api(self):
+        model = create_model(
+            "OmniAnomaly",
+            domain="detection",
+            input_dim=3,
+            seq_len=10,
+            d_model=8,
+            latent_dim=4,
+            hidden_dim=16,
+            num_layers=1,
+        )
+        x = torch.randn(2, 10, 3)
+        batch = model.make_detection_batch(x)
+        reconstruction, mu, logvar = model.reconstruct(x)
+        prediction = model.predict(batch)
+        loss = model.fit_step(batch)
+        score = model.score_batch(batch)
+        self.assertEqual(reconstruction.shape, x.shape)
+        self.assertEqual(mu.shape, (2, 10, 4))
+        self.assertEqual(logvar.shape, (2, 10, 4))
+        self.assertEqual(prediction.shape, (2, 3))
+        self.assertEqual(score.shape, (2,))
+        self.assertEqual(loss.dim(), 0)
+
     def test_anomaly_transformer_predict_api(self):
         cfg = tl.AnomalyTransformerConfig(input_dim=4, seq_len=10, d_model=16, n_heads=4, e_layers=1, d_ff=32)
         model = tl.AnomalyTransformer.from_config(cfg)
@@ -92,7 +151,9 @@ class DetectionApiTests(unittest.TestCase):
         self.assertEqual(out.shape, (3, cfg.input_dim))
 
     def test_memto_score_batch(self):
-        model = create_model("MEMTO", domain="detection", input_dim=3, seq_len=10, d_model=16, n_heads=1, e_layers=1, d_ff=32, mem_size=8)
+        model = create_model(
+            "MEMTO", domain="detection", input_dim=3, seq_len=10, d_model=16, n_heads=1, e_layers=1, d_ff=32, mem_size=8
+        )
         x = torch.rand(2, 10, 3)
         batch = model.make_detection_batch(x)
         score = model.score_batch(batch, reduction="mean")

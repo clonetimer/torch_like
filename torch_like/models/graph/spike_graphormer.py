@@ -115,7 +115,10 @@ class SpikeGraphormer(GraphModel):
         self.input_proj = nn.Linear(input_dim, d_model)
         self.local_branch = LocalGraphBranch(d_model, dropout)
         self.transformer_blocks = nn.ModuleList(
-            [SpikeGraphormerBlock(d_model=d_model, n_heads=n_heads, d_ff=d_ff, dropout=dropout) for _ in range(num_layers)]
+            [
+                SpikeGraphormerBlock(d_model=d_model, n_heads=n_heads, d_ff=d_ff, dropout=dropout)
+                for _ in range(num_layers)
+            ]
         )
         self.output_proj = nn.Linear(d_model, output_dim)
 

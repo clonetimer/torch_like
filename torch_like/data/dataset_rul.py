@@ -11,11 +11,12 @@ Usage:
 """
 
 import os
+from typing import List, Optional, Tuple
+
 import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
-from typing import List, Tuple, Optional
 
 
 class XJTUSYDataset(Dataset):
@@ -55,9 +56,7 @@ class XJTUSYDataset(Dataset):
         self.stride = stride or max(1, seq_len // 2)
 
         # Discover bearings
-        self.bearing_paths, self.bearing_names = self._discover_bearings(
-            condition, bearing_ids
-        )
+        self.bearing_paths, self.bearing_names = self._discover_bearings(condition, bearing_ids)
 
         if len(self.bearing_paths) == 0:
             raise ValueError(f"No bearings found in {root_dir} for condition={condition}")
@@ -182,9 +181,7 @@ def create_train_test_split(
     """
     # Discover all bearings in this condition
     cond_path = os.path.join(root_dir, condition)
-    all_bearings = sorted(
-        [d for d in os.listdir(cond_path) if os.path.isdir(os.path.join(cond_path, d))]
-    )
+    all_bearings = sorted([d for d in os.listdir(cond_path) if os.path.isdir(os.path.join(cond_path, d))])
 
     rng = np.random.RandomState(seed)
     indices = rng.permutation(len(all_bearings))
@@ -193,12 +190,18 @@ def create_train_test_split(
     test_ids = [all_bearings[i] for i in indices[n_train:]]
 
     train_set = XJTUSYDataset(
-        root_dir, condition=condition, seq_len=seq_len,
-        stride=stride, bearing_ids=train_ids,
+        root_dir,
+        condition=condition,
+        seq_len=seq_len,
+        stride=stride,
+        bearing_ids=train_ids,
     )
     test_set = XJTUSYDataset(
-        root_dir, condition=condition, seq_len=seq_len,
-        stride=stride, bearing_ids=test_ids,
+        root_dir,
+        condition=condition,
+        seq_len=seq_len,
+        stride=stride,
+        bearing_ids=test_ids,
     )
 
     return train_set, test_set

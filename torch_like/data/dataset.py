@@ -4,10 +4,11 @@ Supports common time series benchmark formats (ETT, Electricity, etc.)
 with sliding window generation.
 """
 
+from pathlib import Path
+
+import numpy as np
 import torch
 from torch.utils.data import Dataset
-import numpy as np
-from pathlib import Path
 
 
 class Dataset_ETT_hour(Dataset):

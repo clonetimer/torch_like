@@ -131,7 +131,10 @@ class SOFTS(ForecastingModel):
         self.revin = RevIN(enc_in) if use_revin else None
         self.series_embedding = nn.Linear(seq_len, d_model)
         self.blocks = nn.ModuleList(
-            [STARBlock(d_model=d_model, d_ff=d_ff, core_dim=core_dim, dropout=dropout, pooling=pooling) for _ in range(e_layers)]
+            [
+                STARBlock(d_model=d_model, d_ff=d_ff, core_dim=core_dim, dropout=dropout, pooling=pooling)
+                for _ in range(e_layers)
+            ]
         )
         self.horizon_head = nn.Linear(d_model, pred_len)
         self.output_proj = nn.Identity() if c_out == enc_in else nn.Linear(enc_in, c_out)

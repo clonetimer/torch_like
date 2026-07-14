@@ -58,7 +58,9 @@ class GNANLayer(nn.Module):
         )
         self.norm = nn.LayerNorm(d_model)
 
-    def forward(self, x: torch.Tensor, normalized_distance: torch.Tensor, node_mask: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
+    def forward(
+        self, x: torch.Tensor, normalized_distance: torch.Tensor, node_mask: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         kernel_weight = self.kernel(x, normalized_distance)
         messages = self.message_proj(x)
         aggregated = torch.matmul(kernel_weight, messages)
@@ -99,15 +101,21 @@ class GNAN(GraphModel):
             task_level=task_level,
         )
         self.input_proj = nn.Linear(input_dim, d_model)
-        self.layers = nn.ModuleList([GNANLayer(d_model=d_model, num_bases=num_bases, d_ff=d_ff, dropout=dropout) for _ in range(num_layers)])
+        self.layers = nn.ModuleList(
+            [GNANLayer(d_model=d_model, num_bases=num_bases, d_ff=d_ff, dropout=dropout) for _ in range(num_layers)]
+        )
         self.output_proj = nn.Linear(d_model, output_dim)
 
     def _normalize_distance(self, adjacency: torch.Tensor, dtype: torch.dtype) -> torch.Tensor:
         distance = _batched_shortest_path_distance(adjacency)
         return (distance / max(1, self.num_nodes - 1)).to(dtype=dtype)
 
-    def explain(self, batch_x: torch.Tensor, adjacency: torch.Tensor, node_mask: torch.Tensor | None = None) -> dict[str, torch.Tensor]:
-        _, contributions = self._forward_internal(batch_x, adjacency=adjacency, node_mask=node_mask, return_contributions=True)
+    def explain(
+        self, batch_x: torch.Tensor, adjacency: torch.Tensor, node_mask: torch.Tensor | None = None
+    ) -> dict[str, torch.Tensor]:
+        _, contributions = self._forward_internal(
+            batch_x, adjacency=adjacency, node_mask=node_mask, return_contributions=True
+        )
         return contributions
 
     def _forward_internal(

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 import torch
 import torch.nn as nn
 
@@ -53,7 +52,11 @@ class TimesBlock(nn.Module):
         outputs = []
         for idx, period in enumerate(periods.tolist()):
             pad_len = (period - total_len % period) % period
-            x_pad = x if pad_len == 0 else torch.cat([x, torch.zeros(batch, pad_len, channels, device=x.device, dtype=x.dtype)], dim=1)
+            x_pad = (
+                x
+                if pad_len == 0
+                else torch.cat([x, torch.zeros(batch, pad_len, channels, device=x.device, dtype=x.dtype)], dim=1)
+            )
             steps = x_pad.size(1) // period
             x_2d = x_pad.view(batch, steps, period, channels).permute(0, 3, 1, 2)
             y = self.conv(x_2d)
@@ -112,7 +115,10 @@ class TimesNet(ForecastingModel):
         )
         self.value_proj = nn.Linear(enc_in, d_model)
         self.blocks = nn.ModuleList(
-            [TimesBlock(d_model=d_model, d_ff=d_ff, top_k=top_k, num_kernels=num_kernels, dropout=dropout) for _ in range(e_layers)]
+            [
+                TimesBlock(d_model=d_model, d_ff=d_ff, top_k=top_k, num_kernels=num_kernels, dropout=dropout)
+                for _ in range(e_layers)
+            ]
         )
         self.pred_proj = nn.Linear(seq_len, pred_len)
         self.feature_proj = nn.Linear(d_model, c_out)

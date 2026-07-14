@@ -56,8 +56,12 @@ class ComplexFrequencyMLP(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # x: (..., F), complex tensor.
-        real = torch.einsum("...f,fg->...g", x.real, self.real_weight) - torch.einsum("...f,fg->...g", x.imag, self.imag_weight)
-        imag = torch.einsum("...f,fg->...g", x.real, self.imag_weight) + torch.einsum("...f,fg->...g", x.imag, self.real_weight)
+        real = torch.einsum("...f,fg->...g", x.real, self.real_weight) - torch.einsum(
+            "...f,fg->...g", x.imag, self.imag_weight
+        )
+        imag = torch.einsum("...f,fg->...g", x.real, self.imag_weight) + torch.einsum(
+            "...f,fg->...g", x.imag, self.real_weight
+        )
         real = F.gelu(real + self.real_bias)
         imag = F.gelu(imag + self.imag_bias)
         real = F.softshrink(real, lambd=self.sparsity_threshold)
@@ -116,7 +120,9 @@ class FreTS(ForecastingModel):
 
         self.revin = RevIN(enc_in) if use_revin else None
         self.temporal_mlp = ComplexFrequencyMLP(seq_len // 2 + 1, sparsity_threshold, dropout)
-        self.channel_mlp = ComplexFrequencyMLP(enc_in // 2 + 1, sparsity_threshold, dropout) if use_channel_frequency else None
+        self.channel_mlp = (
+            ComplexFrequencyMLP(enc_in // 2 + 1, sparsity_threshold, dropout) if use_channel_frequency else None
+        )
         self.fusion_gate = nn.Sequential(
             nn.Linear(2 * enc_in, enc_in),
             nn.Sigmoid(),

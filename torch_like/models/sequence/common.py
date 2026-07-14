@@ -31,6 +31,42 @@ class SequenceBatch:
     causal_mask: Optional[torch.Tensor] = None
 
 
+def causal_sdpa_mask(
+    attention_mask: torch.Tensor | None,
+    causal_mask: torch.Tensor | None,
+    *,
+    batch_size: int,
+    seq_len: int,
+    device: torch.device,
+) -> tuple[torch.Tensor | None, bool]:
+    """Convert framework masks to SDPA's ``True means allowed`` convention."""
+    if attention_mask is None and causal_mask is None:
+        return None, True
+
+    if causal_mask is None:
+        allowed = torch.ones(seq_len, seq_len, device=device, dtype=torch.bool).tril()
+    else:
+        causal_mask = causal_mask.to(device=device, dtype=torch.bool)
+        if causal_mask.dim() == 2:
+            if causal_mask.shape != (seq_len, seq_len):
+                raise ValueError(f"Expected causal_mask shape ({seq_len}, {seq_len}), got {tuple(causal_mask.shape)}")
+            causal_mask = causal_mask.view(1, 1, seq_len, seq_len)
+        elif causal_mask.dim() == 3:
+            causal_mask = causal_mask.unsqueeze(1)
+        if causal_mask.dim() != 4 or causal_mask.shape[-2:] != (seq_len, seq_len):
+            raise ValueError(f"Expected causal_mask ending in ({seq_len}, {seq_len}), got {tuple(causal_mask.shape)}")
+        allowed = ~causal_mask
+
+    if attention_mask is not None:
+        if attention_mask.shape != (batch_size, seq_len):
+            raise ValueError(
+                f"Expected attention_mask shape ({batch_size}, {seq_len}), got {tuple(attention_mask.shape)}"
+            )
+        key_allowed = attention_mask.to(device=device, dtype=torch.bool).view(batch_size, 1, 1, seq_len)
+        allowed = allowed & key_allowed
+    return allowed, False
+
+
 @dataclass
 class Seq2SeqBatch:
     input_ids: torch.Tensor

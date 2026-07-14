@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-import sys
 
 import numpy as np
 import torch
@@ -18,6 +18,15 @@ import torch_like as tl
 from runner.common import average_total, build_run_payload, print_epoch_metrics, resolve_results_dir, save_json
 from runner.compile_utils import CompileConfig, maybe_compile_model
 from runner.forecast_data import ForecastDataConfig, create_forecast_loaders
+from runner.performance import (
+    ExecutionConfig,
+    add_execution_args,
+    autocast_context,
+    backward_and_step,
+    create_grad_scaler,
+    execution_config_from_args,
+    move_to_device,
+)
 from torch_like.models.forecasting.common import ForecastingBatch
 
 
@@ -31,6 +40,7 @@ class ForecastRunConfig:
     weight_decay: float = 1e-5
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     compile: CompileConfig = field(default_factory=CompileConfig)
+    execution: ExecutionConfig = field(default_factory=ExecutionConfig)
     results_dir: str | Path | None = None
     model_kwargs: dict = field(
         default_factory=lambda: {
@@ -70,24 +80,31 @@ def _make_decoder_input(x_dec_target, label_len: int):
     return torch.cat([known, future], dim=1)
 
 
-def _move_optional(value, device):
-    return None if value is None else value.to(device)
+def _move_optional(value, device, execution):
+    return None if value is None else move_to_device(value, device, execution)
 
 
-def _to_forecasting_batch(batch, device, label_len: int | None = None) -> ForecastingBatch:
+def _to_forecasting_batch(
+    batch,
+    device,
+    label_len: int | None = None,
+    execution: ExecutionConfig | None = None,
+) -> ForecastingBatch:
     batch = _unpack_batch(batch)
-    x_dec_target = batch["x_dec_target"].to(device)
+    execution = execution or ExecutionConfig()
+    x_dec_target = move_to_device(batch["x_dec_target"], device, execution)
+    batch["x_dec_target"] = x_dec_target
     if label_len is None:
         raise ValueError("label_len is required when converting a forecasting batch")
     return ForecastingBatch(
-        x_enc=batch["x_enc"].to(device),
-        x_mark_enc=batch["x_mark_enc"].to(device),
+        x_enc=move_to_device(batch["x_enc"], device, execution),
+        x_mark_enc=move_to_device(batch["x_mark_enc"], device, execution),
         x_dec=_make_decoder_input(x_dec_target, label_len),
-        x_mark_dec=batch["x_mark_dec"].to(device),
-        x_target_enc=_move_optional(batch["x_target_enc"], device),
-        x_exog_enc=_move_optional(batch["x_exog_enc"], device),
-        x_target_dec=_move_optional(batch["x_target_dec"], device),
-        x_exog_dec=_move_optional(batch["x_exog_dec"], device),
+        x_mark_dec=move_to_device(batch["x_mark_dec"], device, execution),
+        x_target_enc=_move_optional(batch["x_target_enc"], device, execution),
+        x_exog_enc=_move_optional(batch["x_exog_enc"], device, execution),
+        x_target_dec=_move_optional(batch["x_target_dec"], device, execution),
+        x_exog_dec=_move_optional(batch["x_exog_dec"], device, execution),
     )
 
 
@@ -151,44 +168,55 @@ def _merge_model_kwargs(args) -> dict:
     return model_kwargs
 
 
-def train_epoch(model, loader, optimizer, criterion, device, label_len: int):
+def train_epoch(
+    model,
+    loader,
+    optimizer,
+    criterion,
+    device,
+    label_len: int,
+    execution: ExecutionConfig | None = None,
+    scaler=None,
+):
+    execution = execution or ExecutionConfig()
     model.train()
     total_loss = 0.0
     total_count = 0
     for batch in loader:
         batch_data = _unpack_batch(batch)
-        model_batch = _to_forecasting_batch(batch, device, label_len=label_len)
+        model_batch = _to_forecasting_batch(batch_data, device, label_len=label_len, execution=execution)
         x_enc = model_batch.x_enc
-        x_dec_target = batch_data["x_dec_target"].to(device)
-        pred = model.predict(model_batch)
-        target = x_dec_target[:, -pred.shape[1] :, :]
-        loss = criterion(pred, target)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        x_dec_target = batch_data["x_dec_target"]
+        with autocast_context(device, execution):
+            pred = model.predict(model_batch)
+            target = x_dec_target[:, -pred.shape[1] :, :]
+            loss = criterion(pred, target)
+        backward_and_step(loss, optimizer, scaler, execution)
         total_loss += loss.item() * x_enc.size(0)
         total_count += x_enc.size(0)
     return average_total(total_loss, total_count)
 
 
 @torch.inference_mode()
-def evaluate(model, loader, criterion, device, label_len: int):
+def evaluate(model, loader, criterion, device, label_len: int, execution: ExecutionConfig | None = None):
+    execution = execution or ExecutionConfig()
     model.eval()
     total_loss = 0.0
     total_count = 0
     all_preds, all_targets = [], []
     for batch in loader:
         batch_data = _unpack_batch(batch)
-        model_batch = _to_forecasting_batch(batch, device, label_len=label_len)
+        model_batch = _to_forecasting_batch(batch_data, device, label_len=label_len, execution=execution)
         x_enc = model_batch.x_enc
-        x_dec_target = batch_data["x_dec_target"].to(device)
-        pred = model.predict(model_batch)
-        target = x_dec_target[:, -pred.shape[1] :, :]
-        loss = criterion(pred, target)
+        x_dec_target = batch_data["x_dec_target"]
+        with autocast_context(device, execution):
+            pred = model.predict(model_batch)
+            target = x_dec_target[:, -pred.shape[1] :, :]
+            loss = criterion(pred, target)
         total_loss += loss.item() * x_enc.size(0)
         total_count += x_enc.size(0)
-        all_preds.append(pred.cpu().numpy())
-        all_targets.append(target.cpu().numpy())
+        all_preds.append(pred.float().cpu().numpy())
+        all_targets.append(target.float().cpu().numpy())
     preds = np.concatenate(all_preds)
     targets = np.concatenate(all_targets)
     rmse = float(np.sqrt(np.mean((preds - targets) ** 2)))
@@ -228,12 +256,22 @@ def main(config: ForecastRunConfig):
     model = maybe_compile_model(model, config.compile)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
+    scaler = create_grad_scaler(config.device, config.execution)
 
     history = []
     for epoch in range(1, config.epochs + 1):
-        train_loss = train_epoch(model, train_loader, optimizer, criterion, config.device, config.data.label_len)
+        train_loss = train_epoch(
+            model,
+            train_loader,
+            optimizer,
+            criterion,
+            config.device,
+            config.data.label_len,
+            config.execution,
+            scaler,
+        )
         val_loss, val_rmse, val_mae = evaluate(
-            model, val_loader, criterion, config.device, config.data.label_len
+            model, val_loader, criterion, config.device, config.data.label_len, config.execution
         )
         history.append(
             {
@@ -247,7 +285,7 @@ def main(config: ForecastRunConfig):
         print_epoch_metrics(epoch, config.epochs, train_loss=train_loss, val_loss=val_loss, val_rmse=val_rmse)
 
     test_loss, test_rmse, test_mae = evaluate(
-        model, test_loader, criterion, config.device, config.data.label_len
+        model, test_loader, criterion, config.device, config.data.label_len, config.execution
     )
     out_dir = resolve_results_dir(config.results_dir, Path(__file__).parent)
     save_json(
@@ -280,6 +318,7 @@ def parse_args():
     parser.add_argument("--compile-mode")
     parser.add_argument("--compile-fullgraph", action="store_true")
     parser.add_argument("--compile-dynamic", action="store_true")
+    add_execution_args(parser)
     parser.add_argument("--adjacency-path")
     parser.add_argument("--d-model", type=int, default=128)
     parser.add_argument("--n-heads", type=int, default=4)
@@ -333,6 +372,7 @@ def cli():
             fullgraph=args.compile_fullgraph,
             dynamic=True if args.compile_dynamic else None,
         ),
+        execution=execution_config_from_args(args),
         model_kwargs=_merge_model_kwargs(args),
     )
     main(config)

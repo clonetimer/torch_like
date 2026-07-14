@@ -24,7 +24,9 @@ class BERTConfig(SequenceConfig):
 
 
 class BERTEmbeddings(nn.Module):
-    def __init__(self, vocab_size: int, max_seq_len: int, type_vocab_size: int, d_model: int, dropout: float, pad_token_id: int):
+    def __init__(
+        self, vocab_size: int, max_seq_len: int, type_vocab_size: int, d_model: int, dropout: float, pad_token_id: int
+    ):
         super().__init__()
         self.word_embeddings = nn.Embedding(vocab_size, d_model, padding_idx=pad_token_id)
         self.position_embeddings = nn.Embedding(max_seq_len, d_model)
@@ -32,7 +34,9 @@ class BERTEmbeddings(nn.Module):
         self.norm = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, input_ids: torch.Tensor, position_ids: torch.Tensor, token_type_ids: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self, input_ids: torch.Tensor, position_ids: torch.Tensor, token_type_ids: torch.Tensor | None = None
+    ) -> torch.Tensor:
         if token_type_ids is None:
             token_type_ids = torch.zeros_like(input_ids)
         x = (

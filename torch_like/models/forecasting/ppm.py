@@ -162,7 +162,9 @@ class PPM(ProbabilisticForecastingModel):
         mean = dist["mean"]
         scale = dist["scale"]
         if batch.y_true.shape != mean.shape:
-            raise ValueError(f"PPM fit_step expects y_true with shape {tuple(mean.shape)}, got {tuple(batch.y_true.shape)}")
+            raise ValueError(
+                f"PPM fit_step expects y_true with shape {tuple(mean.shape)}, got {tuple(batch.y_true.shape)}"
+            )
         variance = scale.square()
         log_term = torch.log(2 * torch.tensor(math.pi, device=mean.device, dtype=mean.dtype) * variance)
         nll = 0.5 * log_term + 0.5 * (batch.y_true - mean).square() / variance

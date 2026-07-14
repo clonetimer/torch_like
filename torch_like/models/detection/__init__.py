@@ -6,10 +6,43 @@ from torch_like.models.detection.dc_detector import DCDetector, DCDetectorConfig
 from torch_like.models.detection.gdn import GDN, GDNConfig
 from torch_like.models.detection.memto import MEMTO, MEMTOConfig
 from torch_like.models.detection.mtad_gat import MTADGAT, MTADGATConfig
+from torch_like.models.detection.omni_anomaly import OmniAnomaly, OmniAnomalyConfig
 from torch_like.models.detection.rt_detector import RTDetector, RTDetectorConfig
+from torch_like.models.detection.tranad import TranAD, TranADConfig
+from torch_like.models.detection.usad import USAD, USADConfig
 from torch_like.models.registry import register_model_catalog
 
 model_zoo = {
+    "TranAD": {
+        "cls": TranAD,
+        "family": "self_conditioned_transformer",
+        "layer": "Anomaly detection",
+        "integration_level": "paper_aligned_core",
+        "supports": ["reconstruction", "self_conditioning", "attention", "two_phase"],
+        "paper": "TranAD: Deep Transformer Networks for Anomaly Detection in Multivariate Time Series Data (PVLDB 2022)",
+        "description": "Two-phase self-conditioned Transformer reconstruction detector",
+        "complexity": "O(B * L^2 * D) Transformer reconstruction with two conditioned phases",
+    },
+    "USAD": {
+        "cls": USAD,
+        "family": "dual_autoencoder",
+        "layer": "Anomaly detection",
+        "integration_level": "paper_aligned_core",
+        "supports": ["reconstruction", "dual_autoencoder", "unsupervised"],
+        "paper": "USAD: UnSupervised Anomaly Detection on Multivariate Time Series (KDD Workshop 2020)",
+        "description": "Dual-autoencoder anomaly detector with direct and chained reconstruction losses",
+        "complexity": "O(B * L * C * hidden_dim) MLP encoding/decoding over flattened windows",
+    },
+    "OmniAnomaly": {
+        "cls": OmniAnomaly,
+        "family": "variational_recurrent_detector",
+        "layer": "Anomaly detection",
+        "integration_level": "paper_aligned_core",
+        "supports": ["reconstruction", "latent_variable", "variational", "recurrent"],
+        "paper": "Robust Anomaly Detection for Multivariate Time Series through Stochastic Recurrent Neural Network (KDD 2019)",
+        "description": "Variational recurrent reconstruction detector with sequence-level ELBO-style objective and anomaly scores",
+        "complexity": "O(B * L * hidden_dim^2) recurrent variational reconstruction",
+    },
     "MEMTO": {
         "cls": MEMTO,
         "family": "memory_transformer",
@@ -88,7 +121,13 @@ __all__ = [
     "MEMTO",
     "MTADGATConfig",
     "MTADGAT",
+    "OmniAnomalyConfig",
+    "OmniAnomaly",
     "RTDetectorConfig",
     "RTDetector",
+    "TranADConfig",
+    "TranAD",
+    "USADConfig",
+    "USAD",
     "model_zoo",
 ]

@@ -109,10 +109,7 @@ class TiDE(ForecastingModel):
 
         self.encoder_in = LazyTiDEResidualBlock(hidden_dim=d_ff, out_dim=hidden, dropout=dropout, activation=activation)
         self.encoder = nn.Sequential(
-            *[
-                TiDEResidualBlock(hidden, d_ff, hidden, dropout=dropout, activation=activation)
-                for _ in range(e_layers)
-            ]
+            *[TiDEResidualBlock(hidden, d_ff, hidden, dropout=dropout, activation=activation) for _ in range(e_layers)]
         )
         self.decoder = nn.Sequential(
             *[
@@ -146,7 +143,13 @@ class TiDE(ForecastingModel):
             if batch.x_dec is not None and batch.x_dec.numel() > 0 and exog_enc.size(-1) > 0:
                 exog_dec = batch.x_dec[..., : min(batch.x_dec.size(-1), exog_enc.size(-1))]
             else:
-                exog_dec = torch.zeros(batch.x_enc.size(0), self.label_len + self.pred_len, 0, device=batch.x_enc.device, dtype=batch.x_enc.dtype)
+                exog_dec = torch.zeros(
+                    batch.x_enc.size(0),
+                    self.label_len + self.pred_len,
+                    0,
+                    device=batch.x_enc.device,
+                    dtype=batch.x_enc.dtype,
+                )
         future_exog = exog_dec[:, -self.pred_len :, :]
         if batch.x_mark_dec is not None and batch.x_mark_dec.numel() > 0:
             future_exog = torch.cat([future_exog, batch.x_mark_dec[:, -self.pred_len :, :]], dim=-1)

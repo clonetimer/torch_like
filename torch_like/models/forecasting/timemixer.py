@@ -88,7 +88,7 @@ class FutureMultiPredictorMixing(nn.Module):
 
     def forward(self, multiscale_features: list[torch.Tensor]) -> torch.Tensor:
         preds = []
-        for feature, predictor in zip(multiscale_features, self.predictors):
+        for feature, predictor in zip(multiscale_features, self.predictors, strict=True):
             preds.append(predictor(feature.transpose(1, 2)).transpose(1, 2))
         stacked = torch.stack(preds, dim=0)
         weights = torch.softmax(self.weights, dim=0).view(-1, 1, 1, 1)

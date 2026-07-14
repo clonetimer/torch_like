@@ -62,7 +62,9 @@ class MambaLike(SequenceModel):
         )
         self.token_embedding = nn.Embedding(vocab_size, d_model)
         self.position_embedding = nn.Embedding(max_seq_len, d_model)
-        self.blocks = nn.ModuleList([MambaLikeBlock(d_model=d_model, d_ff=d_ff, dropout=dropout) for _ in range(n_layers)])
+        self.blocks = nn.ModuleList(
+            [MambaLikeBlock(d_model=d_model, d_ff=d_ff, dropout=dropout) for _ in range(n_layers)]
+        )
         self.norm = nn.LayerNorm(d_model)
         self.lm_head = nn.Linear(d_model, vocab_size, bias=False)
 
@@ -94,7 +96,9 @@ class MambaLike(SequenceModel):
             raise ValueError("SequenceBatch.labels is required for loss_step")
         logits = self.next_token_logits(batch)
         if batch.labels.shape != batch.input_ids.shape:
-            raise ValueError(f"MambaLike expects labels with shape {tuple(batch.input_ids.shape)}, got {tuple(batch.labels.shape)}")
+            raise ValueError(
+                f"MambaLike expects labels with shape {tuple(batch.input_ids.shape)}, got {tuple(batch.labels.shape)}"
+            )
         return self.causal_lm_loss(logits, batch.labels)
 
     @torch.no_grad()

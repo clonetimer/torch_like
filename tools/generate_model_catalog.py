@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
+import sys
 from collections import defaultdict
 from pathlib import Path
-import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from torch_like.models import list_models  # noqa: E402
-
 
 FORECAST_LAYER_ORDER = [
     "Transformer / attention",
@@ -32,7 +31,18 @@ SEQUENCE_LAYER_ORDER = [
     "General sequence modeling",
 ]
 
-ADDITIONAL_DOMAINS = ["detection", "rul", "vision", "multimodal", "generative", "diagnosis"]
+ADDITIONAL_DOMAINS = [
+    "detection",
+    "rul",
+    "vision",
+    "multimodal",
+    "generative",
+    "tabular",
+    "recommendation",
+    "audio",
+    "reinforcement",
+    "diagnosis",
+]
 
 
 def _format_model_list(names: list[str]) -> str:
@@ -96,7 +106,25 @@ def build_graph_capability_tags() -> str:
         for support in meta.get("supports", []):
             supports_map[support].append(name)
 
-    ordered_supports = ["adjacency", "node_task", "graph_task", "attention", "spiking"]
+    ordered_supports = [
+        "adjacency",
+        "node_task",
+        "graph_task",
+        "attention",
+        "dynamic_attention",
+        "centrality",
+        "spatial_encoding",
+        "local_global_mixing",
+        "multi_aggregation",
+        "degree_scaling",
+        "deep_gcn",
+        "initial_residual",
+        "identity_mapping",
+        "self_supervised",
+        "mutual_information",
+        "corruption",
+        "spiking",
+    ]
     lines = []
     for support in ordered_supports:
         names = sorted(supports_map.get(support, []))
@@ -129,7 +157,22 @@ def build_sequence_capability_tags() -> str:
         for support in meta.get("supports", []):
             supports_map[support].append(name)
 
-    ordered_supports = ["next_token", "generation", "causal_mask", "state_space_like", "fft_mixing", "long_context"]
+    ordered_supports = [
+        "next_token",
+        "generation",
+        "causal_mask",
+        "segment_memory",
+        "linear_attention",
+        "random_features",
+        "lsh_attention",
+        "local_attention",
+        "state_space",
+        "dplr",
+        "state_space_like",
+        "fft_mixing",
+        "fft_convolution",
+        "long_context",
+    ]
     lines = []
     for support in ordered_supports:
         names = sorted(supports_map.get(support, []))

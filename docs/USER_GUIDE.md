@@ -48,6 +48,7 @@ MLP / decomposition / convolutional mixing:
 - `TimeMixer`
 - `TSMixer`
 - `ConvTimeNet`
+- `ModernTCN`
 - `SOFTS`
 
 Graph spatiotemporal forecasting:
@@ -99,36 +100,72 @@ Frequency-domain forecasting:
 - `GDN`
 - `MTADGAT`
 - `DCDetector`
+- `OmniAnomaly`
+- `TranAD`
+- `USAD`
 
 ### Graph / 通用图学习
 
 - `GCN`
+- `DGI`
+- `GraphCL`
+- `GraphMAE`
 - `GAT`
+- `GATv2`
 - `GNAN`
 - `GraphSAGE`
 - `GIN`
 - `GraphTransformer`
+- `Graphormer`
+- `GPS`
+- `PNA`
+- `GCNII`
 - `SpikeGraphormer`
 
 ### Sequence / 序列建模
 
 - `TransformerDecoder`
+- `TransformerXL`
+- `Performer`
+- `Reformer`
+- `RetNet`
+- `KimiLinear`
+- `xLSTM`
 - `GPT`
+- `LLaMA`
+- `Mixtral`
 - `LRU`
 - `Mamba`
 - `MambaLike`
 - `Caracal`
+- `S4`
+- `Hyena`
 - `BERT`
 - `T5`
+
+### Diagnosis / 故障诊断
+
+- `InceptionTime`
+- `ROCKET`
 
 ### Vision / 视觉模型
 
 - `ResNet`
 - `ViT`
+- `MAE`
+- `SimCLR`
+- `BYOL`
+- `DINO`
+- `MoCo`
+- `SAM`
 - `DeiT`
 - `UNet`
 - `DeepLabV3`
 - `DETR`
+- `RTDETR`
+- `YOLO`
+- `GroundingDINO`
+- `Mask2Former`
 - `FCN`
 - `DenseNet`
 - `MobileNetV2`
@@ -146,15 +183,172 @@ Frequency-domain forecasting:
 ### Multimodal / 多模态模型
 
 - `CLIP`
+- `SigLIP`
+- `BLIP`
+- `BLIP2`
+- `LLaVA`
 
 中文：`CLIP` 接收图像张量和已经 tokenized 的 `input_ids`，输出归一化 image/text embeddings 以及 image-text similarity logits。框架不绑定 tokenizer，也不自动下载预训练权重。
-English: `CLIP` consumes image tensors and already-tokenized `input_ids`, then returns normalized image/text embeddings and image-text similarity logits. The framework does not bind a tokenizer or download pretrained weights automatically.
+English: `CLIP` consumes image tensors and already-tokenized `input_ids`, then returns normalized image/text embeddings and image-text similarity logits. `BLIP2` consumes image tensors and already-tokenized text ids, then returns Q-Former query embeddings, language-prefix features, image-text matching logits, and caption logits. `LLaVA` consumes image tensors plus already-tokenized prompt ids and returns visual-prefix causal LM logits for visual instruction modeling. The framework does not bind a tokenizer, chat template, external LLM checkpoint, or pretrained weight downloader automatically.
+
+中文：`ModernTCN` 提供 patch + 大卷积核的纯卷积预测骨架；`S4` 提供 DPLR 状态空间结构和可移植 recurrent scan；`TransformerXL` 提供 segment memory 长上下文自回归；`Performer` 提供随机特征线性注意力；`Reformer` 提供 bucketed LSH 局部注意力；`Graphormer` 提供中心性与最短路空间编码；`GATv2` 提供动态 pairwise 图注意力；`GPS` 组合局部图传播与全局注意力；`PNA` 提供多聚合器与度缩放的消息传递；`GraphCL` 提供两路图增强视图的对比表征学习接口；`GraphMAE` 提供 masked node-feature 图自编码重建接口；`Hyena` 提供隐式 FFT 长卷积；`InceptionTime` 提供多尺度故障诊断分类；`ROCKET` 提供固定随机卷积特征和线性分类头；`TranAD` 提供两阶段自条件异常重建；`USAD` 提供双自编码器无监督异常检测；`MAE` 通过 `fit_step(batch)` 计算 masked-patch 重建损失；`SimCLR`、`BYOL` 和 `DINO` 提供视觉自监督表征学习接口；`SigLIP` 使用独立图文对的 sigmoid loss。所有实现默认随机初始化，不自动下载论文预训练权重。
+
+English: `ModernTCN` provides a patch-based large-kernel convolutional forecaster; `S4` uses a DPLR state-space structure with a portable recurrent scan; `TransformerXL` adds segment-memory long-context autoregression; `Performer` adds random-feature linear attention; `Reformer` adds bucketed LSH local attention; `RetNet` provides equivalent parallel-training and recurrent-state inference paths; `LLaMA` adds RoPE, RMSNorm, SwiGLU, and grouped-query attention for modern decoder-only language modeling; `Mixtral` adds sparse MoE top-k expert routing on top of LLaMA-style decoder blocks; `Graphormer` adds centrality and shortest-path encodings; `GATv2` adds dynamic pairwise graph attention; `GPS` combines local propagation and global attention; `PNA` adds multi-aggregator degree-scaled message passing; `GCNII` adds initial residual and identity mapping for deep GCNs; `DGI` adds self-supervised graph representation learning through corruption and global summary discrimination; `GraphCL` adds graph-level contrastive learning over two augmented graph views; `GraphMAE` adds masked node-feature graph autoencoding; `Hyena` provides implicit FFT long convolution; `InceptionTime` provides multiscale diagnosis classification; `ROCKET` provides fixed random convolutional features and a linear classifier; `TranAD` provides two-phase self-conditioned anomaly reconstruction; `USAD` provides dual-autoencoder unsupervised anomaly detection; `OmniAnomaly` provides variational recurrent anomaly reconstruction; `MAE.fit_step(batch)` computes masked-patch reconstruction loss; `SimCLR`, `BYOL`, `DINO`, and `MoCo` provide visual self-supervised representation interfaces; and `SigLIP` uses an independent pairwise sigmoid objective. All implementations are randomly initialized and do not download paper checkpoints automatically.
+
+### Kimi Linear reference API / Kimi Linear 参考接口
+
+```python
+import torch
+import torch_like as tl
+from torch_like import nn
+
+kda = nn.KimiDeltaAttention(embed_dim=32, num_heads=4, chunk_size=16)
+x = torch.randn(2, 64, 32)
+y, state = kda(x, mode="chunkwise", return_state=True)
+step_y, state = kda.forward_step(torch.randn(2, 32), state)
+
+model = tl.KimiLinear(vocab_size=128, max_seq_len=256, d_model=32, n_heads=4, n_layers=2)
+logits = model(torch.randint(0, 128, (2, 32)))
+
+# Insert a causal full-attention layer after every three KDA layers.
+hybrid = tl.KimiLinear(
+    vocab_size=128, max_seq_len=256, d_model=32, n_heads=4,
+    n_layers=4, full_attention_interval=4,
+)
+```
+
+中文：该实现提供可移植的细粒度门控 delta-rule scan、分块调用和显式递归状态。它不是官方 48B 模型，且不包含 FlashKDA、FLA 或 vLLM 内核，因此不能直接套用官方吞吐结论。
+
+English: This implementation provides a portable fine-grained gated delta-rule scan, chunked calls, and explicit recurrent state. Setting `full_attention_interval > 0` enables a hybrid causal-attention model; fixed-size recurrent state is then unavailable because full attention requires a KV history. It is not the official 48B model and does not bundle FlashKDA, FLA, or vLLM kernels, so official throughput claims do not apply directly.
+
+### xLSTM mLSTM API / xLSTM mLSTM 接口
+
+```python
+import torch
+import torch_like as tl
+from torch_like import nn
+
+cell = nn.mLSTMCell(embed_dim=32, num_heads=4)
+y, state = cell(torch.randn(2, 16, 32), return_state=True)
+step_y, state = cell.forward_step(torch.randn(2, 32), state)
+
+model = tl.xLSTM(vocab_size=128, max_seq_len=256, d_model=32, n_heads=4, n_layers=2)
+tokens = torch.randint(0, 128, (2, 32))
+logits, states = model.forward_recurrent(tokens)
+```
+
+中文：当前 `xLSTM` 实现聚焦论文中的 mLSTM 矩阵记忆、指数门控和数值稳定化递推，不包含 sLSTM 路径、官方 7B 权重或定制 CUDA kernel。因此 catalog 使用 `paper_aligned_mlstm_reference`，而不是完整官方复刻。
+
+English: The current `xLSTM` implementation focuses on the paper's mLSTM matrix memory, exponential gates, and numerically stabilized recurrence. It excludes the sLSTM path, official 7B weights, and custom CUDA kernels, so the catalog labels it `paper_aligned_mlstm_reference` rather than a complete official reproduction.
 
 ### Generative / 生成模型
 
 - `DDPM`
 - `VAE`
 - `DCGAN`
+- `DiT`
+- `ControlNet`
+- `LatentDiffusion`
+- `PixelCNN`
+- `RectifiedFlow`
+- `RealNVP`
+- `VQVAE`
+
+### Tabular / 表格模型
+
+- `TabNet`
+- `NODE`
+- `FTTransformer`
+- `TabTransformer`
+- `SAINT`
+
+English: `TabNet` exposes attentive feature masks through `explain(batch)`; `NODE` exposes differentiable oblivious tree ensembles through `tree_outputs(...)` and `feature_importance()`; `FTTransformer` exposes feature tokenization through `tokenize(...)` and `forward_features(...)`; `TabTransformer` exposes categorical contextual embeddings through `contextual_embeddings(...)`; and `SAINT` exposes column/row attention tokenization through `tokenize(...)` and `forward_features(...)`. Data cleaning, categorical encoding policy, missing-value policy, augmentation, contrastive pre-training loops, calibration, and tabular benchmark protocol remain outside model classes.
+
+### Recommendation / 推荐系统
+
+- `NCF`
+- `DeepFM`
+- `DCN`
+- `LightGCN`
+- `SASRec`
+- `BERT4Rec`
+
+English: recommendation models use `RecommendationBatch` and expose `predict(batch)` plus `loss_step(batch)` where the task allows it. `NCF` handles user-item ids; `DeepFM` and `DCN` handle CTR-style categorical and continuous fields; `LightGCN` handles graph collaborative filtering with `full_sort_scores(...)` and `bpr_loss(...)`; `SASRec` handles item-sequence recommendation with `next_item_logits(...)`; `BERT4Rec` handles bidirectional masked-item prediction with `sequence_logits(...)`, `masked_item_logits(...)`, and `score_items(...)`. Negative sampling, candidate generation, feature stores, online serving, and ranking metrics belong outside model classes.
+
+### Audio / 音频与语音
+
+- `Wav2Vec2`
+- `EnCodec`
+- `Conformer`
+- `HuBERT`
+- `Whisper`
+- `AudioSpectrogramTransformer`
+
+English: audio models use `AudioBatch` and expose `predict(batch)` plus `loss_step(batch)`. `Wav2Vec2` consumes raw waveforms, `HuBERT` consumes raw waveforms and predicts masked hidden-unit labels, `Conformer` consumes frame-level acoustic features, `Whisper` consumes log-mel features plus token ids for decoder training/generation, and `AudioSpectrogramTransformer` consumes spectrogram tensors. Tokenization, hidden-unit clustering, CTC/beam decoding, mel extraction, augmentation, and ASR evaluation remain outside model classes.
+
+EnCodec / 神经音频编解码:
+
+```python
+import torch
+import torch_like as tl
+
+codec = tl.EnCodec(d_model=64, target_bandwidth=6.0)
+waveform = torch.randn(2, 24000)
+encoded = codec.encode(waveform, bandwidth=3.0)
+reconstructed = codec.decode(encoded["codes"], length=waveform.size(-1))
+codec.set_target_bandwidth(6.0)
+```
+
+中文：`EnCodec` 提供随机初始化的因果卷积编码器、带宽可调 RVQ 和波形解码器。它不自动下载官方权重，也不包含熵模型或多尺度判别器训练器。
+
+English: `EnCodec` provides a randomly initialized causal convolutional encoder, bandwidth-scalable RVQ, and waveform decoder. It does not download official weights or bundle the entropy model or multi-scale discriminator trainer.
+
+### Reinforcement Learning / 强化学习
+
+- `DQN`
+- `ActorCritic`
+- `PPOActorCritic`
+- `SACActorCritic`
+- `TD3ActorCritic`
+- `DecisionTransformer`
+- `DreamerV3`
+
+English: reinforcement models use `ReinforcementBatch` and expose reusable model-side functions such as `q_values(...)`, `greedy_action(...)`, `policy_logits(...)`, `value(...)`, `evaluate_actions(...)`, `td_loss(...)`, `ppo_loss(...)`, SAC-style `actor_loss(...)` / `critic_loss(...)`, TD3-style deterministic `policy(...)` / `target_actions(...)`, and Decision Transformer `encode_trajectory(...)` / `predict_action(...)` / `action_loss(...)`. Environment stepping, offline dataset loading, replay buffers, rollout collection, target-network updates, exploration schedules, advantage estimation, entropy-temperature tuning, and benchmark protocols remain outside model classes.
+
+DreamerV3 / 世界模型强化学习:
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.DreamerV3(state_dim=8, action_dim=3, d_model=64)
+states = torch.randn(4, 16, 8)
+actions = torch.randn(4, 16, 3).tanh()
+outputs = model(states, actions)
+imagined = model.imagine(outputs["posterior"], horizon=8)
+losses = model.actor_critic_loss(outputs["posterior"], horizon=8)
+```
+
+中文：`DreamerV3` 提供 categorical RSSM、observation/reward/continuation heads、latent imagination 和 actor/critic loss。环境交互、replay buffer、优化器更新顺序和 benchmark runner 不属于模型类。
+
+English: `DreamerV3` provides a categorical RSSM, observation/reward/continuation heads, latent imagination, and actor/critic losses. Environment interaction, replay buffers, optimizer update ordering, and benchmark runners remain outside the model class.
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.PPOActorCritic(state_dim=8, action_dim=4, d_model=32)
+states = torch.randn(16, 8)
+actions, old_log_probs, _ = model.act(states)
+batch = model.make_reinforcement_batch(
+    states=states,
+    actions=actions,
+    old_log_probs=old_log_probs.detach(),
+    returns=torch.randn(16),
+    advantages=torch.randn(16),
+)
+loss = model.loss_step(batch)
+```
 
 中文：`DDPM` 提供 `q_sample(...)`、`predict_noise(...)`、`loss_step(batch)` 和 `sample(...)`。数据集、FID 评估和长时间训练 runner 不属于模型类职责。
 English: `DDPM` exposes `q_sample(...)`, `predict_noise(...)`, `loss_step(batch)`, and `sample(...)`. Datasets, FID evaluation, and long-running training runners are outside the model class boundary.
@@ -168,6 +362,18 @@ English: `VAE` exposes `encode(...)`, `decode(...)`, `reparameterize(...)`, `los
 中文：`DCGAN` 提供 `sample(...)`、`discriminate(...)`、`generator_loss(...)` 和 `discriminator_loss(...)`；两个 optimizer 的训练顺序属于 runner 或用户代码。
 English: `DCGAN` exposes `sample(...)`, `discriminate(...)`, `generator_loss(...)`, and `discriminator_loss(...)`; the two-optimizer update schedule belongs in runners or user code.
 
+中文：`DiT` 使用 patch token 和 timestep-conditioned Transformer blocks 做扩散噪声预测；`RealNVP` 提供可逆 affine coupling flow、精确 `log_prob(...)` 和 `sample(...)`。
+English: `DiT` uses patch tokens and timestep-conditioned Transformer blocks for diffusion noise prediction; `LatentDiffusion` exposes `encode_to_latent(...)`, `decode_latent(...)`, latent-space `q_sample(...)`, `predict_noise(...)`, `loss_step(batch)`, `sample_latents(...)`, and image `sample(...)`; `ControlNet` adds `encode_control(...)`, `control_residuals(...)`, control-conditioned `predict_noise(...)`, `loss_step(batch, control=...)`, and control-conditioned `sample(...)`; `RectifiedFlow` exposes straight-line `interpolate(...)`, `target_velocity(...)`, `predict_velocity(...)`, flow-matching `loss_step(batch)`, and Euler `sample(...)`; `PixelCNN` provides masked-convolution autoregressive `log_prob(...)`, `loss_step(batch)`, and ancestral `sample(...)`; `RealNVP` provides invertible affine coupling flows, exact `log_prob(...)`, and `sample(...)`; `VQVAE` provides a discrete codebook, `quantize(...)`, reconstruction loss, and sampling.
+
+中文：`LatentDiffusion` 只实现潜空间扩散的模型核心；文本编码器、tokenizer、classifier-free guidance、外部 Stable Diffusion 权重和采样 scheduler 库不属于模型类职责。
+English: `LatentDiffusion` implements only the model-side latent diffusion core. Text encoders, tokenizers, classifier-free guidance, external Stable Diffusion checkpoints, and sampler scheduler libraries remain outside the model class.
+
+中文：`ControlNet` 只实现控制分支和零初始化残差注入；边缘图、深度图、姿态图等控制信号的外部预处理器，以及 ControlNet/Stable Diffusion 官方权重转换不属于模型类职责。
+English: `ControlNet` implements only the control branch and zero-initialized residual injection. External annotators for edges, depth, pose, and other control maps, plus official ControlNet/Stable Diffusion checkpoint conversion, stay outside the model class.
+
+中文：`RectifiedFlow` 实现 Flow Matching / Rectified Flow 的模型侧向量场；高阶 ODE 求解器、guidance 策略、大规模预训练权重和数据分布工程不属于模型类职责。
+English: `RectifiedFlow` implements the model-side velocity field for Flow Matching / Rectified Flow. Higher-order ODE solvers, guidance strategies, large pretrained checkpoints, and data-distribution engineering remain outside the model class.
+
 ### Vision Output Protocol / 视觉输出协议
 
 中文：vision 域共享 `make_vision_batch(x, y=None)` 和 `predict(batch)`，但不同任务的输出不同。
@@ -175,7 +381,10 @@ English: The vision domain shares `make_vision_batch(x, y=None)` and `predict(ba
 
 - Classification / 分类: returns logits with shape `(batch, num_classes)`.
 - Segmentation / 分割: returns dense logits with shape `(batch, num_classes, height, width)`.
+- Universal segmentation / 通用分割: `Mask2Former` returns query `pred_logits`, query `pred_masks`, and composed `semantic_logits`.
 - Object detection / 目标检测: `DETR` returns `{"pred_logits": (batch, queries, classes + 1), "pred_boxes": (batch, queries, 4)}`. `pred_boxes` uses normalized `cx, cy, w, h`; call `model.post_process(...)` for normalized `xyxy` detections.
+- Open-vocabulary detection / 开放词表检测: `GroundingDINO` returns `{"token_logits": (batch, queries, text_len), "objectness": (batch, queries), "pred_boxes": (batch, queries, 4)}` and consumes already-tokenized text ids.
+- Promptable segmentation / 提示分割: `SAM` returns `{"masks": (batch, masks, height, width), "low_res_masks": ..., "iou_predictions": ...}` and accepts point, box, and mask prompts through `forward(...)`.
 
 ## Import Patterns / 导入方式
 
@@ -216,7 +425,11 @@ from torch_like.models.detection import GDN
 English: Useful for config-driven code, CLI tools, or batch experiments.
 
 ```python
-from torch_like.models import create_model
+from torch_like.models import create_model, get_model_info, list_domains, list_models
+
+print(list_domains())
+print(list_models("forecasting").keys())
+print(get_model_info("Informer", domain="forecasting"))
 
 model = create_model(
     "Informer",
@@ -509,6 +722,47 @@ Example / 示例:
 & 'D:\Project\base\base\Scripts\python.exe' runner/forecast_runner.py --help
 ```
 
+## 性能配置 / Performance Configuration
+
+中文：模型层无需额外开关即可使用原生 SDPA。`FullAttention(output_attention=False)`、`GPT`、`LLaMA` 和 `Mixtral` 会将兼容的注意力计算交给 PyTorch；实际选择 Flash、内存高效或数学后端由 PyTorch 根据设备、dtype、形状和掩码决定。
+
+English: Native SDPA requires no model-level switch. `FullAttention(output_attention=False)`, `GPT`, `LLaMA`, and `Mixtral` delegate compatible attention operations to PyTorch; PyTorch selects Flash, memory-efficient, or math backends according to device, dtype, shapes, and masks.
+
+Python runner configuration / Python runner 配置:
+
+```python
+from runner.compile_utils import CompileConfig
+from runner.performance import ExecutionConfig
+from runner.forecast_runner import ForecastRunConfig
+
+config = ForecastRunConfig(
+    data=data_config,
+    execution=ExecutionConfig(
+        mixed_precision=True,
+        amp_dtype="bfloat16",
+        non_blocking=True,
+        zero_grad_set_to_none=True,
+    ),
+    compile=CompileConfig(enabled=True, mode="reduce-overhead"),
+)
+```
+
+CLI flags / CLI 参数:
+
+- `--amp`: enable automatic mixed precision / 启用自动混合精度
+- `--amp-dtype {float16,bfloat16}`: select AMP dtype / 选择 AMP 数据类型
+- `--blocking-transfers`: disable non-blocking CUDA copies / 禁用异步 CUDA 搬运
+- `--zero-grad-values`: use zero-filled gradients instead of `None` / 使用数值清零而不是将梯度设为 `None`
+- `--compile`: enable `Module.compile()` / 启用 `Module.compile()`
+
+中文：CUDA FP16 训练会使用 GradScaler；BF16 通常不需要缩放。`non_blocking=True` 只有在 CUDA 搬运与 pinned-memory DataLoader 配合时才可能带来收益。编译存在首次调用开销，应使用 `runner/benchmark_compile.py` 或任务级基准测量稳态收益。
+
+English: CUDA FP16 training uses GradScaler; BF16 normally does not require scaling. `non_blocking=True` can help only when CUDA transfers are paired with pinned-memory loaders. Compilation has first-call overhead, so measure steady-state gains with `runner/benchmark_compile.py` or a task-level benchmark.
+
+中文：当前生成接口尚未实现 KV cache，因此 GPT/LLaMA 的逐 token 生成仍重新计算完整前缀。
+
+English: Generation APIs do not yet implement a KV cache, so token-by-token GPT/LLaMA generation still recomputes the full prefix.
+
 ## Forecast Data Protocol / 预测数据协议
 
 中文：`ForecastingBatch` 支持传统单输入和目标变量 + 外生变量双输入。
@@ -538,15 +792,52 @@ English: Auxiliary runners write to their local `results/` by default; use confi
 
 ## Development References / 开发参考
 
+- [Packaging Guide / 打包安装指南](PACKAGING.md)
 - [Development Guide / 开发指南](DEVELOPMENT.md)
 - [Project Structure / 项目结构](PROJECT_STRUCTURE.md)
 - [Sequence Domain Draft / 序列域草案](SEQUENCE_DOMAIN_DRAFT.md)
+
+## Vision Extension Notes / 视觉域补充
+
+YOLO / 单阶段检测:
+
+- `YOLO` returns `{"pred_logits": (batch, anchors, classes), "pred_boxes": (batch, anchors, 4), "objectness": (batch, anchors)}`.
+- Boxes use normalized `cx, cy, w, h`.
+- Anchor clustering, NMS policy, assignment, loss matching, and COCO evaluation remain outside model classes.
+
+GroundingDINO / 开放词表检测:
+
+- `GroundingDINO` consumes image tensors plus already-tokenized `input_ids`.
+- It exposes `encode_image_tokens(...)`, `encode_text_tokens(...)`, `forward_features(...)`, token alignment logits, grounded `objectness`, normalized boxes, and `post_process(...)`.
+- Tokenization, phrase span extraction, NMS policy, Grounded-SAM orchestration, official checkpoint conversion, and dataset evaluation remain outside model classes.
+
+SAM / 提示分割:
+
+- `SAM` exposes `encode_image(...)`, `encode_prompts(...)`, `predict_masks(...)`, and `forward(..., points=..., boxes=..., masks=...)`.
+- Points and boxes can use normalized coordinates or pixel coordinates through `prompt_coordinate_format`.
+- Official checkpoints, interactive annotation UI, SAM2 video memory, and training recipes remain outside model classes.
+
+Mask2Former / 通用分割:
+
+- `Mask2Former` exposes `encode_pixels(...)`, `forward_features(...)`, `predict_masks(...)`, `semantic_logits(...)`, and `post_process(...)`.
+- It returns class logits for mask queries, per-query mask logits, and composed dense semantic logits.
+- Hungarian matching, panoptic fusion, dataset-specific target formatting, and COCO/ADE20K evaluation remain outside model classes.
+
+## Multimodal Extension Notes / 多模态域补充
+
+BLIP / 图文理解与生成:
+
+- `BLIP` exposes `encode_image(...)`, `encode_text(...)`, `fuse(...)`, `itm_logits`, and caption `lm_logits`.
+- `BLIP2` exposes `qformer_features(...)`, `language_prefix(...)`, `caption_logits(...)`, image-text matching logits, and retrieval embeddings.
+- The framework expects already-tokenized `input_ids`.
+- Tokenizers, large language model weights, synthetic captions, filtering pipelines, and BLIP/BLIP-2 pre-training schedules remain outside model classes.
 
 ## Testing / 测试
 
 ```powershell
 & 'D:\Project\base\base\Scripts\python.exe' -m unittest discover -s tests
 & 'D:\Project\base\base\Scripts\python.exe' -m ruff check torch_like runner tests examples tools
+& 'D:\Project\base\base\Scripts\python.exe' -m ruff format --check torch_like runner tests examples tools
 & 'D:\Project\base\base\Scripts\python.exe' -m pytest --cov=torch_like --cov-report=term-missing
 ```
 

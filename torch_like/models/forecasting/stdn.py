@@ -112,9 +112,7 @@ class STDN(ForecastingModel):
 
         self.input_norm = nn.LayerNorm(enc_in)
         self.input_proj = nn.Linear(enc_in, d_model)
-        self.blocks = nn.ModuleList(
-            [STDNBlock(d_model, n_heads, d_ff, dropout) for _ in range(e_layers)]
-        )
+        self.blocks = nn.ModuleList([STDNBlock(d_model, n_heads, d_ff, dropout) for _ in range(e_layers)])
         self.temporal_head = nn.Linear(seq_len, pred_len)
         self.output_proj = nn.Linear(d_model, c_out)
 

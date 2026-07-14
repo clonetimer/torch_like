@@ -1,13 +1,17 @@
 """General-purpose training utilities."""
 
-import torch
 from pathlib import Path
+
+import torch
 
 
 def adjust_learning_rate(optimizer, epoch, args):
     """Cosine annealing learning rate schedule."""
-    lr_adjust = {epoch: args.learning_rate if not hasattr(args, "lradj") else
-                 _adjust_fn(args.lradj, args.learning_rate, epoch, args)}
+    lr_adjust = {
+        epoch: args.learning_rate
+        if not hasattr(args, "lradj")
+        else _adjust_fn(args.lradj, args.learning_rate, epoch, args)
+    }
     if epoch in lr_adjust:
         lr = lr_adjust[epoch]
         for param_group in optimizer.param_groups:
@@ -22,7 +26,8 @@ def _adjust_fn(lradj, lr, epoch, args):
         return lr * (0.5 ** ((epoch - 1) // 2))
     elif lradj == "cosine":
         import math
-        eta_min = lr * (0.1 ** 3)
+
+        eta_min = lr * (0.1**3)
         return eta_min + (lr - eta_min) * (1 + math.cos(math.pi * epoch / args.train_epochs)) / 2
     return lr
 

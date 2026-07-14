@@ -7,6 +7,165 @@ import torch_like as tl
 
 
 class TaskInterfaceTests(unittest.TestCase):
+    def test_inception_time_diagnosis_api(self):
+        model = tl.InceptionTime(
+            input_dim=3,
+            num_classes=5,
+            seq_len=32,
+            d_model=16,
+            num_blocks=3,
+            bottleneck_dim=4,
+            kernel_sizes=(3, 5, 7),
+        )
+        batch = model.make_diagnosis_batch(torch.randn(2, 32, 3), labels=torch.tensor([1, 2]))
+        logits = model.predict(batch)
+        loss = model.loss_step(batch)
+        loss.backward()
+        self.assertEqual(logits.shape, (2, 5))
+        self.assertEqual(loss.dim(), 0)
+
+    def test_gps_local_global_graph_api(self):
+        model = tl.GPS(input_dim=3, output_dim=2, num_nodes=4, d_model=8, num_layers=1, n_heads=2, d_ff=16)
+        batch = model.make_graph_batch(
+            torch.randn(2, 4, 3),
+            adjacency=torch.eye(4),
+            node_mask=torch.tensor([[1, 1, 1, 0], [1, 1, 0, 0]], dtype=torch.float32),
+        )
+        output = model.predict(batch)
+        self.assertEqual(output.shape, (2, 2))
+
+    def test_pna_multi_aggregation_graph_api(self):
+        model = tl.PNA(
+            input_dim=3,
+            output_dim=2,
+            num_nodes=4,
+            d_model=8,
+            num_layers=1,
+            task_level="graph",
+            aggregators=("mean", "max", "std"),
+            scalers=("identity", "amplification"),
+            avg_degree=2.0,
+        )
+        batch = model.make_graph_batch(
+            torch.randn(2, 4, 3),
+            adjacency=torch.ones(2, 4, 4),
+            node_mask=torch.tensor([[1, 1, 1, 0], [1, 1, 0, 0]], dtype=torch.float32),
+        )
+        output = model.predict(batch)
+        self.assertEqual(output.shape, (2, 2))
+
+    def test_hyena_sequence_api_and_causality(self):
+        model = tl.Hyena(
+            vocab_size=32,
+            max_seq_len=16,
+            d_model=8,
+            n_layers=1,
+            d_ff=16,
+            dropout=0.0,
+            filter_order=8,
+        ).eval()
+        first = torch.randint(0, 32, (2, 8))
+        second = first.clone()
+        second[:, 5:] = torch.randint(0, 32, (2, 3))
+        first_logits = model.next_token_logits(model.make_sequence_batch(first))
+        second_logits = model.next_token_logits(model.make_sequence_batch(second))
+        self.assertEqual(first_logits.shape, (2, 8, 32))
+        self.assertTrue(torch.allclose(first_logits[:, :5], second_logits[:, :5], atol=1e-5))
+
+    def test_s4_sequence_api(self):
+        model = tl.S4(vocab_size=32, max_seq_len=12, d_model=8, n_layers=1, d_ff=16, d_state=4)
+        input_ids = torch.randint(0, 32, (2, 6))
+        batch = model.make_sequence_batch(input_ids, labels=input_ids.clone())
+        logits = model.next_token_logits(batch)
+        loss = model.loss_step(batch)
+        generated = model.generate(model.make_sequence_batch(input_ids[:, :3]), max_new_tokens=2)
+        self.assertEqual(logits.shape, (2, 6, 32))
+        self.assertEqual(loss.dim(), 0)
+        self.assertEqual(generated.shape, (2, 5))
+
+    def test_transformer_xl_memory_sequence_api(self):
+        model = tl.TransformerXL(
+            vocab_size=32,
+            max_seq_len=8,
+            d_model=16,
+            n_heads=4,
+            n_layers=2,
+            d_ff=32,
+            mem_len=4,
+        )
+        input_ids = torch.randint(0, 32, (2, 6))
+        batch = model.make_sequence_batch(input_ids, labels=input_ids.clone())
+        logits = model.next_token_logits(batch)
+        memory = model.init_memory(2)
+        first_logits, memory = model.forward_with_memory(input_ids[:, :3], memory=memory)
+        second_logits, memory = model.forward_with_memory(input_ids[:, 3:], memory=memory)
+        loss = model.loss_step(batch)
+        generated = model.generate(model.make_sequence_batch(input_ids[:, :3]), max_new_tokens=2)
+        self.assertEqual(logits.shape, (2, 6, 32))
+        self.assertEqual(first_logits.shape, (2, 3, 32))
+        self.assertEqual(second_logits.shape, (2, 3, 32))
+        self.assertEqual(len(memory), 2)
+        self.assertEqual(memory[0].shape, (2, 4, 16))
+        self.assertEqual(loss.dim(), 0)
+        self.assertEqual(generated.shape, (2, 5))
+
+    def test_performer_linear_attention_sequence_api(self):
+        model = tl.Performer(
+            vocab_size=32,
+            max_seq_len=12,
+            d_model=16,
+            n_heads=4,
+            n_layers=2,
+            d_ff=32,
+            num_features=8,
+        )
+        input_ids = torch.randint(0, 32, (2, 6))
+        batch = model.make_sequence_batch(input_ids, labels=input_ids.clone())
+        logits = model.next_token_logits(batch)
+        loss = model.loss_step(batch)
+        generated = model.generate(model.make_sequence_batch(input_ids[:, :3]), max_new_tokens=2)
+        self.assertEqual(logits.shape, (2, 6, 32))
+        self.assertEqual(loss.dim(), 0)
+        self.assertEqual(generated.shape, (2, 5))
+
+    def test_reformer_lsh_attention_sequence_api(self):
+        model = tl.Reformer(
+            vocab_size=32,
+            max_seq_len=12,
+            d_model=16,
+            n_heads=4,
+            n_layers=1,
+            d_ff=32,
+            bucket_size=4,
+            num_hashes=2,
+        )
+        input_ids = torch.randint(0, 32, (2, 6))
+        batch = model.make_sequence_batch(input_ids, labels=input_ids.clone())
+        logits = model.next_token_logits(batch)
+        loss = model.loss_step(batch)
+        generated = model.generate(model.make_sequence_batch(input_ids[:, :3]), max_new_tokens=2)
+        self.assertEqual(logits.shape, (2, 6, 32))
+        self.assertEqual(loss.dim(), 0)
+        self.assertEqual(generated.shape, (2, 5))
+
+    def test_graphormer_structural_encoding_api(self):
+        model = tl.Graphormer(
+            input_dim=3,
+            output_dim=2,
+            num_nodes=4,
+            d_model=8,
+            num_layers=1,
+            n_heads=2,
+            d_ff=16,
+            dropout=0.0,
+            task_level="node",
+        ).eval()
+        x = torch.randn(2, 4, 3)
+        identity_output = model(x, adjacency=torch.eye(4))
+        dense_output = model(x, adjacency=torch.ones(4, 4))
+        self.assertEqual(identity_output.shape, (2, 4, 2))
+        self.assertFalse(torch.allclose(identity_output, dense_output))
+
     def test_graph_pooling_excludes_masked_nodes_and_expands_graph_ids(self):
         model = tl.GCN(
             input_dim=2,
@@ -96,7 +255,9 @@ class TaskInterfaceTests(unittest.TestCase):
                     enc_in=3, dec_in=3, c_out=3, seq_len=8, label_len=4, pred_len=2
                 )
 
-            def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
+            def forward(
+                self, x_enc, x_mark_enc, x_dec, x_mark_dec, enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None
+            ):
                 del x_mark_enc, x_dec, x_mark_dec, enc_self_mask, dec_self_mask, dec_enc_mask
                 return x_enc[:, -self.pred_len :, :]
 
@@ -132,7 +293,9 @@ class TaskInterfaceTests(unittest.TestCase):
         class DummySequence(tl.SequenceModel):
             def __init__(self):
                 super().__init__()
-                self._config = tl.SequenceConfig(vocab_size=32, max_seq_len=8, d_model=16, n_heads=2, n_layers=2, d_ff=32)
+                self._config = tl.SequenceConfig(
+                    vocab_size=32, max_seq_len=8, d_model=16, n_heads=2, n_layers=2, d_ff=32
+                )
 
             def forward(self, input_ids, attention_mask=None, position_ids=None, causal_mask=None):
                 del attention_mask, position_ids, causal_mask
@@ -181,6 +344,179 @@ class TaskInterfaceTests(unittest.TestCase):
         generated = model.generate(model.make_sequence_batch(input_ids=input_ids[:, :4]), max_new_tokens=3)
         self.assertEqual(logits.shape, (3, 8, 32))
         self.assertEqual(features.shape, (3, 8, 16))
+        self.assertEqual(loss.dim(), 0)
+        self.assertEqual(generated.shape, (3, 7))
+
+    def test_llama_sequence_api(self):
+        model = tl.LLaMA(
+            vocab_size=32,
+            max_seq_len=12,
+            d_model=16,
+            n_heads=4,
+            n_kv_heads=2,
+            n_layers=2,
+            d_ff=32,
+            multiple_of=8,
+        )
+        input_ids = torch.randint(0, 32, (3, 8))
+        labels = torch.randint(0, 32, (3, 8))
+        labels[:, 1::2] = -100
+        batch = model.make_sequence_batch(input_ids=input_ids, labels=labels)
+        logits = model.next_token_logits(batch)
+        features = model.forward_features(batch.input_ids, attention_mask=batch.attention_mask)
+        loss = model.loss_step(batch)
+        generated = model.generate(model.make_sequence_batch(input_ids=input_ids[:, :4]), max_new_tokens=3)
+        self.assertEqual(logits.shape, (3, 8, 32))
+        self.assertEqual(features.shape, (3, 8, 16))
+        self.assertEqual(loss.dim(), 0)
+        self.assertEqual(generated.shape, (3, 7))
+
+    def test_retnet_parallel_recurrent_and_generation_api(self):
+        model = tl.RetNet(
+            vocab_size=32,
+            max_seq_len=12,
+            d_model=16,
+            n_heads=4,
+            n_layers=2,
+            d_ff=32,
+            dropout=0.0,
+        ).eval()
+        input_ids = torch.randint(0, 32, (2, 7))
+        labels = torch.randint(0, 32, (2, 7))
+        batch = model.make_sequence_batch(input_ids=input_ids, labels=labels)
+
+        parallel = model.next_token_logits(batch)
+        recurrent, states = model.forward_recurrent(input_ids)
+        first, first_states = model.forward_recurrent(input_ids[:, :3])
+        second, _ = model.forward_recurrent(input_ids[:, 3:], first_states, position_offset=3)
+        generated = model.generate(model.make_sequence_batch(input_ids[:, :4]), max_new_tokens=3)
+
+        torch.testing.assert_close(parallel, recurrent, rtol=1e-5, atol=1e-5)
+        torch.testing.assert_close(recurrent, torch.cat([first, second], dim=1), rtol=1e-5, atol=1e-5)
+        self.assertEqual(len(states), 2)
+        self.assertEqual(states[0].shape, (2, 4, 4, 4))
+        self.assertEqual(model.loss_step(batch).dim(), 0)
+        self.assertEqual(generated.shape, (2, 7))
+
+    def test_kimi_delta_attention_modes_and_step_api(self):
+        attention = tl.KimiDeltaAttention(embed_dim=16, num_heads=4, dropout=0.0, chunk_size=3).eval()
+        x = torch.randn(2, 7, 16)
+        parallel, parallel_state = attention(x, mode="parallel", return_state=True)
+        chunkwise, chunkwise_state = attention(x, mode="chunkwise", return_state=True)
+        state = None
+        steps = []
+        for index in range(x.size(1)):
+            output, state = attention.forward_step(x[:, index], state)
+            steps.append(output)
+        recurrent = torch.stack(steps, dim=1)
+
+        torch.testing.assert_close(parallel, chunkwise)
+        torch.testing.assert_close(parallel, recurrent)
+        torch.testing.assert_close(parallel_state, chunkwise_state)
+        torch.testing.assert_close(parallel_state, state)
+        self.assertEqual(parallel_state.shape, (2, 4, 4, 4))
+
+    def test_kimi_linear_sequence_api(self):
+        model = tl.KimiLinear(
+            vocab_size=32,
+            max_seq_len=12,
+            d_model=16,
+            n_heads=4,
+            n_layers=2,
+            d_ff=32,
+            dropout=0.0,
+            chunk_size=3,
+        ).eval()
+        input_ids = torch.randint(0, 32, (2, 7))
+        labels = torch.randint(0, 32, (2, 7))
+        batch = model.make_sequence_batch(input_ids, labels=labels)
+        parallel = model(input_ids)
+        chunkwise = model(input_ids, mode="chunkwise")
+        recurrent, states = model.forward_recurrent(input_ids)
+
+        torch.testing.assert_close(parallel, chunkwise)
+        torch.testing.assert_close(parallel, recurrent)
+        self.assertEqual(len(states), 2)
+        self.assertEqual(model.loss_step(batch).dim(), 0)
+        self.assertEqual(model.generate(model.make_sequence_batch(input_ids[:, :4]), 3).shape, (2, 7))
+
+        hybrid = tl.KimiLinear(
+            vocab_size=32,
+            max_seq_len=12,
+            d_model=16,
+            n_heads=4,
+            n_layers=2,
+            d_ff=32,
+            dropout=0.0,
+            full_attention_interval=2,
+        ).eval()
+        self.assertEqual(hybrid(input_ids).shape, (2, 7, 32))
+        with self.assertRaises(ValueError):
+            hybrid.forward_recurrent(input_ids)
+
+    def test_xlstm_matrix_memory_and_sequence_api(self):
+        cell = tl.mLSTMCell(embed_dim=16, num_heads=4, dropout=0.0).eval()
+        x = torch.randn(2, 7, 16)
+        parallel, parallel_state = cell(x, return_state=True)
+        state = None
+        steps = []
+        for index in range(x.size(1)):
+            output, state = cell.forward_step(x[:, index], state)
+            steps.append(output)
+        torch.testing.assert_close(parallel, torch.stack(steps, dim=1))
+        for expected, actual in zip(parallel_state, state, strict=True):
+            torch.testing.assert_close(expected, actual)
+
+        model = tl.xLSTM(
+            vocab_size=32,
+            max_seq_len=12,
+            d_model=16,
+            n_heads=4,
+            n_layers=2,
+            d_ff=32,
+            dropout=0.0,
+        ).eval()
+        input_ids = torch.randint(0, 32, (2, 7))
+        labels = torch.randint(0, 32, (2, 7))
+        batch = model.make_sequence_batch(input_ids, labels=labels)
+        full = model(input_ids)
+        first, states = model.forward_recurrent(input_ids[:, :3])
+        second, states = model.forward_recurrent(input_ids[:, 3:], states)
+        torch.testing.assert_close(full, torch.cat([first, second], dim=1))
+        self.assertEqual(len(states), 2)
+        self.assertEqual(states[0][0].shape, (2, 4, 4, 4))
+        self.assertEqual(model.loss_step(batch).dim(), 0)
+        self.assertEqual(model.generate(model.make_sequence_batch(input_ids[:, :4]), 3).shape, (2, 7))
+
+    def test_mixtral_sparse_moe_sequence_api(self):
+        model = tl.Mixtral(
+            vocab_size=32,
+            max_seq_len=12,
+            d_model=16,
+            n_heads=4,
+            n_kv_heads=2,
+            n_layers=2,
+            d_ff=32,
+            multiple_of=8,
+            num_experts=4,
+            num_experts_per_tok=2,
+        )
+        input_ids = torch.randint(0, 32, (3, 8))
+        labels = torch.randint(0, 32, (3, 8))
+        labels[:, 1::2] = -100
+        batch = model.make_sequence_batch(input_ids=input_ids, labels=labels)
+        logits = model.next_token_logits(batch)
+        features, router_logits = model.forward_features(
+            batch.input_ids,
+            attention_mask=batch.attention_mask,
+            return_router_logits=True,
+        )
+        loss = model.loss_step(batch)
+        generated = model.generate(model.make_sequence_batch(input_ids=input_ids[:, :4]), max_new_tokens=3)
+        self.assertEqual(logits.shape, (3, 8, 32))
+        self.assertEqual(features.shape, (3, 8, 16))
+        self.assertEqual(len(router_logits), 2)
+        self.assertEqual(router_logits[0].shape, (3, 8, 4))
         self.assertEqual(loss.dim(), 0)
         self.assertEqual(generated.shape, (3, 7))
 
@@ -269,12 +605,25 @@ class TaskInterfaceTests(unittest.TestCase):
         batch = model.make_sequence_batch(input_ids=input_ids, labels=labels)
         logits = model.next_token_logits(batch)
         loss = model.loss_step(batch)
-        pooled = model.pooled_output(batch.input_ids, attention_mask=batch.attention_mask, position_ids=batch.position_ids)
+        pooled = model.pooled_output(
+            batch.input_ids, attention_mask=batch.attention_mask, position_ids=batch.position_ids
+        )
         self.assertEqual(logits.shape, (3, 8, 32))
         self.assertEqual(loss.dim(), 0)
         self.assertEqual(pooled.shape, (3, 16))
         with self.assertRaises(NotImplementedError):
             model.generate(batch, max_new_tokens=2)
+
+    def test_rocket_diagnosis_api(self):
+        model = tl.ROCKET(input_dim=3, num_classes=4, seq_len=16, num_kernels=8, kernel_sizes=(3, 5))
+        x = torch.randn(2, 16, 3)
+        batch = model.make_diagnosis_batch(x, labels=torch.tensor([1, 2]))
+        features = model.transform(x)
+        logits = model.predict(batch)
+        loss = model.loss_step(batch)
+        self.assertEqual(features.shape, (2, 16))
+        self.assertEqual(logits.shape, (2, 4))
+        self.assertEqual(loss.dim(), 0)
 
     def test_t5_seq2seq_api(self):
         model = tl.T5(vocab_size=32, max_seq_len=12, d_model=16, n_heads=4, n_layers=2, d_ff=32)
@@ -297,11 +646,135 @@ class TaskInterfaceTests(unittest.TestCase):
         out = model.predict(batch)
         self.assertEqual(out.shape, (4, 5, 2))
 
+    def test_gcnii_deep_graph_api(self):
+        model = tl.GCNII(
+            input_dim=3,
+            output_dim=2,
+            num_nodes=5,
+            d_model=8,
+            num_layers=3,
+            task_level="graph",
+            alpha=0.2,
+            theta=0.5,
+        )
+        batch = model.make_graph_batch(
+            torch.randn(4, 5, 3),
+            adjacency=torch.eye(5).expand(4, 5, 5),
+            node_mask=torch.ones(4, 5),
+        )
+        out = model.predict(batch)
+        self.assertEqual(out.shape, (4, 2))
+
+    def test_dgi_self_supervised_graph_api(self):
+        model = tl.DGI(input_dim=3, output_dim=2, num_nodes=5, d_model=8, num_layers=2, task_level="graph")
+        x = torch.randn(4, 5, 3)
+        adjacency = torch.eye(5).expand(4, 5, 5)
+        node_mask = torch.ones(4, 5)
+        batch = model.make_graph_batch(x, adjacency=adjacency, node_mask=node_mask)
+        embeddings = model.encode(x, adjacency)
+        summary = model.summary(embeddings, node_mask=node_mask)
+        pos_logits, neg_logits = model.dgi_logits(x, adjacency, node_mask=node_mask)
+        loss = model.dgi_loss(x, adjacency, node_mask=node_mask)
+        out = model.predict(batch)
+        self.assertEqual(embeddings.shape, (4, 5, 8))
+        self.assertEqual(summary.shape, (4, 8))
+        self.assertEqual(pos_logits.shape, (4, 5))
+        self.assertEqual(neg_logits.shape, (4, 5))
+        self.assertEqual(out.shape, (4, 2))
+        self.assertEqual(loss.dim(), 0)
+
+    def test_graphcl_contrastive_graph_api(self):
+        model = tl.GraphCL(
+            input_dim=3,
+            output_dim=6,
+            num_nodes=5,
+            d_model=8,
+            num_layers=2,
+            projection_dim=4,
+            temperature=0.5,
+        )
+        x1 = torch.randn(4, 5, 3)
+        x2 = x1 + 0.01 * torch.randn_like(x1)
+        adjacency = torch.eye(5).expand(4, 5, 5)
+        node_mask = torch.ones(4, 5)
+        batch1 = model.make_graph_batch(x1, adjacency=adjacency, node_mask=node_mask)
+        batch2 = model.make_graph_batch(x2, adjacency=adjacency, node_mask=node_mask)
+
+        node_embeddings = model.encode_nodes(x1, adjacency)
+        graph_embeddings = model.encode_graph(x1, adjacency=adjacency, node_mask=node_mask)
+        projected = model.project(graph_embeddings)
+        logits = model.contrastive_logits(projected, projected)
+        loss = model.contrastive_loss(x1, x2, adjacency1=adjacency, adjacency2=adjacency, node_mask1=node_mask)
+        step_loss = model.loss_step(batch1, batch2)
+        out = model.predict(batch1)
+
+        self.assertEqual(node_embeddings.shape, (4, 5, 6))
+        self.assertEqual(graph_embeddings.shape, (4, 6))
+        self.assertEqual(projected.shape, (4, 4))
+        self.assertEqual(logits.shape, (4, 4))
+        self.assertEqual(out.shape, (4, 6))
+        self.assertEqual(loss.dim(), 0)
+        self.assertEqual(step_loss.dim(), 0)
+        step_loss.backward()
+        self.assertIsNotNone(model.output_projection.weight.grad)
+
+    def test_graphmae_masked_reconstruction_api(self):
+        model = tl.GraphMAE(
+            input_dim=3,
+            output_dim=5,
+            num_nodes=5,
+            d_model=8,
+            num_layers=2,
+            decoder_layers=2,
+            mask_ratio=0.4,
+        )
+        x = torch.randn(4, 5, 3)
+        adjacency = torch.eye(5).expand(4, 5, 5)
+        node_mask = torch.ones(4, 5)
+        mask = torch.zeros(4, 5, dtype=torch.bool)
+        mask[:, :2] = True
+        batch = model.make_graph_batch(x, adjacency=adjacency, node_mask=node_mask)
+
+        sampled_mask = model.sample_mask(x, node_mask=node_mask)
+        masked_x = model.apply_mask(x, mask)
+        latent = model.encode(masked_x, adjacency)
+        reconstructed, used_mask = model.reconstruct(x, adjacency=adjacency, mask=mask, node_mask=node_mask)
+        loss = model.reconstruction_loss(x, adjacency=adjacency, mask=mask, node_mask=node_mask)
+        step_loss = model.loss_step(batch, mask=mask)
+        out = model.predict(batch)
+
+        self.assertEqual(sampled_mask.shape, (4, 5))
+        self.assertEqual(masked_x.shape, (4, 5, 3))
+        self.assertEqual(latent.shape, (4, 5, 8))
+        self.assertEqual(reconstructed.shape, (4, 5, 3))
+        self.assertTrue(torch.equal(used_mask, mask))
+        self.assertEqual(out.shape, (4, 5, 5))
+        self.assertEqual(loss.dim(), 0)
+        self.assertEqual(step_loss.dim(), 0)
+        step_loss.backward()
+        self.assertIsNotNone(model.mask_token.grad)
+
     def test_gat_predict_api(self):
         model = tl.GAT(input_dim=3, output_dim=2, num_nodes=5, d_model=8, num_layers=2, heads=2)
         batch = model.make_graph_batch(torch.randn(4, 5, 3), adjacency=torch.eye(5).expand(4, 5, 5))
         out = model.predict(batch)
         self.assertEqual(out.shape, (4, 5, 2))
+
+    def test_gatv2_predict_api(self):
+        model = tl.GATv2(input_dim=3, output_dim=2, num_nodes=5, d_model=8, num_layers=2, heads=2)
+        batch = model.make_graph_batch(torch.randn(4, 5, 3), adjacency=torch.eye(5).expand(4, 5, 5))
+        out = model.predict(batch)
+        self.assertEqual(out.shape, (4, 5, 2))
+
+    def test_gatv2_graph_pooling_api(self):
+        model = tl.GATv2(input_dim=3, output_dim=2, num_nodes=4, d_model=8, num_layers=1, heads=2, task_level="graph")
+        batch = model.make_graph_batch(
+            torch.randn(2, 4, 3),
+            adjacency=torch.ones(2, 4, 4),
+            node_mask=torch.tensor([[1, 1, 0, 0], [1, 1, 1, 0]], dtype=torch.float32),
+        )
+        out = model.predict(batch)
+        self.assertEqual(out.shape, (2, 2))
 
     def test_gnan_predict_and_explain_api(self):
         model = tl.GNAN(input_dim=3, output_dim=2, num_nodes=5, d_model=8, num_layers=2, d_ff=16, num_bases=4)
@@ -351,6 +824,12 @@ class TaskInterfaceTests(unittest.TestCase):
 
     def test_gin_predict_api(self):
         model = tl.GIN(input_dim=3, output_dim=2, num_nodes=5, d_model=8, num_layers=2)
+        batch = model.make_graph_batch(torch.randn(4, 5, 3), adjacency=torch.eye(5).expand(4, 5, 5))
+        out = model.predict(batch)
+        self.assertEqual(out.shape, (4, 5, 2))
+
+    def test_pna_predict_api(self):
+        model = tl.PNA(input_dim=3, output_dim=2, num_nodes=5, d_model=8, num_layers=2)
         batch = model.make_graph_batch(torch.randn(4, 5, 3), adjacency=torch.eye(5).expand(4, 5, 5))
         out = model.predict(batch)
         self.assertEqual(out.shape, (4, 5, 2))

@@ -36,9 +36,7 @@ class GraphTransformerBlock(nn.Module):
                 attn_mask = ~full_adj[0]
             else:
                 if full_adj.size(0) != x.size(0):
-                    raise ValueError(
-                        f"Expected adjacency batch size 1 or {x.size(0)}, got {full_adj.size(0)}"
-                    )
+                    raise ValueError(f"Expected adjacency batch size 1 or {x.size(0)}, got {full_adj.size(0)}")
                 attn_mask = (~full_adj).repeat_interleave(self.n_heads, dim=0)
         attn_out, _ = self.attn(x, x, x, attn_mask=attn_mask, key_padding_mask=key_padding_mask, need_weights=False)
         x = self.norm_1(x + attn_out)
@@ -75,7 +73,10 @@ class GraphTransformer(GraphModel):
         )
         self.input_proj = nn.Linear(input_dim, d_model)
         self.blocks = nn.ModuleList(
-            [GraphTransformerBlock(d_model=d_model, n_heads=n_heads, d_ff=d_ff, dropout=dropout) for _ in range(num_layers)]
+            [
+                GraphTransformerBlock(d_model=d_model, n_heads=n_heads, d_ff=d_ff, dropout=dropout)
+                for _ in range(num_layers)
+            ]
         )
         self.output_proj = nn.Linear(d_model, output_dim)
 

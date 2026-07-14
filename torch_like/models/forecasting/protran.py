@@ -118,7 +118,9 @@ class ProTran(ProbabilisticForecastingModel):
         history_summary = history_state.mean(dim=1, keepdim=True).expand(-1, self.pred_len, -1)
         return self.prior_mean(history_summary), self.prior_logvar(history_summary)
 
-    def _fuse_hidden(self, history_state: torch.Tensor, future_context: torch.Tensor, latent: torch.Tensor) -> torch.Tensor:
+    def _fuse_hidden(
+        self, history_state: torch.Tensor, future_context: torch.Tensor, latent: torch.Tensor
+    ) -> torch.Tensor:
         history_summary = history_state.mean(dim=1, keepdim=True).expand(-1, self.pred_len, -1)
         latent_hidden = self.latent_to_hidden(latent)
         return self.hidden_fusion(torch.cat([history_summary, future_context, latent_hidden], dim=-1))
@@ -140,7 +142,7 @@ class ProTran(ProbabilisticForecastingModel):
             posterior_context = future_context + self.dec_proj(
                 torch.cat(
                     [
-                        batch.x_dec[:, -self.pred_len :, :-self.c_out],
+                        batch.x_dec[:, -self.pred_len :, : -self.c_out],
                         batch.y_true,
                     ],
                     dim=-1,
@@ -187,9 +189,13 @@ class ProTran(ProbabilisticForecastingModel):
     def fit_step(self, batch: ProbabilisticForecastingBatch) -> torch.Tensor:
         if batch.y_true is None:
             raise ValueError("ProbabilisticForecastingBatch.y_true is required for fit_step")
-        mean, scale, prior_mean, prior_logvar, post_mean, post_logvar = self._forward_distribution(batch, use_posterior=True)
+        mean, scale, prior_mean, prior_logvar, post_mean, post_logvar = self._forward_distribution(
+            batch, use_posterior=True
+        )
         if batch.y_true.shape != mean.shape:
-            raise ValueError(f"ProTran fit_step expects y_true with shape {tuple(mean.shape)}, got {tuple(batch.y_true.shape)}")
+            raise ValueError(
+                f"ProTran fit_step expects y_true with shape {tuple(mean.shape)}, got {tuple(batch.y_true.shape)}"
+            )
         variance = scale.square()
         recon = 0.5 * torch.log(2 * torch.tensor(math.pi, device=mean.device, dtype=mean.dtype) * variance)
         recon = recon + 0.5 * (batch.y_true - mean).square() / variance

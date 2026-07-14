@@ -77,7 +77,7 @@ class FCN(VisionModel):
 
         blocks: list[nn.Module] = []
         current_channels = in_channels
-        for out_channels, stride in zip(channels, strides):
+        for out_channels, stride in zip(channels, strides, strict=True):
             blocks.append(FCNBlock(current_channels, out_channels, stride=stride))
             current_channels = out_channels
         self.encoder = nn.Sequential(*blocks)

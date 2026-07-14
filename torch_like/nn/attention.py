@@ -6,10 +6,11 @@
 - LogSparseSelfAttention: LogTrans (NeurIPS 2019) — exponential step mask.
 """
 
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
 
 
 class FullAttention(nn.Module):
@@ -31,8 +32,20 @@ class FullAttention(nn.Module):
 
     def forward(self, queries, keys, values, attn_mask=None):
         B, L, H, E = queries.shape
-        _, S, _, D = keys.shape
+        _, S, _, _ = keys.shape
         scale = self.scale or 1.0 / math.sqrt(E)
+
+        if not self.output_attention:
+            mask = attn_mask if self.mask_flag else None
+            out = F.scaled_dot_product_attention(
+                queries.transpose(1, 2),
+                keys.transpose(1, 2),
+                values.transpose(1, 2),
+                attn_mask=mask,
+                dropout_p=self.dropout.p if self.training else 0.0,
+                scale=self.scale,
+            )
+            return out.transpose(1, 2).contiguous(), None
 
         scores = torch.einsum("blhe,bshe->bhls", queries, keys) * scale
 
@@ -58,8 +71,7 @@ class ProbSparseAttention(nn.Module):
         output_attention: if True, returns attention weights.
     """
 
-    def __init__(self, mask_flag=True, factor=5, scale=None,
-                 attention_dropout=0.1, output_attention=False):
+    def __init__(self, mask_flag=True, factor=5, scale=None, attention_dropout=0.1, output_attention=False):
         super().__init__()
         self.factor = factor
         self.scale = scale
@@ -179,8 +191,7 @@ class AutoCorrelation(nn.Module):
         output_attention: if True, returns attention weights.
     """
 
-    def __init__(self, mask_flag=True, factor=1, scale=None,
-                 attention_dropout=0.1, output_attention=False):
+    def __init__(self, mask_flag=True, factor=1, scale=None, attention_dropout=0.1, output_attention=False):
         super().__init__()
         self.factor = factor
         self.mask_flag = mask_flag
@@ -205,8 +216,8 @@ class AutoCorrelation(nn.Module):
 
         # Reshape to (B, H, E, T) for batched FFT along time dim
         Q = queries.permute(0, 2, 3, 1).float()  # (B, H, E, L)
-        K = keys.permute(0, 2, 3, 1).float()      # (B, H, E, S)
-        V = values.permute(0, 2, 3, 1)             # (B, H, E, S)
+        K = keys.permute(0, 2, 3, 1).float()  # (B, H, E, S)
+        V = values.permute(0, 2, 3, 1)  # (B, H, E, S)
 
         # Handle unequal sequence lengths: pad the shorter to the longer
         T = max(L, S)
@@ -217,11 +228,11 @@ class AutoCorrelation(nn.Module):
             V = F.pad(V, (0, T - S))
 
         # FFT-based cross-correlation
-        Q_fft = torch.fft.rfft(Q, dim=-1)           # (B, H, E, T//2+1)
-        K_fft = torch.fft.rfft(K, dim=-1)           # (B, H, E, T//2+1)
+        Q_fft = torch.fft.rfft(Q, dim=-1)  # (B, H, E, T//2+1)
+        K_fft = torch.fft.rfft(K, dim=-1)  # (B, H, E, T//2+1)
 
-        res = Q_fft * torch.conj(K_fft)              # (B, H, E, T//2+1)
-        corr = torch.fft.irfft(res, dim=-1, n=T)    # (B, H, E, T)
+        res = Q_fft * torch.conj(K_fft)  # (B, H, E, T//2+1)
+        corr = torch.fft.irfft(res, dim=-1, n=T)  # (B, H, E, T)
 
         # Take only the first L lags (output length for queries)
         corr = corr[..., :L]  # (B, H, E, L)
@@ -242,10 +253,10 @@ class AutoCorrelation(nn.Module):
         V_exp = V.unsqueeze(2).expand(-1, -1, top_k, -1, -1)  # (B, H, top_k, E, S)
 
         # Compute rolled indices: rolled_idx[b, h, k, s] = (s - lag) % S
-        time_idx = torch.arange(S, device=device).view(1, 1, 1, S)     # (1, 1, 1, S)
-        lags = top_lags.unsqueeze(-1)                                   # (B, H, top_k, 1)
-        raw_idx = time_idx - lags                                       # (B, H, top_k, S)
-        rolled_idx = raw_idx % S                                        # (B, H, top_k, S)
+        time_idx = torch.arange(S, device=device).view(1, 1, 1, S)  # (1, 1, 1, S)
+        lags = top_lags.unsqueeze(-1)  # (B, H, top_k, 1)
+        raw_idx = time_idx - lags  # (B, H, top_k, S)
+        rolled_idx = raw_idx % S  # (B, H, top_k, S)
         valid = None
         if self.mask_flag:
             valid = (raw_idx >= 0) & (raw_idx < S)
@@ -376,12 +387,11 @@ class LogSparseSelfAttention(FullAttention):
     Bottleneck of Transformer on Time Series Forecasting" (NeurIPS 2019).
     """
 
-    def __init__(self, mask_flag=False, scale=None, attention_dropout=0.1,
-                 output_attention=False):
+    def __init__(self, mask_flag=False, scale=None, attention_dropout=0.1, output_attention=False):
         # mask_flag=False because we use our own sparse mask, not triangular
-        super().__init__(mask_flag=False, scale=scale,
-                         attention_dropout=attention_dropout,
-                         output_attention=output_attention)
+        super().__init__(
+            mask_flag=False, scale=scale, attention_dropout=attention_dropout, output_attention=output_attention
+        )
         self.register_buffer("sparse_mask", None, persistent=False)
 
     def forward(self, queries, keys, values, attn_mask=None):

@@ -1,7 +1,9 @@
 """Demo: LogTrans — verify model builds and forward pass works."""
 
-import torch
 import sys
+
+import torch
+
 sys.path.insert(0, "..")
 
 from torch_like.models.forecasting import LogTrans
@@ -17,10 +19,18 @@ print("  LogTrans Demo")
 print("=" * 64)
 
 model = LogTrans(
-    enc_in=ENC_IN, dec_in=DEC_IN, c_out=C_OUT,
-    seq_len=SEQ_LEN, label_len=LABEL_LEN, pred_len=PRED_LEN,
-    d_model=256, n_heads=8, e_layers=2, d_layers=1,
-    d_ff=512, dropout=0.05,
+    enc_in=ENC_IN,
+    dec_in=DEC_IN,
+    c_out=C_OUT,
+    seq_len=SEQ_LEN,
+    label_len=LABEL_LEN,
+    pred_len=PRED_LEN,
+    d_model=256,
+    n_heads=8,
+    e_layers=2,
+    d_layers=1,
+    d_ff=512,
+    dropout=0.05,
 )
 print(f"\nModel parameters: {model.param_count():,}")
 

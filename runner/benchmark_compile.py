@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import time
 from pathlib import Path
-import sys
 
 import torch
 
@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import torch_like as tl
 from runner.compile_utils import CompileConfig, maybe_compile_model
 from runner.forecast_runner import _to_forecasting_batch
-
 
 BENCHMARK_MODELS = {
     "PatchTST": {
@@ -86,7 +85,9 @@ BENCHMARK_MODELS = {
 }
 
 
-def build_batch(kind: str, batch_size: int, seq_len: int, label_len: int, pred_len: int, enc_in: int, c_out: int, device: str):
+def build_batch(
+    kind: str, batch_size: int, seq_len: int, label_len: int, pred_len: int, enc_in: int, c_out: int, device: str
+):
     if kind == "standard":
         x_enc = torch.randn(batch_size, seq_len, enc_in, device=device)
         x_dec_target = torch.randn(batch_size, label_len + pred_len, c_out, device=device)
@@ -209,7 +210,9 @@ def cli():
             raise KeyError(f"Unsupported benchmark model: {model_name}. Available: {list(BENCHMARK_MODELS)}")
         result = benchmark_one(model_name, spec, args.device, args.warmup, args.iters, compile_cfg)
         results.append(result)
-        compile_part = f", compile={result['compile_ms']} ms, speedup={result['speedup']}" if result["compile_ok"] else ""
+        compile_part = (
+            f", compile={result['compile_ms']} ms, speedup={result['speedup']}" if result["compile_ok"] else ""
+        )
         print(f"{model_name}: eager={result['eager_ms']} ms{compile_part}")
         if result["error"]:
             print(f"  error: {result['error']}")
