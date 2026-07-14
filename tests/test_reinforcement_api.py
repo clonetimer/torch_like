@@ -9,9 +9,17 @@ from torch_like.models import create_model
 class ReinforcementApiTests(unittest.TestCase):
     def test_dreamerv3_world_model_imagination_and_registry_api(self):
         model = create_model(
-            "DreamerV3", domain="reinforcement", state_dim=5, action_dim=2,
-            d_model=16, hidden_layers=1, deter_dim=12, stochastic_dim=4,
-            classes=4, imagination_horizon=3, free_nats=0.1,
+            "DreamerV3",
+            domain="reinforcement",
+            state_dim=5,
+            action_dim=2,
+            d_model=16,
+            hidden_layers=1,
+            deter_dim=12,
+            stochastic_dim=4,
+            classes=4,
+            imagination_horizon=3,
+            free_nats=0.1,
         )
         states = torch.randn(3, 4, 5)
         actions = torch.randn(3, 4, 2).tanh()
@@ -33,6 +41,7 @@ class ReinforcementApiTests(unittest.TestCase):
         self.assertEqual(world_loss.dim(), 0)
         self.assertIsNotNone(model.rssm.recurrent.weight_hh.grad)
         self.assertIsNotNone(model.actor[-1].weight.grad)
+
     def test_dqn_q_values_actions_and_td_loss(self):
         model = tl.DQN(state_dim=5, action_dim=3, d_model=16, hidden_layers=1)
         states = torch.randn(4, 5)

@@ -2,6 +2,7 @@
 
 from torch_like.models.graph.common import GraphBatch, GraphConfig, GraphModel
 from torch_like.models.graph.dgi import DGI, DGIConfig
+from torch_like.models.graph.egnn import EGNN, EGNNConfig, EGNNLayer, GeometricGraphBatch
 from torch_like.models.graph.gat import GAT
 from torch_like.models.graph.gatv2 import GATv2, GATv2Config
 from torch_like.models.graph.gcn import GCN
@@ -19,6 +20,16 @@ from torch_like.models.graph.spike_graphormer import SpikeGraphormer
 from torch_like.models.registry import register_model_catalog
 
 model_zoo = {
+    "EGNN": {
+        "cls": EGNN,
+        "family": "equivariant_message_passing",
+        "layer": "Geometric graph learning",
+        "integration_level": "paper_aligned_dense",
+        "supports": ["adjacency", "node_task", "graph_task", "coordinates", "e_n_equivariance", "edge_attributes"],
+        "paper": "E(n) Equivariant Graph Neural Networks (ICML 2021)",
+        "description": "Geometric message passing with invariant features and E(n)-equivariant coordinate updates",
+        "complexity": "O(B * N^2 * D) dense geometric message passing over N nodes",
+    },
     "GPS": {
         "cls": GPS,
         "family": "graph_transformer",
@@ -183,6 +194,10 @@ __all__ = [
     "GraphConfig",
     "GraphBatch",
     "GraphModel",
+    "GeometricGraphBatch",
+    "EGNNConfig",
+    "EGNNLayer",
+    "EGNN",
     "GCN",
     "DGIConfig",
     "DGI",

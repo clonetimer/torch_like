@@ -8,7 +8,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torch_like.models.reinforcement.common import ReinforcementBatch, ReinforcementConfig, ReinforcementModel, build_mlp
+from torch_like.models.reinforcement.common import (
+    ReinforcementBatch,
+    ReinforcementConfig,
+    ReinforcementModel,
+    build_mlp,
+)
 
 
 @dataclass
@@ -59,7 +64,9 @@ class DiscreteRSSM(nn.Module):
 
     def _sample(self, logits, deterministic=False):
         distribution = self._distribution(logits)
-        sample = F.one_hot(logits.argmax(-1), self.classes).to(logits.dtype) if deterministic else distribution.rsample()
+        sample = (
+            F.one_hot(logits.argmax(-1), self.classes).to(logits.dtype) if deterministic else distribution.rsample()
+        )
         return sample.flatten(1)
 
     def imagine_step(self, previous, action, deterministic=False):
@@ -85,7 +92,10 @@ class DiscreteRSSM(nn.Module):
             state, prior = self.observe_step(state, actions[:, index], observations[:, index], deterministic)
             posteriors.append(state)
             priors.append(prior)
-        stack = lambda items, key: torch.stack([item[key] for item in items], dim=1)
+
+        def stack(items, key):
+            return torch.stack([item[key] for item in items], dim=1)
+
         posterior = {key: stack(posteriors, key) for key in ("deter", "stoch", "logits")}
         prior = {key: stack(priors, key) for key in ("deter", "stoch", "logits")}
         return posterior, prior
@@ -120,11 +130,24 @@ class DreamerV3(ReinforcementModel):
             raise ValueError("Invalid DreamerV3 optimization configuration")
         self.state_dim, self.action_dim = state_dim, action_dim
         self.imagination_horizon, self.free_nats, self.kl_balance, self.discount = (
-            imagination_horizon, free_nats, kl_balance, discount
+            imagination_horizon,
+            free_nats,
+            kl_balance,
+            discount,
         )
         self._config = DreamerV3Config(
-            state_dim, action_dim, d_model, hidden_layers, dropout, deter_dim,
-            stochastic_dim, classes, imagination_horizon, free_nats, kl_balance, discount,
+            state_dim,
+            action_dim,
+            d_model,
+            hidden_layers,
+            dropout,
+            deter_dim,
+            stochastic_dim,
+            classes,
+            imagination_horizon,
+            free_nats,
+            kl_balance,
+            discount,
         )
         self.rssm = DiscreteRSSM(state_dim, action_dim, deter_dim, stochastic_dim, classes, d_model)
         feature_dim = deter_dim + stochastic_dim * classes
@@ -196,7 +219,9 @@ class DreamerV3(ReinforcementModel):
         outputs = self(batch.states, batch.actions)
         target_states = batch.states.to(outputs["reconstructed_states"])
         target_rewards = batch.rewards.to(outputs["predicted_rewards"])
-        target_continues = torch.ones_like(target_rewards) if batch.dones is None else 1 - batch.dones.to(target_rewards)
+        target_continues = (
+            torch.ones_like(target_rewards) if batch.dones is None else 1 - batch.dones.to(target_rewards)
+        )
         reconstruction = F.mse_loss(symlog(outputs["reconstructed_states"]), symlog(target_states))
         reward = F.mse_loss(symlog(outputs["predicted_rewards"]), symlog(target_rewards))
         continuation = F.binary_cross_entropy_with_logits(outputs["continue_logits"], target_continues)

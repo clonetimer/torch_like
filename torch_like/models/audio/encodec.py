@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
@@ -38,9 +38,7 @@ class ResidualVectorQuantizer(nn.Module):
     def _nearest(self, residual, codebook):
         flat = residual.reshape(-1, self.dim)
         distances = (
-            flat.pow(2).sum(dim=1, keepdim=True)
-            - 2 * flat @ codebook.t()
-            + codebook.pow(2).sum(dim=1).unsqueeze(0)
+            flat.pow(2).sum(dim=1, keepdim=True) - 2 * flat @ codebook.t() + codebook.pow(2).sum(dim=1).unsqueeze(0)
         )
         indices = distances.argmin(dim=1)
         quantized = F.embedding(indices, codebook).view_as(residual)
@@ -91,7 +89,7 @@ class _ResidualUnit(nn.Module):
 
 
 class EnCodec(AudioModel):
-    """Random-initialized causal neural codec with bandwidth-scalable RVQ."""
+    """Random-initialized portable neural codec with bandwidth-scalable RVQ."""
 
     def __init__(
         self,
@@ -122,17 +120,27 @@ class EnCodec(AudioModel):
         self.hop_length = math.prod(strides)
         self.target_bandwidth = float(target_bandwidth)
         self._config = EnCodecConfig(
-            input_dim, output_dim, d_model, 0.0, sample_rate, channels, strides,
-            codebook_size, num_codebooks, target_bandwidth,
+            input_dim,
+            output_dim,
+            d_model,
+            0.0,
+            sample_rate,
+            channels,
+            strides,
+            codebook_size,
+            num_codebooks,
+            target_bandwidth,
         )
 
         encoder = []
         current = input_dim
         for index, (channel, stride) in enumerate(zip(channels, strides, strict=True)):
-            encoder.extend([
-                nn.Conv1d(current, channel, kernel_size=2 * stride, stride=stride, padding=stride // 2),
-                _ResidualUnit(channel, 3**min(index, 2)),
-            ])
+            encoder.extend(
+                [
+                    nn.Conv1d(current, channel, kernel_size=2 * stride, stride=stride, padding=stride // 2),
+                    _ResidualUnit(channel, 3 ** min(index, 2)),
+                ]
+            )
             current = channel
         encoder.extend([nn.ELU(), nn.Conv1d(current, d_model, 3, padding=1)])
         self.encoder = nn.Sequential(*encoder)
@@ -142,18 +150,20 @@ class EnCodec(AudioModel):
         current = channels[-1]
         for index, stride in enumerate(reversed(strides)):
             out_channels = input_dim if index == len(channels) - 1 else channels[-index - 2]
-            decoder.extend([
-                _ResidualUnit(current, 3**min(index, 2)),
-                nn.ELU(),
-                nn.ConvTranspose1d(
-                    current,
-                    out_channels,
-                    kernel_size=2 * stride,
-                    stride=stride,
-                    padding=stride // 2,
-                    output_padding=stride % 2,
-                ),
-            ])
+            decoder.extend(
+                [
+                    _ResidualUnit(current, 3 ** min(index, 2)),
+                    nn.ELU(),
+                    nn.ConvTranspose1d(
+                        current,
+                        out_channels,
+                        kernel_size=2 * stride,
+                        stride=stride,
+                        padding=stride // 2,
+                        output_padding=stride % 2,
+                    ),
+                ]
+            )
             current = out_channels
         self.decoder = nn.Sequential(*decoder)
         self.set_target_bandwidth(target_bandwidth)

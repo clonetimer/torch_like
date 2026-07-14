@@ -107,6 +107,30 @@ Frequency-domain forecasting:
 ### Graph / 通用图学习
 
 - `GCN`
+- `EGNN`
+
+`EGNN` uses a separate geometric batch so existing graph models do not need to
+accept meaningless coordinate arguments:
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.EGNN(input_dim=8, output_dim=4, num_nodes=16, coordinate_dim=3)
+batch = model.make_geometric_batch(
+    x=torch.randn(2, 16, 8),
+    coordinates=torch.randn(2, 16, 3),
+    adjacency=torch.ones(2, 16, 16),
+)
+prediction = model.predict(batch)
+prediction, updated_coordinates = model.forward_geometric(
+    batch.x, batch.coordinates, batch.adjacency
+)
+```
+
+中文：节点/图级预测对 E(n) 变换保持不变，`updated_coordinates` 对旋转、
+平移和反射保持等变。`GeometricGraphBatch` 与普通 `GraphBatch` 分离，避免破坏
+GCN、GAT 等非几何图模型的接口。
 - `DGI`
 - `GraphCL`
 - `GraphMAE`
@@ -136,6 +160,7 @@ Frequency-domain forecasting:
 - `Mixtral`
 - `LRU`
 - `Mamba`
+- `Mamba2`
 - `MambaLike`
 - `Caracal`
 - `S4`
@@ -679,6 +704,34 @@ out = model.predict(model.make_rul_batch(x))
 ## Sequence Usage / 序列域用法
 
 中文：sequence 域用于 decoder-only、SSM、长上下文和通用序列建模，不强行塞进 forecasting。
+
+`Mamba2` additionally exposes equivalent full-sequence, chunkwise, and
+fixed-state recurrent execution. The portable SSD path prioritizes semantic
+correctness and CPU/CUDA portability over the optional fused kernels:
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.Mamba2(
+    vocab_size=32000,
+    max_seq_len=2048,
+    d_model=256,
+    n_layers=4,
+    d_ff=1024,
+    d_state=64,
+    head_dim=64,
+    chunk_size=128,
+)
+tokens = torch.randint(0, 32000, (2, 256))
+logits = model(tokens)
+chunk_logits = model.forward_chunkwise(tokens)
+step_logits, states = model.forward_recurrent(tokens[:, :1])
+```
+
+中文：`forward_chunkwise` 用于保持状态的分块扫描，`forward_recurrent`
+返回每层固定大小的 `SSDState`，适合流式推理。当前实现不宣称达到官方融合 CUDA
+内核速度；三种路径的语义等价由测试保证。
 
 English: The sequence domain is for decoder-only, SSM, long-context, and general sequence modeling, instead of forcing these models into forecasting.
 

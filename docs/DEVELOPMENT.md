@@ -318,6 +318,7 @@ RUL / 剩余寿命:
 Graph / 通用图:
 
 - `GCN`
+- `EGNN`
 - `DGI`
 - `GraphCL`
 - `GraphMAE`
@@ -350,6 +351,7 @@ Sequence / 序列:
 - `Mixtral`
 - `LRU`
 - `Mamba`
+- `Mamba2`
 - `MambaLike`
 - `Caracal`
 - `BERT`
@@ -369,7 +371,7 @@ Vision / 视觉:
 - `UNet`
 - `DeepLabV3`
 - `DETR`
-- `RTDETR` (`paper_aligned_reference`; AIFI hybrid encoder and confidence-based query selection)
+- `RTDETR` (`paper_aligned_portable_subset`; RT-DETR AIFI hybrid encoder and confidence-based query selection)
 - `GroundingDINO`
 - `Mask2Former`
 - `FCN`
@@ -438,7 +440,7 @@ Recommendation / 推荐系统:
 Audio / 音频与语音:
 
 - `Wav2Vec2`
-- `EnCodec` (`paper_aligned_reference`; bandwidth-scalable RVQ without pretrained weights or entropy model)
+- `EnCodec` (`paper_aligned_portable_subset`; bandwidth-scalable RVQ without pretrained weights or entropy model)
 - `Conformer`
 - `HuBERT`
 - `Whisper`
@@ -685,7 +687,7 @@ Current models / 当前模型:
 - `SACActorCritic`
 - `TD3ActorCritic`
 - `DecisionTransformer`
-- `DreamerV3` (`paper_aligned_core`; discrete RSSM, symlog world-model losses, and latent imagination)
+- `DreamerV3` (`paper_aligned_portable_subset`; discrete RSSM, symlog world-model losses, and latent imagination)
 
 Protocol / 协议:
 

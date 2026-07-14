@@ -124,9 +124,7 @@ class KimiDeltaAttention(nn.Module):
 class _CausalAttention(nn.Module):
     def __init__(self, config: KimiLinearConfig):
         super().__init__()
-        self.attention = nn.MultiheadAttention(
-            config.d_model, config.n_heads, dropout=config.dropout, batch_first=True
-        )
+        self.attention = nn.MultiheadAttention(config.d_model, config.n_heads, dropout=config.dropout, batch_first=True)
 
     def forward(self, x, attention_mask=None):
         seq_len = x.size(1)
@@ -199,17 +197,24 @@ class KimiLinear(SequenceModel):
         self.vocab_size = vocab_size
         self.max_seq_len = max_seq_len
         self._config = KimiLinearConfig(
-            vocab_size, max_seq_len, d_model, n_heads, n_layers, d_ff, dropout,
-            full_attention_interval, chunk_size, norm_eps, tie_word_embeddings,
+            vocab_size,
+            max_seq_len,
+            d_model,
+            n_heads,
+            n_layers,
+            d_ff,
+            dropout,
+            full_attention_interval,
+            chunk_size,
+            norm_eps,
+            tie_word_embeddings,
         )
         self.token_embedding = nn.Embedding(vocab_size, d_model)
         self.layers = nn.ModuleList(
             [
                 _KimiLinearBlock(
                     self._config,
-                    use_full_attention=(
-                        full_attention_interval > 0 and (index + 1) % full_attention_interval == 0
-                    ),
+                    use_full_attention=(full_attention_interval > 0 and (index + 1) % full_attention_interval == 0),
                 )
                 for index in range(n_layers)
             ]

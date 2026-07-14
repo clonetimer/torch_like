@@ -9,7 +9,6 @@ from torch_like.models.vision.deeplabv3 import DeepLabV3, DeepLabV3Config
 from torch_like.models.vision.deit import DeiT, DeiTConfig
 from torch_like.models.vision.densenet import DenseNet, DenseNetConfig
 from torch_like.models.vision.detr import DETR, DETRConfig
-from torch_like.models.vision.rtdetr import RTDETR, RTDETRConfig
 from torch_like.models.vision.dino import DINO, DINOConfig
 from torch_like.models.vision.efficientnet import EfficientNet, EfficientNetConfig
 from torch_like.models.vision.fcn import FCN, FCNConfig
@@ -23,6 +22,7 @@ from torch_like.models.vision.mobilenetv2 import MobileNetV2, MobileNetV2Config
 from torch_like.models.vision.moco import MoCo, MoCoConfig
 from torch_like.models.vision.resnet import ResNet, ResNetConfig
 from torch_like.models.vision.resnext import ResNeXt, ResNeXtConfig
+from torch_like.models.vision.rtdetr import RTDETR, RTDETRConfig
 from torch_like.models.vision.sam import SAM, SAMConfig
 from torch_like.models.vision.senet import SEBottleneck, SELayer, SENet, SENetConfig
 from torch_like.models.vision.simclr import SimCLR, SimCLRConfig
@@ -164,10 +164,10 @@ model_zoo = {
         "cls": RTDETR,
         "family": "real_time_detection_transformer",
         "layer": "Object detection",
-        "integration_level": "paper_aligned_reference",
+        "integration_level": "paper_aligned_portable_subset",
         "supports": ["object_detection", "real_time", "end_to_end", "multi_scale", "query_selection", "post_process"],
-        "paper": "DETRs Beat YOLOs on Real-time Object Detection (CVPR 2024) / RT-DETRv2 (2024)",
-        "description": "RT-DETRv2-style detector with AIFI hybrid encoding and confidence-based query selection",
+        "paper": "DETRs Beat YOLOs on Real-time Object Detection (CVPR 2024)",
+        "description": "Portable RT-DETR subset with AIFI hybrid encoding and confidence-based query selection",
         "complexity": "Multi-scale CNN plus deepest-scale self-attention and query-to-memory decoding",
     },
     "YOLO": {

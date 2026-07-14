@@ -42,9 +42,7 @@ class mLSTMCell(nn.Module):
             raise ValueError("batch_size must be positive")
         device = device or self.q_proj.weight.device
         dtype = dtype or self.q_proj.weight.dtype
-        matrix = torch.zeros(
-            batch_size, self.num_heads, self.head_dim, self.head_dim, device=device, dtype=dtype
-        )
+        matrix = torch.zeros(batch_size, self.num_heads, self.head_dim, self.head_dim, device=device, dtype=dtype)
         normalizer = torch.zeros(batch_size, self.num_heads, self.head_dim, device=device, dtype=dtype)
         stabilizer = torch.full((batch_size, self.num_heads), -torch.inf, device=device, dtype=dtype)
         return matrix, normalizer, stabilizer
@@ -56,9 +54,7 @@ class mLSTMCell(nn.Module):
         expected_vector = (batch_size, self.num_heads, self.head_dim)
         expected_scalar = (batch_size, self.num_heads)
         if state[0].shape != expected_matrix or state[1].shape != expected_vector or state[2].shape != expected_scalar:
-            raise ValueError(
-                f"Expected state shapes {expected_matrix}, {expected_vector}, {expected_scalar}"
-            )
+            raise ValueError(f"Expected state shapes {expected_matrix}, {expected_vector}, {expected_scalar}")
 
     def forward(self, x, state=None, attention_mask=None, *, return_state=False):
         if x.dim() != 3 or x.size(-1) != self.embed_dim:

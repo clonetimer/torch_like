@@ -21,6 +21,8 @@ jobs:
         run: python -m ruff check torch_like runner tests examples tools
       - name: Check formatting
         run: python -m ruff format --check torch_like runner tests examples tools
+      - name: Validate model candidate pool
+        run: python tools/validate_candidate_pool.py
       - name: Test with coverage
         run: python -m pytest --cov=torch_like --cov-report=term-missing
       - name: Build wheel

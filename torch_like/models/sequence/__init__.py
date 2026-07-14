@@ -10,6 +10,7 @@ from torch_like.models.sequence.kimi_linear import KimiDeltaAttention, KimiLinea
 from torch_like.models.sequence.llama import LLaMA, LLaMAConfig
 from torch_like.models.sequence.lru import LRU
 from torch_like.models.sequence.mamba import Mamba
+from torch_like.models.sequence.mamba2 import SSD, Mamba2, Mamba2Config, SSDState
 from torch_like.models.sequence.mamba_like import MambaLike
 from torch_like.models.sequence.mixtral import Mixtral, MixtralConfig
 from torch_like.models.sequence.performer import Performer, PerformerConfig
@@ -107,7 +108,14 @@ model_zoo = {
         "family": "matrix_memory_recurrent",
         "layer": "General sequence modeling",
         "integration_level": "paper_aligned_mlstm_reference",
-        "supports": ["next_token", "generation", "matrix_memory", "exponential_gating", "recurrent_state", "long_context"],
+        "supports": [
+            "next_token",
+            "generation",
+            "matrix_memory",
+            "exponential_gating",
+            "recurrent_state",
+            "long_context",
+        ],
         "paper": "xLSTM: Extended Long Short-Term Memory (NeurIPS 2024)",
         "description": "mLSTM residual backbone with matrix memory, stabilized exponential gates, and recurrent inference",
         "complexity": "O(B * L * H * D_head^2) portable recurrent scan without official CUDA kernels",
@@ -178,6 +186,16 @@ model_zoo = {
         "paper": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces (COLM 2024), PyTorch-native framework integration",
         "description": "Selective state-space causal sequence backbone with input-dependent delta, B, and C projections",
         "complexity": "O(B * L * D * S) selective scan over sequence length L, hidden width D, and state size S",
+    },
+    "Mamba2": {
+        "cls": Mamba2,
+        "family": "state_space_duality",
+        "layer": "General sequence modeling",
+        "integration_level": "paper_aligned_portable_scan",
+        "supports": ["next_token", "generation", "state_space_duality", "chunkwise", "recurrent_state", "long_context"],
+        "paper": "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality (ICML 2024)",
+        "description": "Mamba-2 backbone with multi-head scalar-A SSD, grouped B/C parameters, and equivalent scan modes",
+        "complexity": "O(B * L * H * P * N) portable SSD scan; fixed O(B * H * P * N) recurrent state",
     },
     "MambaLike": {
         "cls": MambaLike,
@@ -256,6 +274,10 @@ __all__ = [
     "HyenaConfig",
     "Hyena",
     "Mamba",
+    "Mamba2Config",
+    "SSDState",
+    "SSD",
+    "Mamba2",
     "MambaLike",
     "Caracal",
     "BERTConfig",

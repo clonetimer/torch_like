@@ -17,9 +17,17 @@ class AudioApiTests(unittest.TestCase):
         self.assertEqual(commitment.dim(), 0)
 
         model = create_model(
-            "EnCodec", domain="audio", input_dim=1, output_dim=1, d_model=8,
-            sample_rate=8000, channels=(4, 8), strides=(2, 4), codebook_size=16,
-            num_codebooks=4, target_bandwidth=4.0,
+            "EnCodec",
+            domain="audio",
+            input_dim=1,
+            output_dim=1,
+            d_model=8,
+            sample_rate=8000,
+            channels=(4, 8),
+            strides=(2, 4),
+            codebook_size=16,
+            num_codebooks=4,
+            target_bandwidth=4.0,
         )
         waveform = torch.randn(2, 129)
         encoded = model.encode(waveform, bandwidth=2.0)

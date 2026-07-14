@@ -1,4 +1,4 @@
-"""RT-DETRv2-style real-time end-to-end object detector."""
+"""Portable RT-DETR real-time end-to-end object detector."""
 
 from __future__ import annotations
 
@@ -61,7 +61,7 @@ class _HybridEncoder(nn.Module):
 
 
 class RTDETR(VisionModel):
-    """Portable RT-DETRv2 reference with confidence-based query selection."""
+    """Portable RT-DETR reference with confidence-based query selection."""
 
     def __init__(
         self,
@@ -78,7 +78,20 @@ class RTDETR(VisionModel):
         d_ff: int = 1024,
     ):
         super().__init__()
-        if min(in_channels, num_classes, image_size, d_model, num_queries, n_heads, encoder_layers, decoder_layers, d_ff) <= 0:
+        if (
+            min(
+                in_channels,
+                num_classes,
+                image_size,
+                d_model,
+                num_queries,
+                n_heads,
+                encoder_layers,
+                decoder_layers,
+                d_ff,
+            )
+            <= 0
+        ):
             raise ValueError("RTDETR dimensions and layer counts must be positive")
         if d_model % n_heads != 0 or d_model % 4 != 0:
             raise ValueError("d_model must be divisible by n_heads and by 4")
@@ -87,8 +100,17 @@ class RTDETR(VisionModel):
         self.num_classes = num_classes
         self.num_queries = num_queries
         self._config = RTDETRConfig(
-            in_channels, num_classes, image_size, d_model, dropout, num_queries,
-            backbone_channels, n_heads, encoder_layers, decoder_layers, d_ff,
+            in_channels,
+            num_classes,
+            image_size,
+            d_model,
+            dropout,
+            num_queries,
+            backbone_channels,
+            n_heads,
+            encoder_layers,
+            decoder_layers,
+            d_ff,
         )
         stages = []
         current = in_channels

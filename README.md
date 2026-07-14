@@ -146,6 +146,7 @@ Frequency-domain forecasting:
 ### Graph / 通用图学习
 
 - `GCN`
+- `EGNN`
 - `DGI`
 - `GraphCL`
 - `GraphMAE`
@@ -175,6 +176,7 @@ Frequency-domain forecasting:
 - `Mixtral`
 - `LRU`
 - `Mamba`
+- `Mamba2`
 - `MambaLike`
 - `Caracal`
 - `S4`
