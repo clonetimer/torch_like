@@ -11,6 +11,8 @@ from torch_like.data import (
     DetectionDataConfig,
     ForecastDataConfig,
     RULDataConfig,
+    XJTUSYDataset,
+    XJTUSYFileWindowDataset,
     create_detection_loaders,
     create_forecast_loaders,
     load_detection_data,
@@ -230,6 +232,61 @@ class TaskDataApiTests(unittest.TestCase):
     def test_public_rul_config_defaults(self):
         cfg = RULDataConfig(root_dir="dummy_root")
         self.assertEqual(cfg.condition, "35Hz12kN")
+
+    def test_xjtu_file_window_dataset_is_bounded_and_labels_lifecycle(self):
+        condition = self.tmp_path / "35Hz12kN"
+        for bearing_name in ("Bearing1_1", "Bearing1_2"):
+            bearing = condition / bearing_name
+            bearing.mkdir(parents=True)
+            for minute in range(1, 4):
+                pd.DataFrame(
+                    {
+                        "Horizontal_vibration_signals": np.arange(16, dtype=np.float32) + minute,
+                        "Vertical_vibration_signals": np.arange(16, dtype=np.float32) - minute,
+                    }
+                ).to_csv(bearing / f"{minute}.csv", index=False)
+        dataset = XJTUSYFileWindowDataset(
+            str(self.tmp_path),
+            condition="35Hz12kN",
+            seq_len=8,
+            stride=4,
+            max_files_per_bearing=2,
+            max_windows_per_file=1,
+        )
+        self.assertEqual(len(dataset), 4)
+        self.assertEqual(dataset.num_bearings(), 2)
+        self.assertEqual(dataset.num_channels, 2)
+        first_x, first_y = dataset[0]
+        last_x, last_y = dataset[1]
+        self.assertEqual(first_x.shape, (8, 2))
+        self.assertAlmostEqual(first_y.item(), 2 / 3)
+        self.assertEqual(last_x.shape, (8, 2))
+        self.assertEqual(last_y.item(), 0.0)
+        dataset[0]
+        self.assertEqual(len(dataset._signal_cache), 2)
+
+    def test_xjtu_continuous_window_crosses_files_without_full_life_cache(self):
+        bearing = self.tmp_path / "35Hz12kN" / "Bearing1_1"
+        bearing.mkdir(parents=True)
+        for minute in (1, 2):
+            pd.DataFrame(
+                {
+                    "Horizontal_vibration_signals": np.arange(16, dtype=np.float32) + 100 * minute,
+                    "Vertical_vibration_signals": np.arange(16, dtype=np.float32) - 100 * minute,
+                }
+            ).to_csv(bearing / f"{minute}.csv", index=False)
+        dataset = XJTUSYDataset(
+            str(self.tmp_path),
+            condition="35Hz12kN",
+            seq_len=12,
+            stride=10,
+        )
+        window, rul = dataset[1]
+        self.assertEqual(window.shape, (12, 2))
+        np.testing.assert_array_equal(window[:6, 0].numpy(), np.arange(10, 16) + 100)
+        np.testing.assert_array_equal(window[6:, 0].numpy(), np.arange(6) + 200)
+        self.assertAlmostEqual(rul.item(), (2 - 22 / 16) / 2)
+        self.assertLessEqual(len(dataset._signal_cache), 8)
 
 
 if __name__ == "__main__":

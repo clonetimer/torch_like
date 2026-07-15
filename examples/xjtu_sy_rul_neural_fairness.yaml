@@ -1,0 +1,58 @@
+task_id: xjtu-sy-rul-neural-fairness
+
+dataset:
+  path: E:/Data/XJTU-SY_Bearing_Datasets4/Data/XJTU-SY_Bearing_Datasets
+  format: xjtu_sy
+  label_columns: [rul]
+  sample_mode: sliding_window
+  sequence_length: 1024
+  stride: 1024
+  condition: 35Hz12kN
+  max_files_per_entity: 40
+  max_windows_per_file: 2
+
+task:
+  type: rul_regression
+
+split:
+  type: group_cv
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
+  seed: 42
+  cv_folds: 4
+  test_groups: [35Hz12kN/Bearing1_2]
+
+resources:
+  device: auto
+  max_parallel_trials: 1
+  max_total_minutes: 120
+  timeout_per_trial_minutes: 30
+  max_cpu_workers: 1
+
+search:
+  strategy: grid
+  max_trials: 2
+  preprocessing: [standard]
+  algorithms: [TCNRUL, LogTransRUL]
+  torch_epochs: 100
+  torch_batch_size: 32
+  torch_learning_rate: 0.001
+  torch_optimizer: adamw
+  torch_weight_decay: 0.01
+  torch_loss: huber
+  torch_grad_clip_norm: 1.0
+  torch_lr_scheduler: plateau
+  torch_early_stopping_patience: 15
+  torch_min_delta: 0.0001
+  torch_restore_best: true
+  torch_target_constraint: unit_interval
+
+ranking:
+  primary_metric: rmse
+  additional_metrics: [mae, r2]
+
+artifacts:
+  output_dir: runs
+  save_predictions: true
+  save_checkpoints: true

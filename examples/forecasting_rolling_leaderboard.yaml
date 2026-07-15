@@ -1,0 +1,55 @@
+task_id: forecasting-rolling-leaderboard
+
+dataset:
+  path: D:/data/ETTh1.csv
+  format: csv
+  label_columns: [OT]
+  feature_columns: [OT]
+  time_column: date
+  sample_mode: sliding_window
+  sequence_length: 96
+  prediction_length: 24
+  stride: 24
+
+task:
+  type: time_series_forecasting
+
+split:
+  type: rolling_origin
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
+  seed: 42
+  rolling_folds: 3
+
+resources:
+  device: auto
+  max_parallel_trials: 1
+  max_total_minutes: 180
+  timeout_per_trial_minutes: 30
+  max_cpu_workers: 1
+
+search:
+  strategy: grid
+  max_trials: 4
+  preprocessing: [standard]
+  algorithms: [LastValue, DLinear, PatchTST, TSMixer]
+  torch_epochs: 50
+  torch_batch_size: 32
+  torch_learning_rate: 0.001
+  torch_optimizer: adamw
+  torch_weight_decay: 0.01
+  torch_loss: mse
+  torch_grad_clip_norm: 1.0
+  torch_lr_scheduler: plateau
+  torch_early_stopping_patience: 8
+  torch_restore_best: true
+
+ranking:
+  primary_metric: rmse
+  additional_metrics: [mae, smape]
+
+artifacts:
+  output_dir: runs
+  save_predictions: true
+  save_checkpoints: true

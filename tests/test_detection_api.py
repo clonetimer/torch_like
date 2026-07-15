@@ -4,9 +4,34 @@ import torch
 
 import torch_like as tl
 from torch_like.models import create_model
+from torch_like.nn import CBAM1d
 
 
 class DetectionApiTests(unittest.TestCase):
+    def test_cbam1d_and_causal_tcn_detection_contract(self):
+        attention = CBAM1d(channels=8, reduction=4, kernel_size=3)
+        features = torch.randn(2, 8, 12)
+        self.assertEqual(attention(features).shape, features.shape)
+
+        model = create_model(
+            "CBAMTCNDetector",
+            domain="detection",
+            input_dim=3,
+            seq_len=10,
+            d_model=8,
+            e_layers=2,
+            kernel_size=3,
+            cbam_reduction=4,
+            cbam_kernel_size=3,
+        )
+        x = torch.randn(2, 10, 3)
+        batch = model.make_detection_batch(x)
+        loss = model.fit_step(batch)
+        score = model.score_batch(batch, reduction="none")
+        loss.backward()
+        self.assertEqual(model.predict(batch).shape, (2, 3))
+        self.assertEqual(score.shape, (2, 3))
+
     def test_tranad_self_conditioned_detection_api(self):
         model = tl.TranAD(input_dim=3, seq_len=8, d_model=8, n_heads=2, e_layers=1, d_ff=16)
         batch = model.make_detection_batch(torch.randn(2, 8, 3))
@@ -199,6 +224,12 @@ class DetectionApiTests(unittest.TestCase):
         batch = model.make_detection_batch(x)
         score = model.anomaly_score(batch, reduction="mean")
         self.assertEqual(score.shape, (2,))
+
+    def test_rt_detector_scores_remain_finite_under_distribution_shift(self):
+        model = create_model("RTDetector", domain="detection", input_dim=3, seq_len=10)
+        x = torch.randn(4, 10, 3) * 100
+        score = model.score_batch(model.make_detection_batch(x), reduction="none")
+        self.assertTrue(torch.isfinite(score).all())
 
     def test_detection_fit_step_and_score_batch_contract(self):
         model = create_model("RTDetector", domain="detection", input_dim=3, seq_len=10)

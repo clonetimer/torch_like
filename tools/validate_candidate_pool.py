@@ -13,6 +13,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_POLICY_PATH = ROOT / "governance" / "model_admission_policy.json"
 DEFAULT_BASELINE_PATH = ROOT / "governance" / "model_registry_baseline.txt"
+DEFAULT_ADAPTER_APPROVALS_PATH = ROOT / "governance" / "task_adapter_approvals.json"
 
 
 def load_policy(path: Path = DEFAULT_POLICY_PATH) -> dict[str, Any]:
@@ -108,6 +109,39 @@ def load_registry_baseline(path: Path = DEFAULT_BASELINE_PATH) -> set[tuple[str,
     if not entries:
         raise ValueError("Registry baseline contains no models")
     return entries
+
+
+def load_task_adapter_approvals(path: Path = DEFAULT_ADAPTER_APPROVALS_PATH) -> list[dict[str, Any]]:
+    """Load explicit task-adapter approvals, which are distinct from new model admissions."""
+
+    document = json.loads(path.read_text(encoding="utf-8"))
+    if document.get("schema_version") != 1 or not isinstance(document.get("adapters"), list):
+        raise ValueError("Task-adapter approvals must use schema_version=1 and contain an adapters list")
+    required = {
+        "domain",
+        "name",
+        "source",
+        "target_task",
+        "rationale",
+        "risks",
+        "approved_on",
+        "review_by",
+        "tests",
+    }
+    seen: set[tuple[str, str]] = set()
+    for record in document["adapters"]:
+        missing = required - record.keys()
+        if missing:
+            raise ValueError(f"Task-adapter approval is missing fields: {sorted(missing)}")
+        key = (record["domain"], record["name"])
+        if key in seen:
+            raise ValueError(f"Duplicate task-adapter approval: {key[0]}:{key[1]}")
+        seen.add(key)
+        date.fromisoformat(record["approved_on"])
+        date.fromisoformat(record["review_by"])
+        if not record["tests"] or any(not isinstance(item, str) for item in record["tests"]):
+            raise ValueError(f"Task-adapter approval {key[0]}:{key[1]} must declare tests")
+    return document["adapters"]
 
 
 @dataclass(frozen=True)
@@ -303,7 +337,9 @@ def validate_document(
         if row.model not in rationale_models:
             errors.append(f"{row.model}: missing Dimension Rationale row")
     errors.extend(_validate_detailed_records(markdown, rows, gates, active_policy))
-    errors.extend(_validate_registry_admission(markdown, rows, active_baseline))
+    active_date = as_of or date.today()
+    adapter_approvals = load_task_adapter_approvals()
+    errors.extend(_validate_registry_admission(markdown, rows, active_baseline, adapter_approvals, active_date))
     decisions = {row.decision.split(",", maxsplit=1)[0].strip() for row in rows}
     missing_decisions = {"core", "observation", "rejected"} - decisions
     if missing_decisions:
@@ -317,6 +353,8 @@ def _validate_registry_admission(
     markdown: str,
     scores: list[CandidateScore],
     baseline: set[tuple[str, str]],
+    adapter_approvals: list[dict[str, Any]],
+    as_of: date,
 ) -> list[str]:
     """Reject registry additions that bypassed the evidence-governance workflow."""
 
@@ -343,8 +381,21 @@ def _validate_registry_admission(
         if registry_match:
             implemented_registry_names.add(registry_match.group(1))
 
+    approved_adapters = {
+        (record["domain"], record["name"])
+        for record in adapter_approvals
+        if date.fromisoformat(record["review_by"]) >= as_of
+    }
+    for record in adapter_approvals:
+        key = (record["domain"], record["name"])
+        if date.fromisoformat(record["review_by"]) < as_of:
+            errors.append(f"Task-adapter approval expired: {key[0]}:{key[1]}")
+        for test_path in record["tests"]:
+            if not (ROOT / test_path).is_file():
+                errors.append(f"Task-adapter approval {key[0]}:{key[1]} references missing test: {test_path}")
+
     for domain, name in sorted(actual - baseline):
-        if name not in implemented_registry_names:
+        if name not in implemented_registry_names and (domain, name) not in approved_adapters:
             errors.append(
                 f"Ungoverned registry addition {domain}:{name}; add and approve a candidate-pool record first"
             )

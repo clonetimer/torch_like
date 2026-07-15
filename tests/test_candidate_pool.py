@@ -8,6 +8,7 @@ from tools.validate_candidate_pool import (
     CandidateScore,
     load_policy,
     load_registry_baseline,
+    load_task_adapter_approvals,
     parse_hard_gates,
     parse_review_register,
     parse_scorecard,
@@ -17,6 +18,13 @@ from tools.validate_candidate_pool import (
 
 
 class CandidatePoolValidationTests(unittest.TestCase):
+    def test_task_adapter_approvals_are_structurally_valid(self):
+        approvals = load_task_adapter_approvals()
+        self.assertEqual(
+            {record["name"] for record in approvals},
+            {"TCNRUL", "PatchTSTRUL", "TransformerRUL", "CBAMTCNDetector"},
+        )
+
     @classmethod
     def setUpClass(cls):
         cls.document = Path("docs/MODEL_CANDIDATE_POOL.md").read_text(encoding="utf-8")

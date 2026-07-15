@@ -1,0 +1,45 @@
+task_id: xjtu-sy-rul-lightgbm
+
+dataset:
+  path: E:/Data/XJTU-SY_Bearing_Datasets4/Data/XJTU-SY_Bearing_Datasets
+  format: xjtu_sy
+  label_columns: [rul]
+  sample_mode: sliding_window
+  sequence_length: 1024
+  stride: 1024
+  condition: 35Hz12kN
+  max_files_per_entity: 40
+  max_windows_per_file: 2
+
+task:
+  type: rul_regression
+
+split:
+  type: group_cv
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
+  seed: 42
+  cv_folds: 4
+
+resources:
+  device: cpu
+  max_parallel_trials: 1
+  max_total_minutes: 90
+  timeout_per_trial_minutes: 20
+  max_cpu_workers: 4
+
+search:
+  strategy: grid
+  max_trials: 6
+  preprocessing: [none]
+  algorithms: [LightGBMRegressor]
+
+ranking:
+  primary_metric: rmse
+  additional_metrics: [mae, r2]
+
+artifacts:
+  output_dir: runs
+  save_predictions: true
+  save_checkpoints: true

@@ -20,7 +20,7 @@ list_models_by_family = _models.list_models_by_family
 get_model_info = _models.get_model_info
 create_model = _models.create_model
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 _REGISTRY_EXPORTS = (
     "model_zoo",

@@ -454,6 +454,9 @@ class RULDataConfig:
     seed: int = 42
     batch_size: int = 32
     num_workers: int = 0
+    sample_unit: str = "continuous"
+    max_files_per_bearing: int | None = None
+    max_windows_per_file: int | None = 1
 
     def __post_init__(self):
         if self.seq_len <= 0 or self.stride <= 0:
@@ -462,6 +465,12 @@ class RULDataConfig:
             raise ValueError("train_ratio must be in (0, 1)")
         if self.batch_size <= 0 or self.num_workers < 0:
             raise ValueError("batch_size must be positive and num_workers must be non-negative")
+        if self.sample_unit not in {"continuous", "file_window"}:
+            raise ValueError("sample_unit must be 'continuous' or 'file_window'")
+        if self.max_files_per_bearing is not None and self.max_files_per_bearing <= 0:
+            raise ValueError("max_files_per_bearing must be positive")
+        if self.max_windows_per_file is not None and self.max_windows_per_file <= 0:
+            raise ValueError("max_windows_per_file must be positive")
 
 
 @dataclass
@@ -479,11 +488,21 @@ def load_rul_data(config: RULDataConfig) -> RULDataBundle:
         stride=config.stride,
         train_ratio=config.train_ratio,
         seed=config.seed,
+        sample_unit=config.sample_unit,
+        max_files_per_bearing=config.max_files_per_bearing,
+        max_windows_per_file=config.max_windows_per_file,
     )
     return RULDataBundle(
         train_set=train_set,
         test_set=test_set,
-        extra={"condition": config.condition, "seq_len": config.seq_len, "stride": config.stride},
+        extra={
+            "condition": config.condition,
+            "seq_len": config.seq_len,
+            "stride": config.stride,
+            "sample_unit": config.sample_unit,
+            "max_files_per_bearing": config.max_files_per_bearing,
+            "max_windows_per_file": config.max_windows_per_file,
+        },
     )
 
 

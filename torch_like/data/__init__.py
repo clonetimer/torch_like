@@ -3,7 +3,7 @@
 from torch_like.data.dataset import Dataset_Custom, Dataset_ETT_hour
 from torch_like.data.dataset_detection import SlidingWindowAnomalyDataset, create_train_test_anomaly_datasets
 from torch_like.data.dataset_graph_forecasting import GraphForecastDataset, GraphForecastMeta, load_graph_forecast_array
-from torch_like.data.dataset_rul import XJTUSYDataset, create_train_test_split
+from torch_like.data.dataset_rul import XJTUSYDataset, XJTUSYFileWindowDataset, create_train_test_split
 from torch_like.data.loader import data_provider
 from torch_like.data.task_data import (
     DetectionDataBundle,
@@ -35,6 +35,7 @@ __all__ = [
     "GraphForecastMeta",
     "load_graph_forecast_array",
     "XJTUSYDataset",
+    "XJTUSYFileWindowDataset",
     "create_train_test_split",
     "ForecastDataConfig",
     "ForecastDataBundle",

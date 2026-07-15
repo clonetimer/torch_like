@@ -11,6 +11,7 @@ Usage:
 """
 
 import os
+from collections import OrderedDict
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -63,12 +64,20 @@ class XJTUSYDataset(Dataset):
 
         # Pre-scan: read all CSV file counts (life length in minutes)
         self.life_lengths = []  # N of CSV files per bearing
+        self.points_per_file = []
         for bpath in self.bearing_paths:
             n_files = len([f for f in os.listdir(bpath) if f.endswith(".csv")])
             self.life_lengths.append(n_files)
+            first_file = os.path.join(bpath, "1.csv")
+            with open(first_file, encoding="utf-8") as handle:
+                points = max(0, sum(1 for _ in handle) - 1)
+            if points <= 0:
+                raise ValueError(f"XJTU-SY acquisition file is empty: {first_file}")
+            self.points_per_file.append(points)
 
         # Index mapping: global index → (bearing_idx, window_start_point)
         self.index_map = self._build_index()
+        self._signal_cache: OrderedDict[tuple[int, int], np.ndarray] = OrderedDict()
 
     # ------------------------------------------------------------------
     #  Discovery
@@ -102,7 +111,7 @@ class XJTUSYDataset(Dataset):
         """Build a global sample index: (bearing_idx, start_point)."""
         index_map = []
         for b_idx, n_minutes in enumerate(self.life_lengths):
-            total_points = n_minutes * 32768  # 32768 points per file
+            total_points = n_minutes * self.points_per_file[b_idx]
             for start in range(0, total_points - self.seq_len + 1, self.stride):
                 index_map.append((b_idx, start))
         return index_map
@@ -114,32 +123,44 @@ class XJTUSYDataset(Dataset):
     #  Data access
     # ------------------------------------------------------------------
 
-    def _read_bearing_signal(self, bearing_idx: int) -> np.ndarray:
-        """Full concatenated signal for a bearing, cached."""
-        if not hasattr(self, "_signal_cache"):
-            self._signal_cache: dict = {}
-        if bearing_idx not in self._signal_cache:
-            bpath = self.bearing_paths[bearing_idx]
-            n_files = self.life_lengths[bearing_idx]
-            # Read and concatenate all CSVs
-            chunks = []
-            for i in range(1, n_files + 1):
-                fp = os.path.join(bpath, f"{i}.csv")
-                df = pd.read_csv(fp, header=0)  # 2 cols: Horizontal, Vertical
-                chunks.append(df.values.astype(np.float32))
-            self._signal_cache[bearing_idx] = np.concatenate(chunks, axis=0)  # (total_points, 2)
-        return self._signal_cache[bearing_idx]
+    def _read_signal_file(self, bearing_idx: int, file_index: int) -> np.ndarray:
+        key = (bearing_idx, file_index)
+        if key in self._signal_cache:
+            self._signal_cache.move_to_end(key)
+            return self._signal_cache[key]
+        path = os.path.join(self.bearing_paths[bearing_idx], f"{file_index + 1}.csv")
+        signal = pd.read_csv(path).to_numpy(dtype=np.float32)
+        self._signal_cache[key] = signal
+        if len(self._signal_cache) > 8:
+            self._signal_cache.popitem(last=False)
+        return signal
+
+    def _read_window(self, bearing_idx: int, start: int) -> np.ndarray:
+        """Read only the CSV chunks touched by one continuous window."""
+
+        pieces = []
+        remaining = self.seq_len
+        position = start
+        while remaining > 0:
+            file_index, offset = divmod(position, self.points_per_file[bearing_idx])
+            signal = self._read_signal_file(bearing_idx, file_index)
+            piece = signal[offset : offset + remaining]
+            if len(piece) == 0:
+                raise IndexError(f"Unable to read RUL window at point {position}")
+            pieces.append(piece)
+            remaining -= len(piece)
+            position += len(piece)
+        return np.concatenate(pieces, axis=0)
 
     def __getitem__(self, idx):
         b_idx, start = self.index_map[idx]
-        signal = self._read_bearing_signal(b_idx)
-        window = signal[start : start + self.seq_len]  # (seq_len, 2)
+        window = self._read_window(b_idx, start)
 
         # RUL label: normalized remaining life
         n_minutes = self.life_lengths[b_idx]
         # The end of the window determines the current time
         end_point = start + self.seq_len
-        end_minute = end_point / 32768.0  # continuous minute index
+        end_minute = end_point / float(self.points_per_file[b_idx])
         rul_minutes = n_minutes - end_minute
         rul_norm = float(rul_minutes / n_minutes)  # [0, 1]
 
@@ -158,6 +179,65 @@ class XJTUSYDataset(Dataset):
         return 2
 
 
+class XJTUSYFileWindowDataset(XJTUSYDataset):
+    """Bounded XJTU-SY view where each sample stays inside one acquisition file.
+
+    This view samples the degradation trajectory without constructing every
+    overlapping raw window or concatenating a complete bearing life cycle.
+    """
+
+    def __init__(
+        self,
+        root_dir: str,
+        condition: Optional[str] = None,
+        seq_len: int = 2048,
+        stride: Optional[int] = None,
+        bearing_ids: Optional[List[str]] = None,
+        max_files_per_bearing: Optional[int] = None,
+        max_windows_per_file: Optional[int] = 1,
+    ):
+        self.max_files_per_bearing = max_files_per_bearing
+        self.max_windows_per_file = max_windows_per_file
+        if max_files_per_bearing is not None and max_files_per_bearing <= 0:
+            raise ValueError("max_files_per_bearing must be positive")
+        if max_windows_per_file is not None and max_windows_per_file <= 0:
+            raise ValueError("max_windows_per_file must be positive")
+        super().__init__(root_dir, condition, seq_len, stride, bearing_ids)
+
+    @staticmethod
+    def _even_positions(count: int, limit: Optional[int]) -> List[int]:
+        if limit is None or limit >= count:
+            return list(range(count))
+        if limit == 1:
+            return [count // 2]
+        return sorted(set(np.linspace(0, count - 1, num=limit, dtype=int).tolist()))
+
+    def _build_index(self):
+        index_map = []
+        for bearing_idx, n_files in enumerate(self.life_lengths):
+            file_indices = self._even_positions(n_files, self.max_files_per_bearing)
+            points = self.points_per_file[bearing_idx]
+            possible_starts = list(range(0, points - self.seq_len + 1, self.stride))
+            if not possible_starts:
+                raise ValueError(f"seq_len cannot exceed the {points} rows in one XJTU-SY acquisition file")
+            starts = [
+                possible_starts[index]
+                for index in self._even_positions(len(possible_starts), self.max_windows_per_file)
+            ]
+            for file_index in file_indices:
+                for start in starts:
+                    index_map.append((bearing_idx, file_index, start))
+        return index_map
+
+    def __getitem__(self, idx):
+        bearing_idx, file_index, start = self.index_map[idx]
+        signal = self._read_signal_file(bearing_idx, file_index)
+        window = signal[start : start + self.seq_len]
+        lifetime = self.life_lengths[bearing_idx]
+        rul = max(0.0, float(lifetime - (file_index + 1)) / float(lifetime))
+        return torch.from_numpy(window.copy()), torch.tensor(rul, dtype=torch.float32)
+
+
 def create_train_test_split(
     root_dir: str,
     condition: str = "35Hz12kN",
@@ -165,6 +245,9 @@ def create_train_test_split(
     stride: Optional[int] = None,
     train_ratio: float = 0.6,
     seed: int = 42,
+    sample_unit: str = "continuous",
+    max_files_per_bearing: Optional[int] = None,
+    max_windows_per_file: Optional[int] = 1,
 ) -> Tuple[XJTUSYDataset, XJTUSYDataset]:
     """Create train/test datasets by splitting bearings.
 
@@ -189,19 +272,30 @@ def create_train_test_split(
     train_ids = [all_bearings[i] for i in indices[:n_train]]
     test_ids = [all_bearings[i] for i in indices[n_train:]]
 
-    train_set = XJTUSYDataset(
+    if sample_unit not in {"continuous", "file_window"}:
+        raise ValueError("sample_unit must be 'continuous' or 'file_window'")
+    dataset_class = XJTUSYDataset if sample_unit == "continuous" else XJTUSYFileWindowDataset
+    extra = {}
+    if sample_unit == "file_window":
+        extra = {
+            "max_files_per_bearing": max_files_per_bearing,
+            "max_windows_per_file": max_windows_per_file,
+        }
+    train_set = dataset_class(
         root_dir,
         condition=condition,
         seq_len=seq_len,
         stride=stride,
         bearing_ids=train_ids,
+        **extra,
     )
-    test_set = XJTUSYDataset(
+    test_set = dataset_class(
         root_dir,
         condition=condition,
         seq_len=seq_len,
         stride=stride,
         bearing_ids=test_ids,
+        **extra,
     )
 
     return train_set, test_set

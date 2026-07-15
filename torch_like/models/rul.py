@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 import torch
+import torch.nn.functional as F
 
 from torch_like.models.base import BaseModel
 
@@ -25,6 +26,7 @@ class RULConfig:
 class RULBatch:
     x: torch.Tensor
     x_mark: Optional[torch.Tensor] = None
+    targets: Optional[torch.Tensor] = None
 
 
 class RULModel(BaseModel):
@@ -33,7 +35,29 @@ class RULModel(BaseModel):
     def predict(self, batch: RULBatch) -> torch.Tensor:
         return self(batch.x, batch.x_mark)
 
-    def make_rul_batch(self, x: torch.Tensor, x_mark: Optional[torch.Tensor] = None) -> RULBatch:
+    def loss_step(self, batch: RULBatch, loss: str = "mse") -> torch.Tensor:
+        if batch.targets is None:
+            raise ValueError("RULBatch.targets is required for loss_step")
+        predictions = self(batch.x, batch.x_mark)
+        targets = batch.targets.to(device=predictions.device, dtype=predictions.dtype)
+        if predictions.shape != targets.shape:
+            raise ValueError(
+                f"RUL predictions and targets must have the same shape: {predictions.shape} != {targets.shape}"
+            )
+        if loss == "mse":
+            return F.mse_loss(predictions, targets)
+        if loss == "mae":
+            return F.l1_loss(predictions, targets)
+        if loss == "huber":
+            return F.huber_loss(predictions, targets)
+        raise ValueError("loss must be one of: mse, mae, huber")
+
+    def make_rul_batch(
+        self,
+        x: torch.Tensor,
+        x_mark: Optional[torch.Tensor] = None,
+        targets: Optional[torch.Tensor] = None,
+    ) -> RULBatch:
         if x_mark is None:
             x_mark = torch.zeros(x.size(0), x.size(1), 4, device=x.device, dtype=x.dtype)
-        return RULBatch(x=x, x_mark=x_mark)
+        return RULBatch(x=x, x_mark=x_mark, targets=targets)

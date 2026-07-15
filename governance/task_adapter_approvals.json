@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "policy_id": "torch-like-task-adapter-approval",
+  "adapters": [
+    {
+      "domain": "rul",
+      "name": "TCNRUL",
+      "source": "TCN architecture family",
+      "target_task": "rul_regression",
+      "rationale": "Provide a lightweight convolutional RUL baseline under the shared RUL contract.",
+      "risks": "Framework-oriented implementation; it must not be presented as a paper-exact or SOTA model.",
+      "approved_on": "2026-07-15",
+      "review_by": "2027-01-15",
+      "tests": ["tests/test_forecasting_api.py"]
+    },
+    {
+      "domain": "rul",
+      "name": "PatchTSTRUL",
+      "source": "forecasting:PatchTST",
+      "target_task": "rul_regression",
+      "rationale": "Reuse the admitted patch-based representation as a scalar RUL adapter.",
+      "risks": "The RUL pooling head is framework-specific and is not a claim of paper-equivalent performance.",
+      "approved_on": "2026-07-15",
+      "review_by": "2027-01-15",
+      "tests": ["tests/test_forecasting_api.py"]
+    },
+    {
+      "domain": "rul",
+      "name": "TransformerRUL",
+      "source": "standard Transformer encoder",
+      "target_task": "rul_regression",
+      "rationale": "Provide a transparent full-attention control model for RUL comparisons.",
+      "risks": "Quadratic sequence cost; intended as a baseline rather than a high-efficiency default.",
+      "approved_on": "2026-07-15",
+      "review_by": "2027-01-15",
+      "tests": ["tests/test_forecasting_api.py"]
+    },
+    {
+      "domain": "detection",
+      "name": "CBAMTCNDetector",
+      "source": "CBAM (ECCV 2018) combined with a causal one-dimensional TCN",
+      "target_task": "anomaly_detection",
+      "rationale": "Evaluate CBAM as a reusable sequence-attention component without presenting it as a standalone anomaly-detection paper model.",
+      "risks": "Framework-oriented task adapter; performance depends on the TCN forecasting head and must not be attributed to CBAM alone.",
+      "approved_on": "2026-07-15",
+      "review_by": "2027-01-15",
+      "tests": ["tests/test_detection_api.py", "tests/test_automl.py"]
+    }
+  ]
+}

@@ -130,6 +130,9 @@ Frequency-domain forecasting:
 - `AutoformerRUL`
 - `LogTransRUL`
 - `THGNN`
+- `TCNRUL`
+- `PatchTSTRUL`
+- `TransformerRUL`
 
 ### Detection / 异常检测
 
@@ -142,6 +145,7 @@ Frequency-domain forecasting:
 - `OmniAnomaly`
 - `TranAD`
 - `USAD`
+- `CBAMTCNDetector` (experimental task adapter; explicit AutoML selection only)
 
 ### Graph / 通用图学习
 
@@ -450,6 +454,13 @@ out = model.predict(model.make_rul_batch(x))
 print(out.shape)  # (4,)
 ```
 
+All RUL models accept `RULBatch` and expose `predict(...)` and `loss_step(...)`. `TCNRUL`,
+`PatchTSTRUL`, and `TransformerRUL` are framework-oriented task adapters, not claims of
+paper-exact RUL architectures or SOTA performance.
+
+所有 RUL 模型都接受 `RULBatch`，并提供 `predict(...)` 与 `loss_step(...)`。`TCNRUL`、
+`PatchTSTRUL` 和 `TransformerRUL` 是面向框架的任务适配器，不代表论文原样复现或 SOTA 性能声明。
+
 ## 辅助 Runner / Auxiliary Runners
 
 中文：`runner/` 用于快速验证模型能否实例化、训练一步、评估和比较；它不是框架核心。
@@ -529,6 +540,46 @@ See [`docs/MODEL_CANDIDATE_POOL.md`](docs/MODEL_CANDIDATE_POOL.md) for the evide
 中文：准入阈值、证据要求和复审期限由 [`governance/model_admission_policy.json`](governance/model_admission_policy.json) 统一定义。候选模型不得绕过候选记录、硬门槛、证据评分、复审台账和框架合同测试直接进入公共 API。
 
 English: Admission thresholds, evidence requirements, and review deadlines are defined centrally in [`governance/model_admission_policy.json`](governance/model_admission_policy.json). A model may not enter the public API without a candidate record, hard-gate review, evidence score, review registration, and framework-contract tests.
+
+## AutoML Leaderboard / 自动模型排行榜
+
+The optional `torch_like.automl` layer supports CSV datasets, the native folder layout of
+XJTU-SY, and raw ESA-ADB mission ZIP archives. XJTU-SY tasks derive normalized RUL from acquisition-file position, deterministically
+bound file/window sampling, and support bearing-level `group_cv` with validation mean/std ranking
+and one-shot sealed-test evaluation. See
+[`docs/AUTOML.md`](docs/AUTOML.md) and [`examples/xjtu_sy_rul_leaderboard.yaml`](examples/xjtu_sy_rul_leaderboard.yaml).
+
+XJTU-SY literature screening, protocol differences, local regular-run results, and rejected candidates are recorded in
+[`docs/XJTU_SY_MODEL_EVALUATION.md`](docs/XJTU_SY_MODEL_EVALUATION.md).
+
+XJTU-SY 文献筛选、协议差异、本地常规实验结果和候选否决记录见
+[`docs/XJTU_SY_MODEL_EVALUATION.md`](docs/XJTU_SY_MODEL_EVALUATION.md)。
+
+可选的 `torch_like.automl` 层支持 CSV 数据和 XJTU-SY 原生文件夹结构。XJTU-SY 任务根据采样文件在
+生命周期中的位置生成归一化 RUL，可确定性限制文件数和窗口数，并支持轴承级 `group_cv`：按验证 fold
+均值和标准差排名，只对最终选中的管线执行一次封存测试。
+
+中文：`torch_like.automl` 提供 CSV 数据画像、`row/full_sequence/sliding_window` 样本化、防泄漏划分、scikit-learn 与部分 `torch_like` 模型候选、预处理竞争、隔离 trial、验证集排名和可复现产物。详细配置、CLI 和 Python API 见 [`docs/AUTOML.md`](docs/AUTOML.md)。
+
+English: `torch_like.automl` provides CSV profiling, `row/full_sequence/sliding_window` sampling, group CV, rolling-origin forecasting, sealed final tests, scikit-learn and selected `torch_like` candidates, preprocessing competition, isolated trials, and reproducible artifacts. See [`docs/AUTOML.md`](docs/AUTOML.md) for configuration, CLI, and Python APIs.
+
+ESA-ADB anomaly leaderboards load selected channels directly from the raw mission ZIP, use validation-only threshold selection, rank corrected event-wise F0.5, and open the test period only for the selected detector. See [`docs/ESA_ADB_MODEL_EVALUATION.md`](docs/ESA_ADB_MODEL_EVALUATION.md) and [`examples/esa_mission1_anomaly_leaderboard.yaml`](examples/esa_mission1_anomaly_leaderboard.yaml).
+
+ESA-ADB 异常检测排行榜可直接读取原始任务 ZIP，只缓存选定通道；阈值仅在验证集选择，按 corrected event-wise F0.5 排名，并只对最终入选检测器解封测试时间段。
+
+Forecasting leaderboard tasks support multi-step targets, expanding-window validation, per-horizon metrics, and `LastValue`/DLinear/PatchTST/TSMixer comparisons. See [`examples/forecasting_rolling_leaderboard.yaml`](examples/forecasting_rolling_leaderboard.yaml).
+
+预测排行榜支持多步目标、扩展窗口验证、逐 horizon 指标，以及 `LastValue`、DLinear、PatchTST、TSMixer 对比。配置见 [`examples/forecasting_rolling_leaderboard.yaml`](examples/forecasting_rolling_leaderboard.yaml)。
+
+ETTh1 上的真实机制验证、目标缩放修复和模型准入结论见
+[`docs/FORECASTING_MODEL_EVALUATION.md`](docs/FORECASTING_MODEL_EVALUATION.md)。
+
+LightGBM is an optional AutoML backend rather than an `nn.Module` model. Install it with
+`pip install "torch_like[lightgbm]"`; sequence pipelines can compare basic statistics, vibration statistics, and raw flattening.
+
+LightGBM 是可选的 AutoML 后端，不属于 `nn.Module` 模型。可通过 `pip install "torch_like[lightgbm]"` 安装；
+序列管线可以比较基础统计、振动统计和原始展平特征。
+XJTU-SY 配置示例见 [`examples/xjtu_sy_rul_lightgbm.yaml`](examples/xjtu_sy_rul_lightgbm.yaml)。
 
 ## Recently Added Domains / 新增领域
 

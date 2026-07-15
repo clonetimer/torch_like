@@ -716,6 +716,40 @@ Validation / 验证:
 
 English: The first command checks against today; the second can rehearse upcoming review expiry before merge. Source authenticity still requires human or research-tool review; passing a link count does not establish evidence quality.
 
+## AutoML Boundary / 自动适配边界
+
+### Task Adapter Governance / 任务适配器治理
+
+中文：把已知骨干改造成新任务输出头，不等同于引入一个新的论文模型。此类实现必须登记在
+`governance/task_adapter_approvals.json`，记录来源、目标任务、适配价值、风险、测试和复审日期。
+候选池校验器会自动拒绝既不在历史 registry 基线、又没有候选池批准或任务适配器批准的注册项。
+
+English: Adapting a known backbone to a new task head is distinct from admitting a new paper model.
+Such adapters must be recorded in `governance/task_adapter_approvals.json` with source, target task,
+rationale, risks, tests, and review deadline. The candidate-pool validator rejects registry additions
+that are neither grandfathered, candidate-approved, nor explicitly adapter-approved.
+
+RUL adapters must inherit `RULModel`, return one scalar per sample, and support `RULBatch`, `predict`,
+and `loss_step`. Dataset-specific discovery and label derivation belong in `torch_like.data` or
+`torch_like.automl.data`, never in model classes.
+
+中文：`torch_like.automl` 比较的是“预处理器 + 特征策略 + 算法 + 超参数”完整管线。数据划分必须在搜索前固定，输入和目标预处理器只能在 inner training 数据拟合，排行榜只能按 outer validation 指标排序。`group_cv` 与 `rolling_origin` 的封存测试数据不得传入候选进程，只能在最终管线选定后评估一次。
+
+English: `torch_like.automl` compares complete preprocessing, feature, algorithm, and hyperparameter pipelines. Splits must be fixed before search, input and target preprocessors fit inner-training data only, and rankings use outer-validation metrics. Sealed test data under `group_cv`, `rolling_origin`, and anomaly predefined-time protocols must not enter candidate processes and are evaluated once after final selection.
+
+Rules / 规则:
+
+- Built-in PyTorch models remain in the model registry; sklearn estimators are backend candidates and do not pretend to be `nn.Module` models.
+- Trial failures must be serialized and isolated from the remaining search.
+- Overlapping windows may not use random/stratified splitting.
+- Forecasting targets may not overlap across windows in v1; use `stride >= prediction_length` and `rolling_origin`.
+- PyTorch early stopping must use inner validation, never the outer ranking fold.
+- Every forecasting leaderboard must include a simple baseline before a complex model can claim value.
+- Anomaly scores are not operational decisions until a threshold is selected on validation data; test labels must never tune that threshold.
+- ESA-ADB reports must distinguish the local uniform-grid approximation from the official event-ID/time-domain evaluator.
+- joblib artifacts are trusted-local only and require hashes plus dependency versions.
+- New executable tasks require a task metric contract, split contract, backend adapter, negative tests, and bilingual documentation.
+
 ## Reinforcement Learning Domain / 强化学习域
 
 Current models / 当前模型:

@@ -1,0 +1,45 @@
+task_id: esa-mission1-cbam-ablation-v2
+dataset:
+  path: E:/Data/ESA-Mission1.zip
+  format: esa_adb
+  label_columns: [channel_41, channel_42, channel_43, channel_44, channel_45, channel_46]
+  feature_columns: [channel_41, channel_42, channel_43, channel_44, channel_45, channel_46]
+  sample_mode: sliding_window
+  sequence_length: 64
+  stride: 30
+  resample_seconds: 30
+  split_time_ranges:
+    train: ["2004-01-01", "2006-09-30 23:59:30"]
+    val: ["2006-10-01", "2006-12-31 23:59:30"]
+    test: ["2007-01-01", "2007-12-31 23:59:30"]
+  anomaly_categories: [Anomaly, Rare Event]
+  cache_dir: runs/data_cache/esa-adb
+  scale: large
+task: {type: anomaly_detection}
+split: {type: predefined}
+resources:
+  device: cuda
+  max_parallel_trials: 1
+  max_total_minutes: 180
+  timeout_per_trial_minutes: 90
+  max_cpu_workers: 1
+  max_ram_gb: 24
+  max_vram_gb: 8
+search:
+  strategy: grid
+  max_trials: 2
+  preprocessing: [standard]
+  algorithms: [CBAMTCNDetector]
+  torch_epochs: 10
+  torch_batch_size: 256
+  torch_learning_rate: 0.001
+  torch_optimizer: adamw
+  torch_weight_decay: 0.0001
+  torch_grad_clip_norm: 1.0
+  anomaly_threshold_candidates: 100
+ranking: {primary_metric: event_f0_5_corrected}
+artifacts:
+  output_dir: runs
+  save_predictions: true
+  save_checkpoints: true
+seed: 42

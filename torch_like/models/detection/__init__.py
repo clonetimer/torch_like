@@ -1,6 +1,7 @@
 """Detection task interfaces and models."""
 
 from torch_like.models.detection.anomaly_transformer import AnomalyTransformer, AnomalyTransformerConfig
+from torch_like.models.detection.cbam_tcn import CBAMTCNDetector, CBAMTCNDetectorConfig
 from torch_like.models.detection.common import DetectionBatch, DetectionConfig, DetectionModel
 from torch_like.models.detection.dc_detector import DCDetector, DCDetectorConfig
 from torch_like.models.detection.gdn import GDN, GDNConfig
@@ -13,6 +14,17 @@ from torch_like.models.detection.usad import USAD, USADConfig
 from torch_like.models.registry import register_model_catalog
 
 model_zoo = {
+    "CBAMTCNDetector": {
+        "cls": CBAMTCNDetector,
+        "family": "cbam_temporal_convolution",
+        "layer": "Anomaly detection",
+        "integration_level": "framework_oriented",
+        "automl_default": False,
+        "supports": ["channel_attention", "temporal_attention", "forecasting", "convolution"],
+        "paper": "CBAM: Convolutional Block Attention Module (ECCV 2018), adapted to a causal 1D TCN detector",
+        "description": "CBAM-enhanced temporal convolution that predicts the final sample from preceding context",
+        "complexity": "O(B * L * D^2) temporal convolution with lightweight channel and temporal attention",
+    },
     "TranAD": {
         "cls": TranAD,
         "family": "self_conditioned_transformer",
@@ -111,6 +123,8 @@ __all__ = [
     "DetectionConfig",
     "DetectionBatch",
     "DetectionModel",
+    "CBAMTCNDetectorConfig",
+    "CBAMTCNDetector",
     "AnomalyTransformerConfig",
     "AnomalyTransformer",
     "DCDetectorConfig",

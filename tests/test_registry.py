@@ -25,11 +25,13 @@ class RegistryTests(unittest.TestCase):
             "paper",
             "description",
             "complexity",
+            "automl_default",
         }
         self.assertEqual(list_domains(), tuple(torch_like.model_zoo))
         for domain in list_domains():
             for metadata in list_models(domain).values():
                 self.assertEqual(set(metadata), expected_fields)
+                self.assertIsInstance(metadata["automl_default"], bool)
                 self.assertIsInstance(metadata["cls"], type)
                 self.assertTrue(all(isinstance(tag, str) and tag for tag in metadata["supports"]))
 
@@ -136,7 +138,7 @@ class RegistryTests(unittest.TestCase):
         )
         self.assertEqual(model.__class__.__name__, "Informer")
         self.assertGreater(model.param_count(), 0)
-        self.assertEqual(torch_like.__version__, "0.2.0")
+        self.assertEqual(torch_like.__version__, "0.3.0")
 
     def test_config_roundtrip_preserves_model_specific_arguments(self):
         model = torch_like.GAT(
@@ -157,6 +159,9 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(len(list_models()), by_domain_count)
         self.assertNotIn("InformerRUL", list_models("forecasting"))
         self.assertIn("InformerRUL", list_models("rul"))
+        self.assertIn("TCNRUL", list_models("rul"))
+        self.assertIn("PatchTSTRUL", list_models("rul"))
+        self.assertIn("TransformerRUL", list_models("rul"))
 
     def test_forecasting_registry_exposes_layered_metadata(self):
         models = list_models("forecasting")

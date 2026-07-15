@@ -19,6 +19,7 @@ class ModelMetadata(TypedDict):
     paper: str
     description: str
     complexity: str
+    automl_default: bool
 
 
 ModelCatalog = dict[str, ModelMetadata]
@@ -51,6 +52,8 @@ _METADATA_DEFAULTS = {
     "complexity": "Not specified",
 }
 _METADATA_FIELDS = frozenset(_METADATA_DEFAULTS)
+_METADATA_OPTIONAL_FIELDS = frozenset({"automl_default"})
+_METADATA_ALLOWED_FIELDS = _METADATA_FIELDS | _METADATA_OPTIONAL_FIELDS
 _REGISTRY_LOCK = RLock()
 _BOOTSTRAPPED = False
 
@@ -69,7 +72,7 @@ def _normalize_metadata(
     if not isinstance(cls, type):
         raise TypeError("cls must be a class")
 
-    unknown = set(metadata) - _METADATA_FIELDS
+    unknown = set(metadata) - _METADATA_ALLOWED_FIELDS
     if unknown:
         raise ValueError(f"Unknown model metadata fields: {sorted(unknown)}")
     if require_complete:
@@ -88,6 +91,9 @@ def _normalize_metadata(
         raise ValueError("supports must contain only non-empty strings")
     if len(set(supports)) != len(supports):
         raise ValueError("supports must not contain duplicates")
+    automl_default = metadata.get("automl_default", True)
+    if not isinstance(automl_default, bool):
+        raise TypeError("automl_default must be a bool")
 
     return ModelMetadata(
         cls=cls,
@@ -98,6 +104,7 @@ def _normalize_metadata(
         paper=normalized["paper"],
         description=normalized["description"],
         complexity=normalized["complexity"],
+        automl_default=automl_default,
     )
 
 

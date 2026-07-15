@@ -12,6 +12,7 @@ from torch_like.nn.attention import (
     ProbSparseAttention,
     log_sparse_mask,
 )
+from torch_like.nn.cbam import CBAM1d
 from torch_like.nn.decoder import Decoder, DecoderLayer
 from torch_like.nn.decomposition import SeriesDecomp
 from torch_like.nn.embedding import DataEmbedding, PositionalEmbedding, TemporalEmbedding, TokenEmbedding
@@ -27,6 +28,7 @@ __all__ = [
     "PositionalEmbedding",
     "TemporalEmbedding",
     "FullAttention",
+    "CBAM1d",
     "ProbSparseAttention",
     "AutoCorrelation",
     "AutoCorrelationLayer",

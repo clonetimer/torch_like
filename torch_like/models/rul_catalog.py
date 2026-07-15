@@ -2,6 +2,7 @@
 
 from torch_like.models.forecasting.rul_adapters import AutoformerRUL, InformerRUL, LogTransRUL
 from torch_like.models.registry import register_model_catalog
+from torch_like.models.rul_backbones import TCNRUL, PatchTSTRUL, TransformerRUL
 from torch_like.models.thgnn import THGNN
 
 model_zoo = {
@@ -45,6 +46,36 @@ model_zoo = {
         "description": "LogSparse encoder -> AdaptiveAvgPool -> Linear -> scalar RUL",
         "complexity": "O(L log L)",
     },
+    "TCNRUL": {
+        "cls": TCNRUL,
+        "family": "rul_adapter",
+        "layer": "RUL adapter",
+        "integration_level": "framework_oriented",
+        "supports": ["dilated_convolution", "loss_step"],
+        "paper": "Temporal convolutional network baseline adapted for RUL regression",
+        "description": "Dilated residual temporal convolutions, global pooling, and scalar RUL head",
+        "complexity": "O(L * D * K * B)",
+    },
+    "PatchTSTRUL": {
+        "cls": PatchTSTRUL,
+        "family": "rul_adapter",
+        "layer": "RUL adapter",
+        "integration_level": "framework_oriented",
+        "supports": ["patching", "channel_independent", "loss_step"],
+        "paper": "PatchTST backbone adapted for RUL regression",
+        "description": "Channel-independent patch encoder with pooled scalar RUL head",
+        "complexity": "O(C * P^2 * D)",
+    },
+    "TransformerRUL": {
+        "cls": TransformerRUL,
+        "family": "rul_adapter",
+        "layer": "RUL adapter",
+        "integration_level": "framework_oriented",
+        "supports": ["full_attention", "loss_step"],
+        "paper": "Encoder-only Transformer baseline adapted for RUL regression",
+        "description": "Full-attention temporal encoder with global pooling and scalar RUL head",
+        "complexity": "O(L^2 * D)",
+    },
 }
 
 register_model_catalog("rul", model_zoo)
@@ -54,5 +85,8 @@ __all__ = [
     "InformerRUL",
     "AutoformerRUL",
     "LogTransRUL",
+    "TCNRUL",
+    "PatchTSTRUL",
+    "TransformerRUL",
     "model_zoo",
 ]

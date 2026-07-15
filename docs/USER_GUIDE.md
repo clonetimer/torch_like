@@ -91,6 +91,9 @@ Frequency-domain forecasting:
 - `AutoformerRUL`
 - `LogTransRUL`
 - `THGNN`
+- `TCNRUL`
+- `PatchTSTRUL`
+- `TransformerRUL`
 
 ### Detection / 异常检测
 
@@ -690,6 +693,41 @@ out = model.predict(model.make_rul_batch(x))
 print(out.shape)  # (4,)
 ```
 
+Shared training contract / 统一训练合同:
+
+```python
+import torch
+import torch_like as tl
+
+model = tl.PatchTSTRUL(enc_in=2, seq_len=512, d_model=32, n_heads=4, e_layers=1)
+x = torch.randn(8, 512, 2)
+targets = torch.rand(8)
+batch = model.make_rul_batch(x, targets=targets)
+loss = model.loss_step(batch, loss="huber")
+loss.backward()
+predictions = model.predict(batch)
+```
+
+中文：三个新 RUL 类是统一任务适配器。它们适合在相同数据、预处理和划分协议下比较，但不应被描述为
+论文原样复现。XJTU-SY 文件夹排行榜配置见 `examples/xjtu_sy_rul_leaderboard.yaml`；该配置使用
+`group_cv` 在 development bearings 上轮换验证，并只对最终选中的管线解封一次测试 bearing。
+
+English: The three new RUL classes are task adapters under one contract. They support controlled
+comparison under the same data, preprocessing, and split protocol, but are not paper-exact reproductions.
+The recommended XJTU-SY configuration uses `group_cv` and a one-shot sealed test.
+
+AutoML forecasting uses a separate rolling-origin contract. `sequence_length` defines historical context,
+`prediction_length` defines the future horizon, and the latest windows remain sealed until model selection finishes.
+See `examples/forecasting_rolling_leaderboard.yaml`.
+
+AutoML forecasting 使用独立的 rolling-origin 协议：`sequence_length` 定义历史上下文，
+`prediction_length` 定义未来步长，最新时间窗口在模型选择完成前保持封存。配置见
+`examples/forecasting_rolling_leaderboard.yaml`。
+
+AutoML anomaly detection uses a predefined chronological protocol. Native `format: esa_adb` ingestion reads selected channels from the raw mission ZIP, applies zero-order-hold resampling, selects the binary threshold on validation data, and evaluates the sealed test only after model selection. See `examples/esa_mission1_anomaly_leaderboard.yaml`.
+
+AutoML 异常检测使用预定义的时间协议。`format: esa_adb` 可直接从原始任务 ZIP 读取指定通道，执行 zero-order hold 重采样，只在验证集选择二值阈值，并在模型选择完成后才评估封存测试集。
+
 ### THGNN
 
 ```python
@@ -897,6 +935,20 @@ BLIP / 图文理解与生成:
 中文：测试通过不等于论文指标复现，只表示框架接口、导入、registry 和基础 runner 行为有效。
 
 English: Passing tests do not imply paper-score reproduction. They validate framework interfaces, imports, registry behavior, and basic runner behavior.
+
+## CBAM1d and CBAM-TCN / CBAM1d 与 CBAM-TCN
+
+中文：`CBAM1d` 是处理 `(batch, channels, length)` 特征的通道与时间注意力组件，不是独立模型。`CBAMTCNDetector` 将它接入因果一维 TCN，仅使用前 `L-1` 步预测最后一步，并通过预测误差产生异常分数。ESA 消融实验未显示事件指标收益，因此该适配器默认不进入 AutoML 搜索，需要通过 `search.algorithms: [CBAMTCNDetector]` 显式启用。
+
+English: `CBAM1d` is a channel-and-time attention component for `(batch, channels, length)` features, not a standalone model. `CBAMTCNDetector` combines it with a causal 1D TCN, predicts the final sample from the first `L-1` steps, and emits prediction-error anomaly scores. The ESA ablation did not improve event metrics, so this adapter is excluded from default AutoML discovery and must be selected explicitly with `search.algorithms: [CBAMTCNDetector]`.
+
+```python
+from torch_like.nn import CBAM1d
+import torch_like as tl
+
+attention = CBAM1d(channels=32, reduction=8, kernel_size=7)
+detector = tl.CBAMTCNDetector(input_dim=6, seq_len=64, d_model=32)
+```
 
 ## Practical Caveats / 实用注意事项
 

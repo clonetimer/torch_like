@@ -51,6 +51,7 @@ from torch_like.models.forecasting import (
     TimeXer,
     TSMixer,
 )
+from torch_like.models.rul_backbones import TCNRUL, PatchTSTRUL, TransformerRUL
 from torch_like.models.thgnn import THGNN
 from torch_like.nn.attention import AutoCorrelation, FullAttention
 
@@ -243,6 +244,24 @@ class ForecastingApiTests(unittest.TestCase):
         batch = model.make_rul_batch(x)
         out = model.predict(batch)
         self.assertEqual(out.shape, (3,))
+
+    def test_rul_backbone_adapters_share_training_contract(self):
+        cfg = RULConfig(enc_in=2, seq_len=32, d_model=16, n_heads=4, e_layers=1, d_ff=32, dropout=0.0)
+        x = torch.randn(3, cfg.seq_len, cfg.enc_in)
+        targets = torch.rand(3)
+        for model_class in (TCNRUL, PatchTSTRUL, TransformerRUL):
+            model = model_class.from_config(cfg)
+            batch = model.make_rul_batch(x, targets=targets)
+            self.assertEqual(model.predict(batch).shape, (3,))
+            loss = model.loss_step(batch, loss="huber")
+            self.assertEqual(loss.ndim, 0)
+            loss.backward()
+            self.assertGreater(model.param_count(), 0)
+
+    def test_rul_loss_requires_targets(self):
+        model = TCNRUL(enc_in=2, seq_len=8, d_model=8, e_layers=1, d_ff=16)
+        with self.assertRaisesRegex(ValueError, "targets"):
+            model.loss_step(model.make_rul_batch(torch.randn(2, 8, 2)))
 
     def test_mtgnn_predict_api(self):
         cfg = ForecastingConfig(

@@ -20,10 +20,34 @@ Paths / 路径:
 - `torch_like/nn/`
 - `torch_like/utils/`
 - `torch_like/data/`
+- `torch_like/automl/`
+- `governance/task_adapter_approvals.json`
 
 中文：这里放可复用 API、模型定义、任务 batch、registry 和基础工具。
 
 English: This layer contains reusable APIs, model definitions, task batches, registry utilities, and basic helpers.
+
+中文：`torch_like/automl/` 是可选编排子层，只通过公开 registry 和任务协议调用模型；它可以训练、比较和导出管线，但不得在运行时修改模型源代码或绕过模型治理。
+
+English: `torch_like/automl/` is an optional orchestration sublayer that consumes public registry and task contracts. It may train, compare, and export pipelines, but may not mutate model source code at runtime or bypass model governance.
+
+AutoML module boundaries / AutoML 模块边界:
+
+- `data.py`: shared dataset dispatch and tabular/sequence preparation.
+- `esa_data.py`: ESA-ADB archive reading, resampling, labels, and time-window preparation.
+- `anomaly_backend.py`: anomaly candidate training/scoring adapters and artifact export.
+- `anomaly_catalog.py`: registry-driven detection-model discovery and audited leaderboard defaults.
+- `anomaly_metrics.py`: point-wise and approximate event-wise anomaly metrics and validation-only threshold selection.
+- `sklearn_backend.py`: candidate catalog and classical machine-learning backends.
+- `task.py`: leaderboard orchestration, failure isolation, ranking, and sealed-test execution.
+
+中文：数据集专属读取逻辑、模型训练适配、指标计算和排行榜编排必须分层；`task.py` 不直接实现 ESA 文件解析或异常模型结构。
+
+中文：`governance/task_adapter_approvals.json` 将任务输出头/骨干适配与新论文模型准入分开管理，
+同时保留机器可检查的来源、风险、测试和复审信息。
+
+English: `governance/task_adapter_approvals.json` separates task-head/backbone adaptations from new
+paper-model admissions while retaining machine-checkable source, risk, test, and review metadata.
 
 Rules / 规则:
 

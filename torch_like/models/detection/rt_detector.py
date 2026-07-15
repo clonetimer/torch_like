@@ -186,7 +186,9 @@ class RTDetector(DetectionModel):
         self._std_enc = std_enc
         self._mean_enc = mean_enc
         src = src / std_enc
-        tau = self.tau_learner(src, std_enc).exp()
+        # Bound the learned log-scale so distribution shifts cannot overflow
+        # the de-stationary attention multiplier during inference.
+        tau = self.tau_learner(src, std_enc).clamp(min=-8.0, max=8.0).exp()
         delta = self.delta_learner(src, mean_enc)
         tau = tau.unsqueeze(1)
         delta = delta.unsqueeze(1)
