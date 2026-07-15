@@ -60,7 +60,7 @@ class FTTransformer(TabularModel):
             batch_first=True,
             norm_first=True,
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers, enable_nested_tensor=False)
         self.head = nn.Sequential(nn.LayerNorm(d_model), nn.Linear(d_model, output_dim))
         nn.init.trunc_normal_(self.cls_token, std=0.02)
 

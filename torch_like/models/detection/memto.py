@@ -85,7 +85,7 @@ class MEMTO(DetectionModel):
             batch_first=True,
             norm_first=True,
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=e_layers)
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=e_layers, enable_nested_tensor=False)
         self.latent_proj = nn.Linear(d_model, latent_dim)
         self.memory_bank = MemoryBank(mem_size=mem_size, latent_dim=latent_dim)
         self.decoder = nn.Sequential(

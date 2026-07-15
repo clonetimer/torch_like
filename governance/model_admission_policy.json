@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "policy_id": "torch-like-model-admission",
+  "policy_version": "1.0",
+  "effective_date": "2026-07-14",
+  "dimensions": {
+    "R": 25,
+    "P": 20,
+    "U": 15,
+    "E": 10,
+    "I": 10,
+    "A": 10,
+    "X": 10
+  },
+  "evidence_coefficients": {
+    "A": 1.0,
+    "B": 0.9,
+    "C": 0.75,
+    "D": 0.5
+  },
+  "evidence_requirements": {
+    "A": {"primary": 1, "official": 1, "independent": 2},
+    "B": {"primary": 1, "official": 1, "independent": 1},
+    "C": {"primary": 1, "official": 1, "independent": 0},
+    "D": {"primary": 0, "official": 0, "independent": 0}
+  },
+  "thresholds": {
+    "core": 80,
+    "observation": 65
+  },
+  "allowed_gate_results": [
+    "pass",
+    "pass with risk",
+    "pass with high risk",
+    "fail"
+  ],
+  "allowed_decisions": ["core", "observation", "rejected"],
+  "allowed_decision_qualifiers": ["implemented", "no code"],
+  "review": {
+    "maximum_horizon_days": 366,
+    "owner": "maintainers",
+    "expired_is_error": true
+  }
+}

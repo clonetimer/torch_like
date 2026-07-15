@@ -77,7 +77,7 @@ class Wav2Vec2(AudioModel):
             batch_first=True,
             norm_first=True,
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers, enable_nested_tensor=False)
         self.output_projection = nn.Linear(d_model, output_dim)
 
     def extract_features(self, x: torch.Tensor) -> torch.Tensor:

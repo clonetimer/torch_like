@@ -103,7 +103,11 @@ class LLaVA(MultimodalModel):
             batch_first=True,
             norm_first=True,
         )
-        self.visual_encoder = nn.TransformerEncoder(vision_layer, num_layers=vision_layers)
+        self.visual_encoder = nn.TransformerEncoder(
+            vision_layer,
+            num_layers=vision_layers,
+            enable_nested_tensor=False,
+        )
         self.visual_norm = nn.LayerNorm(d_model)
 
         hidden = projector_hidden_dim or max(d_model, embed_dim)
@@ -122,7 +126,11 @@ class LLaVA(MultimodalModel):
             batch_first=True,
             norm_first=True,
         )
-        self.decoder = nn.TransformerEncoder(decoder_layer, num_layers=decoder_layers)
+        self.decoder = nn.TransformerEncoder(
+            decoder_layer,
+            num_layers=decoder_layers,
+            enable_nested_tensor=False,
+        )
         self.decoder_norm = nn.LayerNorm(d_model)
         self.lm_head = nn.Linear(d_model, vocab_size, bias=False)
         self.lm_head.weight = self.text_embeddings.token_embedding.weight

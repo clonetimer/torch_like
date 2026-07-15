@@ -3,13 +3,54 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import Any
 
-EVIDENCE_COEFFICIENTS = {"A": 1.0, "B": 0.9, "C": 0.75, "D": 0.5}
-DIMENSION_LIMITS = (25, 20, 15, 10, 10, 10, 10)
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_POLICY_PATH = ROOT / "governance" / "model_admission_policy.json"
+DEFAULT_BASELINE_PATH = ROOT / "governance" / "model_registry_baseline.txt"
+
+
+def load_policy(path: Path = DEFAULT_POLICY_PATH) -> dict[str, Any]:
+    """Load and structurally validate the versioned admission policy."""
+
+    policy = json.loads(path.read_text(encoding="utf-8"))
+    required = {
+        "schema_version",
+        "policy_id",
+        "policy_version",
+        "effective_date",
+        "dimensions",
+        "evidence_coefficients",
+        "evidence_requirements",
+        "thresholds",
+        "allowed_gate_results",
+        "allowed_decisions",
+        "allowed_decision_qualifiers",
+        "review",
+    }
+    missing = required - policy.keys()
+    if missing:
+        raise ValueError(f"Admission policy is missing fields: {sorted(missing)}")
+    if policy["schema_version"] != 1:
+        raise ValueError(f"Unsupported admission policy schema: {policy['schema_version']!r}")
+    if tuple(policy["dimensions"]) != tuple("RPUEIAX"):
+        raise ValueError("Admission policy dimensions must be ordered R/P/U/E/I/A/X")
+    if set(policy["evidence_coefficients"]) != set(policy["evidence_requirements"]):
+        raise ValueError("Evidence coefficients and requirements must define the same grades")
+    if policy["thresholds"]["core"] <= policy["thresholds"]["observation"]:
+        raise ValueError("Core threshold must be greater than observation threshold")
+    date.fromisoformat(policy["effective_date"])
+    return policy
+
+
+POLICY = load_policy()
+EVIDENCE_COEFFICIENTS = POLICY["evidence_coefficients"]
+DIMENSION_LIMITS = tuple(POLICY["dimensions"].values())
 SCORECARD_HEADER = (
     "Model",
     "R/25",
@@ -35,6 +76,7 @@ HARD_GATE_HEADER = (
     "License/availability",
     "Gate",
 )
+REVIEW_HEADER = ("Model/version", "Last reviewed", "Review by", "Owner", "Early-review trigger")
 REQUIRED_RECORD_FIELDS = (
     "Category",
     "Core value",
@@ -44,6 +86,28 @@ REQUIRED_RECORD_FIELDS = (
     "Conclusion reason",
     "Missing information",
 )
+
+
+def load_registry_baseline(path: Path = DEFAULT_BASELINE_PATH) -> set[tuple[str, str]]:
+    """Load the registry snapshot grandfathered when governance became mandatory."""
+
+    entries: set[tuple[str, str]] = set()
+    for line_number, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.count(":") != 1:
+            raise ValueError(f"Invalid registry baseline entry at line {line_number}: {line!r}")
+        domain, name = line.split(":", maxsplit=1)
+        if not domain or not name:
+            raise ValueError(f"Empty registry baseline field at line {line_number}")
+        entry = (domain, name)
+        if entry in entries:
+            raise ValueError(f"Duplicate registry baseline entry: {domain}:{name}")
+        entries.add(entry)
+    if not entries:
+        raise ValueError("Registry baseline contains no models")
+    return entries
 
 
 @dataclass(frozen=True)
@@ -63,6 +127,15 @@ class HardGate:
     checks: tuple[str, ...]
     license_availability: str
     gate: str
+
+
+@dataclass(frozen=True)
+class ReviewRecord:
+    model: str
+    last_reviewed: date
+    review_by: date
+    owner: str
+    trigger: str
 
 
 def _cells(line: str) -> list[str]:
@@ -131,16 +204,34 @@ def parse_scorecard(markdown: str) -> list[CandidateScore]:
     return rows
 
 
-def expected_decision(final: float, evidence: str) -> str:
-    if final >= 80 and evidence in {"A", "B"}:
+def parse_review_register(markdown: str) -> list[ReviewRecord]:
+    """Parse candidate ownership and freshness deadlines."""
+
+    records: list[ReviewRecord] = []
+    for row in _parse_table(markdown, REVIEW_HEADER):
+        try:
+            records.append(ReviewRecord(row[0], date.fromisoformat(row[1]), date.fromisoformat(row[2]), row[3], row[4]))
+        except ValueError as exc:
+            raise ValueError(f"Invalid review date for {row[0]!r}") from exc
+    if not records:
+        raise ValueError("Review register contains no candidates")
+    return records
+
+
+def expected_decision(final: float, evidence: str, policy: dict[str, Any] | None = None) -> str:
+    active_policy = POLICY if policy is None else policy
+    if final >= active_policy["thresholds"]["core"] and evidence in {"A", "B"}:
         return "core"
-    if final >= 65:
+    if final >= active_policy["thresholds"]["observation"]:
         return "observation"
     return "rejected"
 
 
-def validate_scores(rows: list[CandidateScore]) -> list[str]:
+def validate_scores(rows: list[CandidateScore], policy: dict[str, Any] | None = None) -> list[str]:
     """Return all scorecard violations instead of failing on the first row."""
+    active_policy = POLICY if policy is None else policy
+    coefficients = active_policy["evidence_coefficients"]
+    dimension_limits = tuple(active_policy["dimensions"].values())
     errors: list[str] = []
     seen: set[str] = set()
     for row in rows:
@@ -150,25 +241,38 @@ def validate_scores(rows: list[CandidateScore]) -> list[str]:
             errors.append(f"{row.model}: duplicate scorecard row")
         seen.add(row.model)
 
-        if len(row.dimensions) != len(DIMENSION_LIMITS):
+        if len(row.dimensions) != len(dimension_limits):
             errors.append(f"{row.model}: expected seven dimensions")
             continue
-        for label, score, limit in zip("RPUEIAX", row.dimensions, DIMENSION_LIMITS, strict=True):
+        for label, score, limit in zip("RPUEIAX", row.dimensions, dimension_limits, strict=True):
             if not 0 <= score <= limit:
                 errors.append(f"{row.model}: {label}={score} is outside 0..{limit}")
         calculated_value = sum(row.dimensions)
         if row.value != calculated_value:
             errors.append(f"{row.model}: value {row.value} != dimension sum {calculated_value}")
-        if row.evidence not in EVIDENCE_COEFFICIENTS:
+        if row.evidence not in coefficients:
             errors.append(f"{row.model}: unknown evidence grade {row.evidence!r}")
             continue
         if row.risk < 0:
             errors.append(f"{row.model}: risk deduction must be non-negative")
-        calculated_final = row.value * EVIDENCE_COEFFICIENTS[row.evidence] - row.risk
+        calculated_final = row.value * coefficients[row.evidence] - row.risk
         if abs(row.final - calculated_final) > 0.051:
             errors.append(f"{row.model}: final {row.final:g} != calculated {calculated_final:g}")
         actual_decision = row.decision.split(",", maxsplit=1)[0].strip()
-        required_decision = expected_decision(calculated_final, row.evidence)
+        decision_parts = [part.strip() for part in row.decision.split(",")]
+        qualifiers = decision_parts[1:]
+        unknown_qualifiers = set(qualifiers) - set(active_policy["allowed_decision_qualifiers"])
+        if actual_decision not in active_policy["allowed_decisions"]:
+            errors.append(f"{row.model}: unsupported decision {actual_decision!r}")
+        if unknown_qualifiers:
+            errors.append(f"{row.model}: unsupported decision qualifier(s) {sorted(unknown_qualifiers)}")
+        if len(qualifiers) != len(set(qualifiers)):
+            errors.append(f"{row.model}: duplicate decision qualifier")
+        if "implemented" in qualifiers and "no code" in qualifiers:
+            errors.append(f"{row.model}: decision cannot be both implemented and no code")
+        if actual_decision == "rejected" and "implemented" in qualifiers:
+            errors.append(f"{row.model}: rejected candidate cannot authorize implementation")
+        required_decision = expected_decision(calculated_final, row.evidence, active_policy)
         if actual_decision != required_decision:
             errors.append(
                 f"{row.model}: decision {actual_decision!r} must be {required_decision!r} "
@@ -177,18 +281,29 @@ def validate_scores(rows: list[CandidateScore]) -> list[str]:
     return errors
 
 
-def validate_document(path: Path) -> list[str]:
+def validate_document(
+    path: Path,
+    *,
+    policy: dict[str, Any] | None = None,
+    registry_baseline: set[tuple[str, str]] | None = None,
+    as_of: date | None = None,
+) -> list[str]:
     markdown = path.read_text(encoding="utf-8")
+    active_policy = POLICY if policy is None else policy
+    active_baseline = load_registry_baseline() if registry_baseline is None else registry_baseline
     rows = parse_scorecard(markdown)
     gates = parse_hard_gates(markdown)
-    errors = validate_scores(rows)
-    errors.extend(_validate_scope(markdown, gates))
-    errors.extend(_validate_hard_gates(gates, rows))
+    reviews = parse_review_register(markdown)
+    errors = validate_scores(rows, active_policy)
+    errors.extend(_validate_scope(markdown, gates, active_policy))
+    errors.extend(_validate_hard_gates(gates, rows, active_policy))
+    errors.extend(_validate_reviews(reviews, gates, active_policy, as_of or date.today()))
     rationale_models = _parse_rationale_models(markdown)
     for row in rows:
         if row.model not in rationale_models:
             errors.append(f"{row.model}: missing Dimension Rationale row")
-    errors.extend(_validate_detailed_records(markdown, rows, gates))
+    errors.extend(_validate_detailed_records(markdown, rows, gates, active_policy))
+    errors.extend(_validate_registry_admission(markdown, rows, active_baseline))
     decisions = {row.decision.split(",", maxsplit=1)[0].strip() for row in rows}
     missing_decisions = {"core", "observation", "rejected"} - decisions
     if missing_decisions:
@@ -198,11 +313,50 @@ def validate_document(path: Path) -> list[str]:
     return errors
 
 
-def _validate_scope(markdown: str, gates: list[HardGate]) -> list[str]:
+def _validate_registry_admission(
+    markdown: str,
+    scores: list[CandidateScore],
+    baseline: set[tuple[str, str]],
+) -> list[str]:
+    """Reject registry additions that bypassed the evidence-governance workflow."""
+
+    from torch_like.models.registry import list_domains, list_models
+
+    actual = {(domain, name) for domain in list_domains() for name in list_models(domain)}
+    errors = [
+        f"Registry baseline entry disappeared without governance update: {domain}:{name}"
+        for domain, name in sorted(baseline - actual)
+    ]
+
+    implemented_registry_names: set[str] = set()
+    sections = list(re.finditer(r"^### (.+)$", markdown, flags=re.MULTILINE))
+    for score in scores:
+        if "implemented" not in score.decision:
+            continue
+        matching_sections = [match for match in sections if _same_model(match.group(1), score.model)]
+        if len(matching_sections) != 1:
+            continue
+        match = matching_sections[0]
+        next_positions = [item.start() for item in sections if item.start() > match.start()]
+        body = markdown[match.end() : min(next_positions, default=len(markdown))]
+        registry_match = re.search(r"^- Registry: `([^`]+)`;", body, flags=re.MULTILINE)
+        if registry_match:
+            implemented_registry_names.add(registry_match.group(1))
+
+    for domain, name in sorted(actual - baseline):
+        if name not in implemented_registry_names:
+            errors.append(
+                f"Ungoverned registry addition {domain}:{name}; add and approve a candidate-pool record first"
+            )
+    return errors
+
+
+def _validate_scope(markdown: str, gates: list[HardGate], policy: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     target_match = re.search(r"^- Target domain: (.+)$", markdown, flags=re.MULTILINE)
     minimum_match = re.search(r"^- Minimum candidate count: (\d+)\.$", markdown, flags=re.MULTILINE)
     date_match = re.search(r"^- Evaluation date: (\d{4}-\d{2}-\d{2})\.$", markdown, flags=re.MULTILINE)
+    policy_match = re.search(r"^- Governance policy: `([^`]+)` version ([\w.-]+)\.$", markdown, flags=re.MULTILINE)
     if not target_match or not target_match.group(1).strip():
         errors.append("Scope is missing a non-empty Target domain")
     if not minimum_match:
@@ -220,10 +374,18 @@ def _validate_scope(markdown: str, gates: list[HardGate]) -> list[str]:
             date.fromisoformat(date_match.group(1))
         except ValueError:
             errors.append(f"Evaluation date is invalid: {date_match.group(1)!r}")
+    if not policy_match:
+        errors.append("Scope is missing Governance policy declaration")
+    else:
+        declared_path, declared_version = policy_match.groups()
+        if declared_path != "governance/model_admission_policy.json":
+            errors.append(f"Governance policy path is not canonical: {declared_path!r}")
+        if declared_version != policy["policy_version"]:
+            errors.append(f"Governance policy version {declared_version!r} does not match {policy['policy_version']!r}")
     return errors
 
 
-def _validate_hard_gates(gates: list[HardGate], scores: list[CandidateScore]) -> list[str]:
+def _validate_hard_gates(gates: list[HardGate], scores: list[CandidateScore], policy: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     seen: set[str] = set()
     for gate in gates:
@@ -232,7 +394,7 @@ def _validate_hard_gates(gates: list[HardGate], scores: list[CandidateScore]) ->
             errors.append(f"{gate.model}: duplicate hard-gate row")
         seen.add(key)
         passed = gate.gate.startswith("pass")
-        if gate.gate not in {"pass", "pass with risk", "pass with high risk", "fail"}:
+        if gate.gate not in set(policy["allowed_gate_results"]):
             errors.append(f"{gate.model}: unsupported gate result {gate.gate!r}")
         if passed and any(
             "unknown" in value.lower() or not value for value in (*gate.checks, gate.license_availability)
@@ -252,7 +414,49 @@ def _validate_hard_gates(gates: list[HardGate], scores: list[CandidateScore]) ->
     return errors
 
 
-def _validate_detailed_records(markdown: str, scores: list[CandidateScore], gates: list[HardGate]) -> list[str]:
+def _validate_reviews(
+    reviews: list[ReviewRecord],
+    gates: list[HardGate],
+    policy: dict[str, Any],
+    as_of: date,
+) -> list[str]:
+    errors: list[str] = []
+    seen: set[str] = set()
+    maximum_horizon = policy["review"]["maximum_horizon_days"]
+    expected_owner = policy["review"]["owner"]
+    for review in reviews:
+        key = _model_key(review.model)
+        if key in seen:
+            errors.append(f"{review.model}: duplicate review-register row")
+        seen.add(key)
+        matches = [gate for gate in gates if _same_model(review.model, gate.model)]
+        if len(matches) != 1:
+            errors.append(f"{review.model}: review row must map to exactly one hard gate, found {len(matches)}")
+        if review.last_reviewed > as_of:
+            errors.append(f"{review.model}: last-reviewed date {review.last_reviewed} is in the future")
+        if review.review_by < review.last_reviewed:
+            errors.append(f"{review.model}: review deadline precedes its last review")
+        if (review.review_by - review.last_reviewed).days > maximum_horizon:
+            errors.append(f"{review.model}: review horizon exceeds {maximum_horizon} days")
+        if policy["review"]["expired_is_error"] and review.review_by < as_of:
+            errors.append(f"{review.model}: review expired on {review.review_by}")
+        if review.owner != expected_owner:
+            errors.append(f"{review.model}: owner must be {expected_owner!r}")
+        if not review.trigger or review.trigger.lower() == "unknown":
+            errors.append(f"{review.model}: early-review trigger is missing")
+    for gate in gates:
+        matches = [review for review in reviews if _same_model(gate.model, review.model)]
+        if len(matches) != 1:
+            errors.append(f"{gate.model}: hard gate must have exactly one review row, found {len(matches)}")
+    return errors
+
+
+def _validate_detailed_records(
+    markdown: str,
+    scores: list[CandidateScore],
+    gates: list[HardGate],
+    policy: dict[str, Any],
+) -> list[str]:
     sections: list[tuple[str, str, str]] = []
     matches = list(re.finditer(r"^### (.+)$", markdown, flags=re.MULTILINE))
     for index, match in enumerate(matches):
@@ -291,11 +495,18 @@ def _validate_detailed_records(markdown: str, scores: list[CandidateScore], gate
             primary_count = evidence.count("[primary:")
             official_count = evidence.count("[official:")
             independent_count = evidence.count("[independent:")
-            if score.evidence in {"A", "B", "C"} and primary_count < 1:
-                errors.append(f"{score.model}: evidence grade {score.evidence} requires a labeled primary source")
-            if score.evidence in {"A", "B", "C"} and official_count < 1:
-                errors.append(f"{score.model}: evidence grade {score.evidence} requires a labeled official source")
-            required_independent = 2 if score.evidence == "A" else 1 if score.evidence == "B" else 0
+            requirements = policy["evidence_requirements"][score.evidence]
+            if primary_count < requirements["primary"]:
+                errors.append(
+                    f"{score.model}: evidence grade {score.evidence} requires "
+                    f"{requirements['primary']} primary source(s), found {primary_count}"
+                )
+            if official_count < requirements["official"]:
+                errors.append(
+                    f"{score.model}: evidence grade {score.evidence} requires "
+                    f"{requirements['official']} official source(s), found {official_count}"
+                )
+            required_independent = requirements["independent"]
             if independent_count < required_independent:
                 errors.append(
                     f"{score.model}: evidence grade {score.evidence} requires {required_independent} "
@@ -378,10 +589,35 @@ def main() -> int:
         default=Path("docs/MODEL_CANDIDATE_POOL.md"),
         help="candidate-pool Markdown path",
     )
+    parser.add_argument(
+        "--policy",
+        type=Path,
+        default=DEFAULT_POLICY_PATH,
+        help="versioned model-admission policy path",
+    )
+    parser.add_argument(
+        "--registry-baseline",
+        type=Path,
+        default=DEFAULT_BASELINE_PATH,
+        help="grandfathered built-in registry snapshot",
+    )
+    parser.add_argument(
+        "--as-of",
+        type=date.fromisoformat,
+        default=date.today(),
+        help="freshness audit date in YYYY-MM-DD form (default: today)",
+    )
     args = parser.parse_args()
     try:
-        errors = validate_document(args.path)
-    except (OSError, ValueError) as exc:
+        policy = load_policy(args.policy)
+        baseline = load_registry_baseline(args.registry_baseline)
+        errors = validate_document(
+            args.path,
+            policy=policy,
+            registry_baseline=baseline,
+            as_of=args.as_of,
+        )
+    except (json.JSONDecodeError, OSError, TypeError, ValueError) as exc:
         print(f"candidate-pool validation failed: {exc}")
         return 1
     if errors:
@@ -390,8 +626,10 @@ def main() -> int:
         return 1
     markdown = args.path.read_text(encoding="utf-8")
     print(
-        f"candidate-pool validation passed: {len(parse_hard_gates(markdown))} gated candidates, "
-        f"{len(parse_scorecard(markdown))} formally scored"
+        f"candidate-pool validation passed under policy {policy['policy_version']}: "
+        f"{len(parse_hard_gates(markdown))} gated candidates, "
+        f"{len(parse_scorecard(markdown))} formally scored, "
+        f"{len(parse_review_register(markdown))} review records"
     )
     return 0
 

@@ -65,7 +65,7 @@ class ITransformer(ForecastingModel):
             batch_first=True,
             norm_first=True,
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=e_layers)
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=e_layers, enable_nested_tensor=False)
         self.dropout = nn.Dropout(dropout)
         self.head = nn.Linear(d_model, pred_len)
         self.output_proj = nn.Identity() if c_out == enc_in else nn.Linear(enc_in, c_out)

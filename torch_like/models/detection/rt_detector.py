@@ -152,7 +152,11 @@ class RTDetector(DetectionModel):
         decoder_layer2 = _TransformerDecoderLayer(
             self.model_dim, nhead=input_dim, dim_feedforward=ff_dim, dropout=dropout
         )
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=1)
+        self.transformer_encoder = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=1,
+            enable_nested_tensor=False,
+        )
         self.transformer_decoder1 = nn.TransformerDecoder(decoder_layer1, num_layers=1)
         self.transformer_decoder2 = nn.TransformerDecoder(decoder_layer2, num_layers=1)
         self.reconstruction_head = nn.Sequential(nn.Linear(self.model_dim, input_dim), nn.Sigmoid())

@@ -93,7 +93,11 @@ class SAMImageEncoder(nn.Module):
             batch_first=True,
             norm_first=True,
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=encoder_layers)
+        self.encoder = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=encoder_layers,
+            enable_nested_tensor=False,
+        )
         self.neck = nn.Sequential(
             nn.Conv2d(d_model, d_model, kernel_size=1, bias=False),
             nn.GroupNorm(1, d_model),

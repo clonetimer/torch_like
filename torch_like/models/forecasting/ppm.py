@@ -83,7 +83,7 @@ class PPM(ProbabilisticForecastingModel):
             activation="gelu",
             norm_first=True,
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=e_layers)
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=e_layers, enable_nested_tensor=False)
         self.dec_proj = nn.Linear(dec_in, d_model)
         self.horizon_embed = nn.Parameter(torch.randn(1, pred_len, d_model) * 0.02)
         self.prior_mapper = nn.Sequential(

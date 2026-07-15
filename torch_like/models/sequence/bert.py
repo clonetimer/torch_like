@@ -91,7 +91,7 @@ class BERT(SequenceModel):
             norm_first=True,
             layer_norm_eps=layer_norm_eps,
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers, enable_nested_tensor=False)
         self.pooler = nn.Sequential(nn.Linear(d_model, d_model), nn.Tanh())
         self.mlm_transform = nn.Sequential(
             nn.Linear(d_model, d_model),

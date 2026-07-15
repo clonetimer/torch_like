@@ -508,6 +508,7 @@ English: Autoregressive KV caching is not part of this optimization batch; curre
 & 'D:\Project\base\base\Scripts\python.exe' -m unittest discover -s tests
 & 'D:\Project\base\base\Scripts\python.exe' -m ruff check torch_like runner tests examples tools
 & 'D:\Project\base\base\Scripts\python.exe' -m ruff format --check torch_like runner tests examples tools
+& 'D:\Project\base\base\Scripts\python.exe' tools/validate_candidate_pool.py
 & 'D:\Project\base\base\Scripts\python.exe' -m pytest --cov=torch_like --cov-report=term-missing
 ```
 
@@ -524,6 +525,10 @@ English: The framework now provides a multi-task model-library skeleton covering
 高价值模型候选、证据等级和正式收录决策见 [`docs/MODEL_CANDIDATE_POOL.md`](docs/MODEL_CANDIDATE_POOL.md)。
 
 See [`docs/MODEL_CANDIDATE_POOL.md`](docs/MODEL_CANDIDATE_POOL.md) for the evidence-graded candidate pool and formal admission decisions.
+
+中文：准入阈值、证据要求和复审期限由 [`governance/model_admission_policy.json`](governance/model_admission_policy.json) 统一定义。候选模型不得绕过候选记录、硬门槛、证据评分、复审台账和框架合同测试直接进入公共 API。
+
+English: Admission thresholds, evidence requirements, and review deadlines are defined centrally in [`governance/model_admission_policy.json`](governance/model_admission_policy.json). A model may not enter the public API without a candidate record, hard-gate review, evidence score, review registration, and framework-contract tests.
 
 ## Recently Added Domains / 新增领域
 

@@ -77,7 +77,7 @@ class MAE(VisionModel):
         encoder_layer = nn.TransformerEncoderLayer(
             d_model, encoder_heads, d_ff, dropout, "gelu", batch_first=True, norm_first=True
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, encoder_layers)
+        self.encoder = nn.TransformerEncoder(encoder_layer, encoder_layers, enable_nested_tensor=False)
         self.encoder_norm = nn.LayerNorm(d_model)
         self.decoder_embed = nn.Linear(d_model, decoder_dim)
         self.mask_token = nn.Parameter(torch.zeros(1, 1, decoder_dim))
@@ -85,7 +85,7 @@ class MAE(VisionModel):
         decoder_layer = nn.TransformerEncoderLayer(
             decoder_dim, decoder_heads, decoder_d_ff, dropout, "gelu", batch_first=True, norm_first=True
         )
-        self.decoder = nn.TransformerEncoder(decoder_layer, decoder_layers)
+        self.decoder = nn.TransformerEncoder(decoder_layer, decoder_layers, enable_nested_tensor=False)
         self.decoder_norm = nn.LayerNorm(decoder_dim)
         self.decoder_pred = nn.Linear(decoder_dim, patch_size * patch_size * in_channels)
         nn.init.trunc_normal_(self.encoder_pos, std=0.02)

@@ -122,7 +122,11 @@ class BLIP2(MultimodalModel):
             batch_first=True,
             norm_first=True,
         )
-        self.visual_encoder = nn.TransformerEncoder(vision_layer, num_layers=vision_layers)
+        self.visual_encoder = nn.TransformerEncoder(
+            vision_layer,
+            num_layers=vision_layers,
+            enable_nested_tensor=False,
+        )
         self.visual_norm = nn.LayerNorm(d_model)
 
         self.query_tokens = nn.Parameter(torch.zeros(1, num_query_tokens, d_model))

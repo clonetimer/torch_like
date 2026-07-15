@@ -49,7 +49,7 @@ class TranAD(DetectionModel):
         encoder_layer = nn.TransformerEncoderLayer(
             d_model, n_heads, d_ff, dropout, "gelu", batch_first=True, norm_first=True
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, e_layers)
+        self.encoder = nn.TransformerEncoder(encoder_layer, e_layers, enable_nested_tensor=False)
         self.reconstruction_head = nn.Sequential(nn.LayerNorm(d_model), nn.Linear(d_model, input_dim))
         nn.init.trunc_normal_(self.position_embedding, std=0.02)
 

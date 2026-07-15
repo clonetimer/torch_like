@@ -41,6 +41,9 @@ build = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = [
+    "error:enable_nested_tensor is True.*:UserWarning",
+]
 
 [tool.coverage.run]
 branch = true

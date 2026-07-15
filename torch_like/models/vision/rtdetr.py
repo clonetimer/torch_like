@@ -44,7 +44,7 @@ class _HybridEncoder(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(
             d_model, n_heads, d_ff, dropout, activation="gelu", batch_first=True, norm_first=True
         )
-        self.aifi = nn.TransformerEncoder(encoder_layer, layers)
+        self.aifi = nn.TransformerEncoder(encoder_layer, layers, enable_nested_tensor=False)
         self.position = PositionEmbeddingSine(d_model)
         self.top_down = nn.ModuleList([_ConvNormAct(d_model * 2, d_model) for _ in range(len(channels) - 1)])
 

@@ -1,10 +1,15 @@
+import copy
 import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 
 from tools.validate_candidate_pool import (
     CandidateScore,
+    load_policy,
+    load_registry_baseline,
     parse_hard_gates,
+    parse_review_register,
     parse_scorecard,
     validate_document,
     validate_scores,
@@ -153,6 +158,98 @@ class CandidatePoolValidationTests(unittest.TestCase):
         )
         errors = self.validate_text(document)
         self.assertIn("Titans (NeurIPS 2025): detailed record is missing 'Missing information'", errors)
+
+    def test_repository_policy_is_machine_readable(self):
+        policy = load_policy(Path("governance/model_admission_policy.json"))
+        self.assertEqual(policy["policy_version"], "1.0")
+        self.assertEqual(sum(policy["dimensions"].values()), 100)
+        self.assertGreater(policy["thresholds"]["core"], policy["thresholds"]["observation"])
+
+    def test_every_candidate_has_one_review_record(self):
+        gates = parse_hard_gates(self.document)
+        reviews = parse_review_register(self.document)
+        self.assertEqual(len(reviews), len(gates))
+        self.assertTrue(all(review.owner == "maintainers" for review in reviews))
+
+    def test_expired_review_fails_closed(self):
+        errors = validate_document(
+            Path("docs/MODEL_CANDIDATE_POOL.md"),
+            as_of=date(2028, 1, 1),
+        )
+        self.assertTrue(any("review expired" in error for error in errors))
+
+    def test_missing_review_record_is_rejected(self):
+        line = next(line for line in self.document.splitlines() if line.startswith("| DINOv2 with registers | 2026"))
+        errors = self.validate_text(self.document.replace(line, "", 1))
+        self.assertTrue(
+            any("DINOv2 with registers: hard gate must have exactly one review row" in error for error in errors)
+        )
+
+    def test_policy_version_drift_is_rejected(self):
+        document = self.document.replace("version 1.0.", "version 0.9.", 1)
+        errors = self.validate_text(document)
+        self.assertTrue(any("Governance policy version" in error for error in errors))
+
+    def test_policy_threshold_change_controls_decision(self):
+        policy = copy.deepcopy(load_policy())
+        policy["thresholds"]["core"] = 90
+        row = CandidateScore(
+            model="PolicyControlled",
+            dimensions=(25, 20, 15, 10, 10, 10, 10),
+            value=100,
+            evidence="B",
+            risk=5,
+            final=85,
+            decision="core",
+        )
+        errors = validate_scores([row], policy)
+        self.assertTrue(any("must be 'observation'" in error for error in errors))
+
+    def test_wrong_review_owner_is_rejected(self):
+        document = self.document.replace("| maintainers | benchmark, API", "| unknown | benchmark, API", 1)
+        errors = self.validate_text(document)
+        self.assertTrue(any("owner must be 'maintainers'" in error for error in errors))
+
+    def test_rejected_candidate_cannot_authorize_implementation(self):
+        row = CandidateScore(
+            model="RejectedImplementation",
+            dimensions=(10, 10, 10, 5, 5, 5, 5),
+            value=50,
+            evidence="A",
+            risk=0,
+            final=50,
+            decision="rejected, implemented",
+        )
+        errors = validate_scores([row])
+        self.assertIn("RejectedImplementation: rejected candidate cannot authorize implementation", errors)
+
+    def test_unknown_decision_qualifier_is_rejected(self):
+        row = CandidateScore(
+            model="UnknownQualifier",
+            dimensions=(25, 20, 15, 10, 10, 10, 10),
+            value=100,
+            evidence="A",
+            risk=0,
+            final=100,
+            decision="core, maybe",
+        )
+        errors = validate_scores([row])
+        self.assertTrue(any("unsupported decision qualifier" in error for error in errors))
+
+    def test_registry_baseline_matches_current_governed_catalog(self):
+        baseline = load_registry_baseline()
+        self.assertEqual(len(baseline), 161)
+        errors = validate_document(Path("docs/MODEL_CANDIDATE_POOL.md"), registry_baseline=baseline)
+        self.assertFalse(any("registry" in error.lower() for error in errors))
+
+    def test_unapproved_registry_addition_is_rejected(self):
+        baseline = load_registry_baseline()
+        baseline.remove(("graph", "GCN"))
+        errors = validate_document(Path("docs/MODEL_CANDIDATE_POOL.md"), registry_baseline=baseline)
+        self.assertIn(
+            "Ungoverned registry addition graph:GCN; add and approve a candidate-pool record first",
+            errors,
+        )
 
 
 if __name__ == "__main__":

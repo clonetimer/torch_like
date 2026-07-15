@@ -56,7 +56,7 @@ class WhisperAudioEncoder(nn.Module):
             batch_first=True,
             norm_first=True,
         )
-        self.encoder = nn.TransformerEncoder(layer, num_layers=n_layers)
+        self.encoder = nn.TransformerEncoder(layer, num_layers=n_layers, enable_nested_tensor=False)
         self.norm = nn.LayerNorm(d_model)
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
 

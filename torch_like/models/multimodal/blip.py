@@ -100,7 +100,11 @@ class BLIP(MultimodalModel):
             batch_first=True,
             norm_first=True,
         )
-        self.visual_encoder = nn.TransformerEncoder(vision_layer, num_layers=vision_layers)
+        self.visual_encoder = nn.TransformerEncoder(
+            vision_layer,
+            num_layers=vision_layers,
+            enable_nested_tensor=False,
+        )
         self.visual_norm = nn.LayerNorm(d_model)
         self.visual_projection = nn.Linear(d_model, embed_dim, bias=False)
 
@@ -114,7 +118,11 @@ class BLIP(MultimodalModel):
             batch_first=True,
             norm_first=True,
         )
-        self.text_encoder = nn.TransformerEncoder(text_layer, num_layers=text_layers)
+        self.text_encoder = nn.TransformerEncoder(
+            text_layer,
+            num_layers=text_layers,
+            enable_nested_tensor=False,
+        )
         self.text_norm = nn.LayerNorm(d_model)
         self.text_projection = nn.Linear(d_model, embed_dim, bias=False)
 

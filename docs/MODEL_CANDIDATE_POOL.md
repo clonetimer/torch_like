@@ -9,6 +9,7 @@ This pool governs admission quality for `torch_like`; it is not a model-count ta
 - Target domain: general deep-learning architecture gaps across the registered `torch_like` domains.
 - Minimum candidate count: 12.
 - Evaluation date: 2026-07-14.
+- Governance policy: `governance/model_admission_policy.json` version 1.0.
 
 ## Rules / 规则
 
@@ -18,6 +19,31 @@ This pool governs admission quality for `torch_like`; it is not a model-count ta
 - 价值分：相关性 25、能力/性能 20、工程实用性 15、效率/成本 10、创新 10、生态/采用度 10、可复现性 10。
 - 最终分：`价值分 × 证据系数 - 风险扣分`；A=1.00，B=0.90，C=0.75，D=0.50。
 - 核心收录：最终分 >=80 且证据 A/B；观察收录：65-79 或价值高但证据不足；候选记录：评价未完成；淘汰：低于 65 或硬门槛失败。
+
+政策配置是评分和状态转换的唯一机器可读依据；本文档中的自然语言规则必须与其一致。每个候选均有复审截止日期，新增证据、许可证变化、官方实现变化或框架能力重叠变化会触发提前复审。
+
+The policy file is the machine-readable source of truth for scoring and state transitions. Every candidate has a review deadline; new evidence, license changes, official implementation changes, or new framework overlap trigger an earlier review.
+
+## Review Register / 复审台账
+
+| Model/version | Last reviewed | Review by | Owner | Early-review trigger |
+|---|---|---|---|---|
+| RT-DETR (CVPR 2024) | 2026-07-14 | 2027-01-14 | maintainers | benchmark, API, license, or implementation-level change |
+| DreamerV3 (Nature 2025 code) | 2026-07-14 | 2027-01-14 | maintainers | independent replication or reference-code change |
+| EnCodec 24/48 kHz | 2026-07-14 | 2027-01-14 | maintainers | codec benchmark, API, or license change |
+| Mamba-2 / SSD | 2026-07-14 | 2026-10-15 | maintainers | independent comparison or fused-kernel evidence |
+| EGNN (ICML 2021) | 2026-07-14 | 2027-01-14 | maintainers | sparse backend, benchmark, or API change |
+| SAM 2.1 | 2026-07-14 | 2026-10-15 | maintainers | video protocol or independent latency evidence |
+| Uni-Mol v1 | 2026-07-14 | 2026-10-15 | maintainers | molecular protocol or checkpoint-policy change |
+| TabPFN v2 | 2026-07-14 | 2026-10-15 | maintainers | license, checkpoint, or independent benchmark change |
+| Fourier Neural Operator | 2026-07-14 | 2026-10-15 | maintainers | operator-learning protocol or benchmark change |
+| V-JEPA 2 | 2026-07-14 | 2026-10-15 | maintainers | permissive assets or broad independent validation |
+| RWKV-7 Goose | 2026-07-14 | 2026-10-15 | maintainers | equal-budget independent replication |
+| Gated DeltaNet-2 (2026-05) | 2026-07-14 | 2026-10-15 | maintainers | license or independent replication |
+| Griffin/RecurrentGemma 1.1 | 2026-07-14 | 2026-10-15 | maintainers | terms, weights, or independent comparison change |
+| SegFormer B0-B5 | 2026-07-14 | 2027-01-14 | maintainers | license or material capability-gap change |
+| Titans (NeurIPS 2025) | 2026-07-14 | 2026-10-15 | maintainers | official code and explicit license become available |
+| DINOv2 with registers | 2026-07-14 | 2027-01-14 | maintainers | non-duplicative random-init API identified |
 
 ## Hard-Gate Summary / 硬门槛汇总
 

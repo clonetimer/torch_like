@@ -677,6 +677,45 @@ English: Implementations in `torch_like` prioritize framework usability and API 
 
 English: If a new model depends heavily on training strategies, dataset assumptions, or external dependencies, it should first be recorded as a candidate instead of entering the core library immediately.
 
+## Model Governance Workflow / 模型治理流程
+
+中文：模型收录采用“发现、硬门槛、正式评分、决策、实现验收、定期复审”六阶段流程。`governance/model_admission_policy.json` 是阈值、证据要求和复审期限的唯一机器可读依据；修改政策必须同步提升 `policy_version`，并重新验证全部候选。
+
+English: Model admission follows six stages: discovery, hard gates, formal scoring, decision, implementation acceptance, and periodic review. `governance/model_admission_policy.json` is the sole machine-readable source for thresholds, evidence requirements, and review deadlines. Policy changes must bump `policy_version` and revalidate every candidate.
+
+State transitions / 状态转换:
+
+1. 中文：新发现只能先进入 `Candidate Record`，不得直接实现并导出。
+   English: A new discovery must first enter `Candidate Record`; it may not jump directly to implementation and export.
+2. 中文：六项硬门槛全部通过后才能进入评分表；失败项不得获得形式化分数。
+   English: Formal scoring is allowed only after all six hard gates pass; failed candidates receive no formal score.
+3. 中文：评分决策只能是 `core`、`observation` 或 `rejected`，由政策阈值自动计算。
+   English: Scored decisions are limited to `core`, `observation`, or `rejected` and are computed from policy thresholds.
+4. 中文：`core` 才默认进入实现队列；`observation` 需要解决“Missing information”并重新评分，不能仅凭维护者偏好升级。
+   English: Only `core` enters the implementation queue by default. An `observation` must resolve its missing information and be rescored; maintainer preference alone cannot promote it.
+5. 中文：实现完成必须登记真实 registry 名称和 `integration_level`，并通过导入、构造、前向、梯度、关键数学性质和边界条件测试。
+   English: An accepted implementation must record its real registry name and `integration_level` and pass import, construction, forward, gradient, key mathematical-property, and boundary-condition tests.
+6. 中文：每个候选都必须在复审台账中登记负责人、截止日期和提前触发条件；过期结论使 CI 失败关闭。
+   English: Every candidate must record an owner, deadline, and early-review trigger. Expired decisions fail closed in CI.
+
+Registry bypass prevention / 注册绕过防护:
+
+- 中文：`governance/model_registry_baseline.txt` 是治理启用时的内置模型快照，不是推荐名单。
+- English: `governance/model_registry_baseline.txt` is the built-in model snapshot at governance activation, not a recommendation list.
+- 中文：不要为了让 CI 通过而直接把新模型追加到基线。新模型必须先获候选池批准；验证器会把候选池中的 `implemented` registry 声明作为基线外新增项的唯一授权。
+- English: Never append a new model to the baseline merely to make CI pass. It must first be approved in the candidate pool; the validator treats an `implemented` registry claim there as the only authorization for an addition beyond the baseline.
+
+Validation / 验证:
+
+```powershell
+& 'D:\Project\base\base\Scripts\python.exe' tools/validate_candidate_pool.py
+& 'D:\Project\base\base\Scripts\python.exe' tools/validate_candidate_pool.py --as-of 2026-10-15
+```
+
+中文：第一条按当前日期检查；第二条可在合并前预演未来复审到期情况。网络链接的内容真实性仍需人工或检索工具复核，链接数量通过不等于证据质量通过。
+
+English: The first command checks against today; the second can rehearse upcoming review expiry before merge. Source authenticity still requires human or research-tool review; passing a link count does not establish evidence quality.
+
 ## Reinforcement Learning Domain / 强化学习域
 
 Current models / 当前模型:

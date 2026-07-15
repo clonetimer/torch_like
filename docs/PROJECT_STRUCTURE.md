@@ -110,6 +110,23 @@ Paths / 路径:
 
 English: The packaging layer builds the core `torch_like/` package into a wheel installable by other Python environments. Runners, tests, examples, and local data are excluded from distributions.
 
+### 7. Model governance layer / 模型治理层
+
+Paths / 路径:
+
+- `governance/model_admission_policy.json`
+- `governance/model_registry_baseline.txt`
+- `docs/MODEL_CANDIDATE_POOL.md`
+- `tools/validate_candidate_pool.py`
+
+中文：治理层决定模型是否值得进入框架，不包含模型实现。政策文件是评分与状态转换的机器可读依据；候选池保存证据、同行比较、风险和复审台账；验证器在 CI 中阻止绕过准入流程或使用过期结论。
+
+English: The governance layer decides whether a model merits framework admission; it does not contain model implementations. The policy file is the machine-readable source for scoring and transitions, the candidate pool records evidence, peer comparisons, risks, and review deadlines, and the validator blocks bypasses and stale decisions in CI.
+
+中文：注册表基线记录治理制度启用前已经存在的模型。任何不在基线中的新 registry 条目，都必须对应候选池中带有 `implemented` 决策和真实 registry 名称的批准记录。
+
+English: The registry baseline records models that predate enforcement. Any new registry entry outside that baseline must map to an approved candidate-pool record carrying an `implemented` decision and its real registry name.
+
 ## Registry Boundary / 注册边界
 
 中文：registry 只注册可复用模型，不注册训练脚本、数据集脚本或一次性实验。

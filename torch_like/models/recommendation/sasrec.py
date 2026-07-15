@@ -65,7 +65,11 @@ class SASRec(RecommendationModel):
             norm_first=True,
             activation="gelu",
         )
-        self.encoder = torch.nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
+        self.encoder = torch.nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=n_layers,
+            enable_nested_tensor=False,
+        )
         self.norm = torch.nn.LayerNorm(d_model)
         self.dropout = torch.nn.Dropout(dropout)
 

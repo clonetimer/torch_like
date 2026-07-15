@@ -107,7 +107,11 @@ class GroundingDINO(VisionModel):
             batch_first=True,
             norm_first=True,
         )
-        self.image_encoder = nn.TransformerEncoder(encoder_layer, num_layers=e_layers)
+        self.image_encoder = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=e_layers,
+            enable_nested_tensor=False,
+        )
 
         self.text_embeddings = CLIPTextEmbeddings(vocab_size, max_text_len, d_model, dropout, pad_token_id)
         text_layer = nn.TransformerEncoderLayer(
@@ -119,7 +123,11 @@ class GroundingDINO(VisionModel):
             batch_first=True,
             norm_first=True,
         )
-        self.text_encoder = nn.TransformerEncoder(text_layer, num_layers=text_layers)
+        self.text_encoder = nn.TransformerEncoder(
+            text_layer,
+            num_layers=text_layers,
+            enable_nested_tensor=False,
+        )
         self.text_norm = nn.LayerNorm(d_model)
 
         decoder_layer = nn.TransformerDecoderLayer(

@@ -88,7 +88,7 @@ class PatchTST(ForecastingModel):
             batch_first=True,
             norm_first=True,
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=e_layers)
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=e_layers, enable_nested_tensor=False)
         self.dropout = nn.Dropout(dropout)
         self.head = nn.Sequential(
             nn.Flatten(start_dim=-2),
