@@ -4,13 +4,16 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
+from unittest import mock
 
 import joblib
 import numpy as np
 import pandas as pd
 
+import torch_like.automl.task as automl_task_module
 from torch_like.automl import (
     ArtifactSpec,
+    CandidatePolicy,
     DatasetFormat,
     DatasetSpec,
     DataSplit,
@@ -26,6 +29,8 @@ from torch_like.automl import (
     SplitType,
     TaskSpec,
     TaskType,
+    list_candidate_specs,
+    load_best,
     load_config,
     prepare_csv_dataset,
     prepare_dataset,
@@ -475,6 +480,118 @@ class AutoMLBackendTests(unittest.TestCase):
             expected_names,
         )
 
+    def test_candidate_registry_covers_non_anomaly_task_models(self):
+        names = {
+            spec.name
+            for spec in list_candidate_specs(
+                TaskType.RUL_REGRESSION,
+                is_sequence=True,
+                equal_sequence_lengths=True,
+            )
+        }
+        self.assertTrue({"Ridge", "TCNRUL", "PatchTSTRUL", "TransformerRUL"}.issubset(names))
+        tabular_names = {
+            spec.name
+            for spec in list_candidate_specs(
+                TaskType.TABULAR_CLASSIFICATION,
+                is_sequence=False,
+                equal_sequence_lengths=True,
+            )
+        }
+        self.assertTrue({"FTTransformer", "TabNet", "NODE", "SAINT"}.issubset(tabular_names))
+
+    def test_random_budget_keeps_every_explicit_algorithm(self):
+        candidates = build_candidates(
+            TaskType.TABULAR_CLASSIFICATION,
+            SearchSpec(
+                strategy="random",
+                max_trials=2,
+                preprocessing=("standard", "robust"),
+                algorithms=("LogisticRegression", "ExtraTreesClassifier"),
+            ),
+            is_sequence=False,
+            equal_sequence_lengths=True,
+            seed=9,
+        )
+        self.assertEqual({candidate.name for candidate in candidates}, {"LogisticRegression", "ExtraTreesClassifier"})
+
+    def test_candidate_policies_filter_and_prioritize_model_families(self):
+        common = {
+            "strategy": "grid",
+            "max_trials": 3,
+            "preprocessing": ("standard",),
+        }
+        torch_only = build_candidates(
+            TaskType.TABULAR_CLASSIFICATION,
+            SearchSpec(**common, candidate_policy="torch_like_only"),
+            is_sequence=False,
+            equal_sequence_lengths=True,
+            seed=9,
+        )
+        baselines_only = build_candidates(
+            TaskType.TABULAR_CLASSIFICATION,
+            SearchSpec(**common, candidate_policy="baseline_only"),
+            is_sequence=False,
+            equal_sequence_lengths=True,
+            seed=9,
+        )
+        preferred = build_candidates(
+            TaskType.TABULAR_CLASSIFICATION,
+            SearchSpec(**common, candidate_policy="prefer_torch_like"),
+            is_sequence=False,
+            equal_sequence_lengths=True,
+            seed=9,
+        )
+
+        self.assertTrue(all(candidate.model_family == "torch_like" for candidate in torch_only))
+        self.assertTrue(all(candidate.model_family == "baseline" for candidate in baselines_only))
+        self.assertEqual([candidate.model_family for candidate in preferred], ["torch_like", "torch_like", "baseline"])
+
+    def test_candidate_policy_rejects_conflicting_explicit_algorithms(self):
+        with self.assertRaisesRegex(ValueError, "rejects explicitly requested algorithms"):
+            build_candidates(
+                TaskType.TABULAR_CLASSIFICATION,
+                SearchSpec(
+                    strategy="grid",
+                    candidate_policy=CandidatePolicy.TORCH_LIKE_ONLY,
+                    max_trials=1,
+                    preprocessing=("standard",),
+                    algorithms=("LogisticRegression",),
+                ),
+                is_sequence=False,
+                equal_sequence_lengths=True,
+                seed=9,
+            )
+
+    def test_grid_budget_balances_preprocessing_after_algorithm_anchors(self):
+        candidates = build_candidates(
+            TaskType.TABULAR_CLASSIFICATION,
+            SearchSpec(
+                strategy="grid",
+                max_trials=6,
+                preprocessing=("standard", "robust", "none"),
+                algorithms=("LogisticRegression", "RandomForestClassifier", "ExtraTreesClassifier"),
+            ),
+            is_sequence=False,
+            equal_sequence_lengths=True,
+            seed=9,
+        )
+        self.assertEqual(
+            [candidate.name for candidate in candidates[:3]],
+            ["LogisticRegression", "RandomForestClassifier", "ExtraTreesClassifier"],
+        )
+        self.assertEqual({candidate.preprocessing for candidate in candidates}, {"standard", "robust", "none"})
+        self.assertTrue(
+            all(
+                sum(candidate.name == name for candidate in candidates) >= 1
+                for name in {
+                    "LogisticRegression",
+                    "RandomForestClassifier",
+                    "ExtraTreesClassifier",
+                }
+            )
+        )
+
     def test_anomaly_threshold_is_selected_from_validation_scores(self):
         truth = np.zeros((100, 2), dtype=np.uint8)
         truth[30:40, 0] = 1
@@ -544,13 +661,29 @@ class AutoMLBackendTests(unittest.TestCase):
             AlgorithmCandidate("LogisticRegression", "standard", {"C": 1.0}),
             TaskType.MULTILABEL_CLASSIFICATION,
             seed=4,
-            workers=1,
+            workers=2,
         )
         pipeline.fit(x, y)
         prediction = pipeline.predict(x)
         metrics = evaluate_predictions(TaskType.MULTILABEL_CLASSIFICATION, y, prediction)
         self.assertIn("f1_macro", metrics)
         self.assertIn("f1_micro", metrics)
+
+    def test_multilabel_torch_candidates_are_available(self):
+        candidates = build_candidates(
+            TaskType.MULTILABEL_CLASSIFICATION,
+            SearchSpec(
+                strategy="grid",
+                max_trials=4,
+                preprocessing=("standard",),
+                algorithms=("FTTransformer", "TabNet", "NODE", "SAINT"),
+            ),
+            is_sequence=False,
+            equal_sequence_lengths=False,
+            seed=4,
+        )
+        self.assertEqual({candidate.name for candidate in candidates}, {"FTTransformer", "TabNet", "NODE", "SAINT"})
+        self.assertTrue(all(candidate.backend == "pytorch" for candidate in candidates))
 
     def test_multi_target_pipeline_and_metrics(self):
         rng = np.random.default_rng(5)
@@ -664,6 +797,38 @@ class AutoMLBackendTests(unittest.TestCase):
             self.assertTrue(((validation_prediction >= 0) & (validation_prediction <= 1)).all())
             self.assertTrue(((test_prediction >= 0) & (test_prediction <= 1)).all())
 
+    def test_torch_multilabel_tabular_candidate(self):
+        rng = np.random.default_rng(13)
+        x = rng.normal(size=(18, 4)).astype(np.float32)
+        y = np.stack([x[:, 0] > 0, x[:, 1] + x[:, 2] > 0], axis=1).astype(np.int64)
+        split = DataSplit(train=np.arange(0, 12), val=np.arange(12, 15), test=np.arange(15, 18))
+        with tempfile.TemporaryDirectory() as directory:
+            validation, test, parameters, validation_prediction, test_prediction = run_torch_candidate(
+                AlgorithmCandidate(
+                    "FTTransformer",
+                    "standard",
+                    {"d_model": 16, "n_heads": 4, "n_layers": 1, "d_ff": 32},
+                    backend="pytorch",
+                ),
+                TaskType.MULTILABEL_CLASSIFICATION,
+                x,
+                y,
+                split,
+                seed=13,
+                epochs=1,
+                batch_size=4,
+                learning_rate=0.001,
+                workers=0,
+                trial_dir=Path(directory),
+                save_checkpoint=True,
+            )
+            self.assertIn("f1_macro", validation)
+            self.assertIn("f1_micro", test)
+            self.assertGreater(parameters, 0)
+            self.assertEqual(validation_prediction.shape, (3, 2))
+            self.assertEqual(test_prediction.shape, (3, 2))
+            self.assertTrue(np.isin(test_prediction, [0, 1]).all())
+
 
 class AutoMLTaskTests(unittest.TestCase):
     def test_anomaly_run_ranks_validation_then_opens_sealed_test_once(self):
@@ -692,6 +857,9 @@ class AutoMLTaskTests(unittest.TestCase):
             self.assertEqual(sealed["threshold_selected_on"], "validation")
             self.assertIn("point_f1", sealed["test_metrics"])
             self.assertTrue((result.run_dir / "best_model" / "predictions.csv").is_file())
+            bundle = load_best(result.run_dir)
+            prepared = prepare_dataset(config.dataset)
+            self.assertEqual(bundle.predict(prepared.x[:3]).shape, (3, 2))
 
     def _make_config(self, root: Path) -> LeaderboardConfig:
         rng = np.random.default_rng(7)
@@ -723,6 +891,7 @@ class AutoMLTaskTests(unittest.TestCase):
             second = task.build_plan()
             self.assertEqual(first, second)
             self.assertEqual(first["candidate_count"], 1)
+            self.assertEqual(first["candidate_policy"], "production")
             self.assertEqual(sum(first["split_sizes"].values()), 60)
 
     def test_invalid_ranking_metric_fails_before_training(self):
@@ -747,22 +916,51 @@ class AutoMLTaskTests(unittest.TestCase):
             self.assertEqual(loaded.task_id, config.task_id)
             self.assertEqual(loaded.task.type, TaskType.TABULAR_CLASSIFICATION)
 
+    def test_validated_forecasting_example_configuration_loads(self):
+        config = load_config(Path("examples") / "forecasting_rolling_validated.yaml")
+
+        self.assertEqual(config.task.type, TaskType.TIME_SERIES_FORECASTING)
+        self.assertEqual(config.trust.level.value, "validated")
+        self.assertEqual(config.search.evaluation_seeds, (11, 29, 47))
+        self.assertEqual(config.split.type, SplitType.ROLLING_ORIGIN)
+
     def test_end_to_end_run_writes_all_core_artifacts(self):
         with tempfile.TemporaryDirectory() as directory:
             task = LeaderboardTask(self._make_config(Path(directory)))
             result = task.run()
             self.assertEqual(len(result.leaderboard), 1)
             self.assertEqual(result.leaderboard.iloc[0]["status"], "completed")
+            self.assertNotIn("test_f1_macro", result.leaderboard)
             for name in (
                 "config.json",
                 "dataset_profile.json",
                 "environment.json",
                 "data_split.json",
+                "protocol_audit.json",
+                "evaluation_trust_audit.json",
                 "leaderboard.csv",
+                "leaderboard_torch_like.csv",
+                "leaderboard_baselines.csv",
+                "sealed_test_metrics.json",
                 "final_report.md",
             ):
                 self.assertTrue((result.run_dir / name).is_file(), name)
             self.assertTrue((result.run_dir / "best_model" / "pipeline.joblib").is_file())
+            protocol_audit = json.loads((result.run_dir / "protocol_audit.json").read_text(encoding="utf-8"))
+            self.assertEqual(protocol_audit["status"], "passed")
+            self.assertIn("sealed_test_isolated", protocol_audit["checks"])
+            trust_audit = json.loads((result.run_dir / "evaluation_trust_audit.json").read_text(encoding="utf-8"))
+            self.assertEqual(trust_audit["status"], "passed")
+            self.assertEqual(trust_audit["level"], "development")
+            self.assertIn("single_seed_development_run", trust_audit["warnings"])
+            sealed = json.loads((result.run_dir / "sealed_test_metrics.json").read_text(encoding="utf-8"))
+            self.assertEqual(sealed["status"], "completed")
+            self.assertIn("f1_macro", sealed["test_metrics"])
+            self.assertTrue((result.run_dir / "trials" / "trial-0000" / "validation_predictions.csv").is_file())
+            self.assertFalse((result.run_dir / "trials" / "trial-0000" / "predictions.csv").exists())
+            bundle = load_best(result.run_dir)
+            prediction = bundle.predict(pd.read_csv(task.config.dataset.path)[["a", "b", "c"]].to_numpy()[:3])
+            self.assertEqual(prediction.shape, (3,))
             self.assertTrue((result.run_dir / "trials" / "trial-0000" / "artifact_manifest.json").is_file())
             trial_config = json.loads(
                 (result.run_dir / "trials" / "trial-0000" / "config.json").read_text(encoding="utf-8")
@@ -770,6 +968,169 @@ class AutoMLTaskTests(unittest.TestCase):
             self.assertEqual(trial_config["seed"], task.config.seed)
             report = (result.run_dir / "final_report.md").read_text(encoding="utf-8")
             self.assertIn("模型排行榜报告", report)
+            self.assertIn("Candidate policy / 候选策略: `production`", report)
+            self.assertIn("Baseline Candidates / 基线模型榜", report)
+
+    def test_mixed_run_writes_independent_family_ranks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            payload = self._make_config(root).to_dict()
+            payload["task_id"] = "classification-family-ranks"
+            payload["search"] = {
+                **payload["search"],
+                "strategy": "grid",
+                "candidate_policy": "production",
+                "max_trials": 2,
+                "algorithms": ("LogisticRegression", "FTTransformer"),
+                "torch_epochs": 1,
+                "torch_batch_size": 16,
+            }
+            result = LeaderboardTask(LeaderboardConfig.from_dict(payload)).run()
+
+            self.assertEqual(set(result.leaderboard["model_family"]), {"baseline", "torch_like"})
+            torch_board = pd.read_csv(result.run_dir / "leaderboard_torch_like.csv")
+            baseline_board = pd.read_csv(result.run_dir / "leaderboard_baselines.csv")
+            self.assertEqual(torch_board.iloc[0]["family_rank"], 1)
+            self.assertEqual(baseline_board.iloc[0]["family_rank"], 1)
+            self.assertIn("overall_rank", torch_board)
+            report = (result.run_dir / "final_report.md").read_text(encoding="utf-8")
+            self.assertIn("Torch-like Candidates / torch_like 模型榜", report)
+            self.assertIn("Baseline Candidates / 基线模型榜", report)
+
+    def test_resume_reuses_terminal_trials_and_does_not_reopen_completed_test(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            payload = self._make_config(root).to_dict()
+            payload["search"] = {
+                **payload["search"],
+                "strategy": "grid",
+                "max_trials": 2,
+                "algorithms": ("LogisticRegression", "ExtraTreesClassifier"),
+            }
+            config = LeaderboardConfig.from_dict(payload)
+            original_runner = automl_task_module._run_isolated_trial
+            calls = 0
+
+            def interrupt_second_trial(trial_payload, timeout_seconds):
+                nonlocal calls
+                calls += 1
+                if calls == 2:
+                    raise KeyboardInterrupt("simulated task interruption")
+                return original_runner(trial_payload, timeout_seconds)
+
+            with mock.patch.object(automl_task_module, "_run_isolated_trial", side_effect=interrupt_second_trial):
+                with self.assertRaisesRegex(KeyboardInterrupt, "simulated task interruption"):
+                    LeaderboardTask(config).run()
+            first_metrics = config.run_dir / "trials" / "trial-0000" / "metrics.json"
+            stored_first_metrics = first_metrics.read_bytes()
+
+            resumed = LeaderboardTask(config).run(resume=True)
+            self.assertEqual(len(resumed.trials), 2)
+            self.assertEqual(first_metrics.read_bytes(), stored_first_metrics)
+            self.assertTrue((resumed.run_dir / "sealed_test_metrics.json").is_file())
+
+            with mock.patch.object(automl_task_module, "_run_isolated_trial") as runner:
+                repeated = LeaderboardTask(config).run(resume=True)
+            runner.assert_not_called()
+            self.assertEqual(len(repeated.trials), 2)
+
+            changed = config.to_dict()
+            changed["seed"] = config.seed + 1
+            with self.assertRaisesRegex(ValueError, "immutable task state changed"):
+                LeaderboardTask(LeaderboardConfig.from_dict(changed)).run(resume=True)
+
+    def test_multi_seed_trials_aggregate_before_single_sealed_test(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            payload = self._make_config(root).to_dict()
+            payload["task_id"] = "classification-multi-seed"
+            payload["search"] = {
+                **payload["search"],
+                "evaluation_seeds": (11, 29),
+            }
+            config = LeaderboardConfig.from_dict(payload)
+            result = LeaderboardTask(config).run()
+
+            self.assertEqual(len(result.trials), 2)
+            self.assertEqual(len(result.leaderboard), 1)
+            row = result.leaderboard.iloc[0]
+            self.assertEqual(row["status"], "completed")
+            self.assertEqual(row["seed_count"], 2)
+            self.assertEqual(row["completed_seed_count"], 2)
+            self.assertIn("val_f1_macro_seed_std", result.leaderboard)
+            self.assertIn("rank_std_across_seeds", result.leaderboard)
+            self.assertTrue((result.run_dir / "trials" / "trial-0000-seed-0000000011").is_dir())
+            self.assertTrue((result.run_dir / "trials" / "trial-0000-seed-0000000029").is_dir())
+
+            sealed = json.loads((result.run_dir / "sealed_test_metrics.json").read_text(encoding="utf-8"))
+            self.assertEqual(sealed["status"], "completed")
+            self.assertEqual(sealed["evaluation_seeds"], [11, 29])
+            self.assertEqual(sealed["final_training_seed"], 11)
+            report = (result.run_dir / "final_report.md").read_text(encoding="utf-8")
+            self.assertIn("Top Candidates / 前五名候选", report)
+            self.assertIn("Seed std / 种子标准差", report)
+
+    def test_multi_seed_configuration_rejects_duplicates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            payload = self._make_config(Path(directory)).to_dict()
+            payload["search"] = {**payload["search"], "evaluation_seeds": (7, 7)}
+            with self.assertRaisesRegex(ValueError, "must not contain duplicates"):
+                LeaderboardConfig.from_dict(payload)
+
+    def test_validated_trust_requires_three_evaluation_seeds(self):
+        with tempfile.TemporaryDirectory() as directory:
+            payload = self._make_config(Path(directory)).to_dict()
+            payload["trust"] = {"level": "validated"}
+            payload["search"] = {**payload["search"], "evaluation_seeds": (11, 29)}
+            task = LeaderboardTask(LeaderboardConfig.from_dict(payload))
+
+            with self.assertRaisesRegex(ValueError, "requires at least 3 evaluation seeds"):
+                task.build_plan()
+
+    def test_validated_trust_writes_seed_coverage_audit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            payload = self._make_config(root).to_dict()
+            payload["task_id"] = "classification-validated-trust"
+            payload["trust"] = {"level": "validated"}
+            payload["search"] = {
+                **payload["search"],
+                "evaluation_seeds": (11, 29, 47),
+            }
+            result = LeaderboardTask(LeaderboardConfig.from_dict(payload)).run()
+            audit = json.loads((result.run_dir / "evaluation_trust_audit.json").read_text(encoding="utf-8"))
+
+            self.assertEqual(audit["status"], "passed")
+            self.assertEqual(audit["level"], "validated")
+            self.assertIn("every_candidate_gets_every_seed", audit["checks"])
+            self.assertEqual(audit["details"]["planned_trial_count"], 3)
+            self.assertEqual(audit["details"]["minimum_evaluation_seeds"], 3)
+            self.assertEqual(audit["warnings"], [])
+
+    def test_torch_like_tabular_candidate_uses_full_leaderboard_contract(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            payload = self._make_config(root).to_dict()
+            payload["task_id"] = "tabular-torch-like"
+            payload["search"] = {
+                **payload["search"],
+                "strategy": "grid",
+                "max_trials": 1,
+                "algorithms": ("FTTransformer",),
+                "torch_epochs": 2,
+                "torch_batch_size": 16,
+            }
+            config = LeaderboardConfig.from_dict(payload)
+            result = LeaderboardTask(config).run()
+
+            self.assertEqual(result.leaderboard.iloc[0]["status"], "completed")
+            self.assertIn("pytorch:standard+FTTransformer", result.leaderboard.iloc[0]["pipeline"])
+            self.assertTrue((result.run_dir / "best_model" / "last_checkpoint.pt").is_file())
+            bundle = load_best(result.run_dir)
+            prepared = prepare_dataset(config.dataset)
+            prediction = bundle.predict(prepared.x[:3])
+            self.assertEqual(prediction.shape, (3,))
+            self.assertTrue(set(np.unique(prediction)).issubset({0, 1}))
 
     def test_group_cv_run_ranks_validation_and_evaluates_sealed_test_once(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -865,6 +1226,9 @@ class AutoMLTaskTests(unittest.TestCase):
             self.assertIsNotNone(sealed["test_timestamp_range"])
             predictions = pd.read_csv(result.run_dir / "best_model" / "predictions.csv")
             self.assertEqual(len([column for column in predictions if column.startswith("prediction_")]), 8)
+            bundle = load_best(result.run_dir)
+            prepared = prepare_dataset(config.dataset)
+            self.assertEqual(bundle.predict(prepared.x[:2]).shape, (2, 8, 1))
             preprocessor = joblib.load(result.run_dir / "trials" / "trial-0001" / "fold-00" / "preprocessor.joblib")
             self.assertIsNotNone(preprocessor["target_scaler"])
 
@@ -917,6 +1281,9 @@ class AutoMLTaskTests(unittest.TestCase):
             self.assertEqual(len(fold_records), 3)
             self.assertTrue(all(len(record["inner_validation_groups"]) == 1 for record in fold_records))
             self.assertTrue(all(record["training"]["best_epoch"] == 1 for record in fold_records))
+            bundle = load_best(result.run_dir)
+            prepared = prepare_dataset(config.dataset)
+            self.assertEqual(bundle.predict(prepared.x[:2]).shape, (2,))
 
 
 if __name__ == "__main__":

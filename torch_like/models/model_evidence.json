@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "registry_id": "torch-like-local-model-evidence",
+  "registry_version": "1.0",
+  "records": {
+    "ett-h1-forecasting-rolling-v1": {
+      "domain": "forecasting",
+      "dataset": "ETTh1",
+      "task": "time_series_forecasting",
+      "protocol": "three-fold rolling-origin validation with a sealed chronological test",
+      "maturity": "benchmarked",
+      "benchmark_evidence": "single_dataset",
+      "evaluated_models": ["DLinear", "PatchTST", "TSMixer"],
+      "config": "examples/forecasting_rolling_leaderboard.yaml",
+      "report": "docs/FORECASTING_MODEL_EVALUATION.md",
+      "seed": 42,
+      "dataset_fingerprint": null,
+      "limitations": "Framework admission experiment with non-overlapping stride, one seed, and no claim of paper-table reproduction or superiority."
+    },
+    "esa-adb-mission1-lite-v3": {
+      "domain": "detection",
+      "dataset": "ESA-ADB Mission1",
+      "task": "anomaly_detection",
+      "protocol": "predefined chronological train/validation/test split with validation-only threshold selection and sealed test",
+      "maturity": "benchmarked",
+      "benchmark_evidence": "single_dataset",
+      "evaluated_models": [
+        "AnomalyTransformer",
+        "DCDetector",
+        "GDN",
+        "MEMTO",
+        "MTADGAT",
+        "OmniAnomaly",
+        "RTDetector",
+        "TranAD",
+        "USAD"
+      ],
+      "config": "examples/esa_mission1_anomaly_leaderboard.yaml",
+      "report": "docs/ESA_ADB_MODEL_EVALUATION.md",
+      "seed": 42,
+      "dataset_fingerprint": null,
+      "limitations": "Bounded six-channel ESA-lite protocol, approximate uniform-grid event metrics, one seed, and no full ESA-ADB or SOTA claim."
+    },
+    "xjtu-sy-rul-single-split-v1": {
+      "domain": "rul",
+      "dataset": "XJTU-SY 35Hz12kN",
+      "task": "rul_regression",
+      "protocol": "bearing-level single group split with a sealed test bearing",
+      "maturity": "benchmarked",
+      "benchmark_evidence": "single_dataset",
+      "evaluated_models": [
+        "AutoformerRUL",
+        "InformerRUL",
+        "LogTransRUL",
+        "PatchTSTRUL",
+        "TCNRUL",
+        "THGNN",
+        "TransformerRUL"
+      ],
+      "config": "examples/xjtu_sy_rul_leaderboard.yaml",
+      "report": "docs/XJTU_SY_MODEL_EVALUATION.md",
+      "seed": 42,
+      "dataset_fingerprint": "df0cb277a8f501582fdde3c648a119a78916071a7c1a74d83cb3dc871bb0c213",
+      "limitations": "One operating condition and one group split; bearing shift prevents model-superiority or SOTA claims."
+    },
+    "xjtu-sy-rul-group-cv-v1": {
+      "domain": "rul",
+      "dataset": "XJTU-SY 35Hz12kN",
+      "task": "rul_regression",
+      "protocol": "four-fold bearing-level group validation with a separately sealed test bearing",
+      "maturity": "benchmarked",
+      "benchmark_evidence": "single_dataset",
+      "evaluated_models": ["LogTransRUL", "TCNRUL"],
+      "config": "examples/xjtu_sy_rul_neural_fairness.yaml",
+      "report": "docs/XJTU_SY_MODEL_EVALUATION.md",
+      "seed": 42,
+      "dataset_fingerprint": "df0cb277a8f501582fdde3c648a119a78916071a7c1a74d83cb3dc871bb0c213",
+      "limitations": "One operating condition and one seed; local framework evidence, not a published-protocol reproduction."
+    }
+  },
+  "model_evidence": {
+    "forecasting/DLinear": "ett-h1-forecasting-rolling-v1",
+    "forecasting/PatchTST": "ett-h1-forecasting-rolling-v1",
+    "forecasting/TSMixer": "ett-h1-forecasting-rolling-v1",
+    "detection/AnomalyTransformer": "esa-adb-mission1-lite-v3",
+    "detection/DCDetector": "esa-adb-mission1-lite-v3",
+    "detection/GDN": "esa-adb-mission1-lite-v3",
+    "detection/MEMTO": "esa-adb-mission1-lite-v3",
+    "detection/MTADGAT": "esa-adb-mission1-lite-v3",
+    "detection/OmniAnomaly": "esa-adb-mission1-lite-v3",
+    "detection/RTDetector": "esa-adb-mission1-lite-v3",
+    "detection/TranAD": "esa-adb-mission1-lite-v3",
+    "detection/USAD": "esa-adb-mission1-lite-v3",
+    "rul/AutoformerRUL": "xjtu-sy-rul-single-split-v1",
+    "rul/InformerRUL": "xjtu-sy-rul-single-split-v1",
+    "rul/LogTransRUL": "xjtu-sy-rul-group-cv-v1",
+    "rul/PatchTSTRUL": "xjtu-sy-rul-single-split-v1",
+    "rul/TCNRUL": "xjtu-sy-rul-group-cv-v1",
+    "rul/THGNN": "xjtu-sy-rul-single-split-v1",
+    "rul/TransformerRUL": "xjtu-sy-rul-single-split-v1"
+  }
+}

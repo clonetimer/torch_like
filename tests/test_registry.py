@@ -8,6 +8,8 @@ from torch_like.models import (
     list_domains,
     list_models,
     list_models_by_family,
+    list_models_by_fidelity,
+    list_models_by_maturity,
     list_models_by_support,
     register_model,
     register_model_catalog,
@@ -21,6 +23,12 @@ class RegistryTests(unittest.TestCase):
             "family",
             "layer",
             "integration_level",
+            "implementation_fidelity",
+            "implementation_scope",
+            "execution_profile",
+            "maturity",
+            "benchmark_evidence",
+            "evidence_record",
             "supports",
             "paper",
             "description",
@@ -58,6 +66,10 @@ class RegistryTests(unittest.TestCase):
             "list_models",
             "list_models_by_support",
             "list_models_by_family",
+            "list_models_by_fidelity",
+            "list_models_by_maturity",
+            "get_evidence_record",
+            "list_evidence_records",
             "get_model_info",
             "create_model",
         }
@@ -79,6 +91,63 @@ class RegistryTests(unittest.TestCase):
                 register_model("diagnosis", name, SecondModel, family="test")
             with self.assertRaisesRegex(ValueError, "globally unique"):
                 register_model("graph", name, FirstModel, family="test")
+        finally:
+            torch_like.model_zoo["diagnosis"].pop(name, None)
+
+    def test_schema_v2_fields_are_additive_and_legacy_compatible(self):
+        modern_tcn = get_model_info("ModernTCN", domain="forecasting")
+        self.assertEqual(modern_tcn["integration_level"], "paper_aligned")
+        self.assertEqual(modern_tcn["implementation_fidelity"], "paper_aligned")
+        self.assertEqual(modern_tcn["implementation_scope"], "full")
+        self.assertEqual(modern_tcn["execution_profile"], "standard")
+        self.assertEqual(modern_tcn["maturity"], "unassessed")
+        self.assertEqual(modern_tcn["benchmark_evidence"], "unassessed")
+        self.assertIsNone(modern_tcn["evidence_record"])
+
+        rtdetr = get_model_info("RTDETR", domain="vision")
+        self.assertEqual(rtdetr["integration_level"], "paper_aligned_portable_subset")
+        self.assertEqual(rtdetr["implementation_fidelity"], "paper_aligned")
+        self.assertEqual(rtdetr["implementation_scope"], "subset")
+        self.assertEqual(rtdetr["execution_profile"], "portable")
+
+    def test_schema_v2_rejects_ambiguous_mapping_and_unsupported_promotion(self):
+        class TemporaryModel:
+            pass
+
+        with self.assertRaisesRegex(ValueError, "Unmapped integration_level"):
+            register_model("diagnosis", "__UnmappedCatalogModel__", TemporaryModel, integration_level="invented")
+        with self.assertRaisesRegex(ValueError, "conflicts with integration_level"):
+            register_model(
+                "diagnosis",
+                "__ConflictingCatalogModel__",
+                TemporaryModel,
+                integration_level="paper_aligned",
+                implementation_fidelity="framework_oriented",
+            )
+        with self.assertRaisesRegex(ValueError, "requires evidence_record"):
+            register_model(
+                "diagnosis",
+                "__UnevidencedCatalogModel__",
+                TemporaryModel,
+                maturity="contract_validated",
+            )
+
+    def test_user_registered_maturity_requires_and_preserves_evidence_record(self):
+        class TemporaryModel:
+            pass
+
+        name = "__EvidenceCatalogModel__"
+        try:
+            register_model(
+                "diagnosis",
+                name,
+                TemporaryModel,
+                maturity="contract_validated",
+                evidence_record="local://registry-contract-test",
+            )
+            metadata = get_model_info(name, domain="diagnosis")
+            self.assertEqual(metadata["maturity"], "contract_validated")
+            self.assertEqual(metadata["evidence_record"], "local://registry-contract-test")
         finally:
             torch_like.model_zoo["diagnosis"].pop(name, None)
 
@@ -227,6 +296,16 @@ class RegistryTests(unittest.TestCase):
         self.assertIn("AST", transformer_models)
         self.assertIn("Informer", transformer_models)
         self.assertNotIn("MTGNN", transformer_models)
+
+        paper_aligned = list_models_by_fidelity("paper_aligned", domain="forecasting")
+        self.assertIn("ModernTCN", paper_aligned)
+        self.assertNotIn("PatchTST", paper_aligned)
+
+        unassessed = list_models_by_maturity("unassessed", domain="forecasting")
+        self.assertNotIn("DLinear", unassessed)
+        self.assertIn("ModernTCN", unassessed)
+        benchmarked = list_models_by_maturity("benchmarked", domain="forecasting")
+        self.assertEqual(set(benchmarked), {"DLinear", "PatchTST", "TSMixer"})
 
         probabilistic_models = list_models_by_support("sampling", domain="forecasting")
         self.assertIn("DeepAR", probabilistic_models)
@@ -419,6 +498,8 @@ class RegistryTests(unittest.TestCase):
         self.assertIsInstance(torch_like.list_models("forecasting"), dict)
         self.assertTrue(callable(torch_like.list_models_by_support))
         self.assertTrue(callable(torch_like.list_models_by_family))
+        self.assertTrue(callable(torch_like.list_models_by_fidelity))
+        self.assertTrue(callable(torch_like.list_models_by_maturity))
         self.assertIsInstance(torch_like.list_models("rul"), dict)
 
     def test_additional_domains_are_exposed(self):

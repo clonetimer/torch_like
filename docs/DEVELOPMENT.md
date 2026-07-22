@@ -143,6 +143,8 @@ Metadata rules / 元数据规则:
 
 - 中文：内置 catalog 的八个字段 `cls`、`family`、`layer`、`integration_level`、`supports`、`paper`、`description`、`complexity` 全部必填。
 - English: Built-in catalogs must provide all eight fields: `cls`, `family`, `layer`, `integration_level`, `supports`, `paper`, `description`, and `complexity`.
+- 中文：`integration_level` 是 schema v1 兼容字段。registry 会根据 `torch_like/models/catalog_schema_v2.json` 派生 `implementation_fidelity`、`implementation_scope`、`execution_profile`、`maturity`、`benchmark_evidence` 和 `evidence_record`；不得自行创造未映射复合值。任何 maturity 或 benchmark 晋升都必须提供 evidence record。
+- English: `integration_level` is a schema-v1 compatibility field. The registry derives `implementation_fidelity`, `implementation_scope`, `execution_profile`, `maturity`, `benchmark_evidence`, and `evidence_record` from `torch_like/models/catalog_schema_v2.json`. Do not invent unmapped compound values. Any maturity or benchmark promotion requires an evidence record.
 - 中文：`family` 表示模型家族。
 - English: `family` identifies the model family.
 - 中文：`layer` 表示文档分层。
@@ -716,6 +718,47 @@ Validation / 验证:
 
 English: The first command checks against today; the second can rehearse upcoming review expiry before merge. Source authenticity still requires human or research-tool review; passing a link count does not establish evidence quality.
 
+## Public API Stability / 公共 API 稳定性
+
+中文：`torch_like`、`torch_like.models`、`torch_like.nn`、`torch_like.data` 和 `torch_like.automl` 的 `__all__` 导出、符号身份和调用签名由 `governance/public_api_baseline.json` 保护。兼容新增后运行 `tools/audit_public_api.py --write`；破坏性变化必须先登记 `governance/api_deprecations.json`，保留旧入口并发出 `FutureWarning`。详细周期见 [`API_STABILITY.md`](API_STABILITY.md)。
+
+English: `__all__` exports, symbol identity, and call signatures in `torch_like`, `torch_like.models`, `torch_like.nn`, `torch_like.data`, and `torch_like.automl` are protected by `governance/public_api_baseline.json`. Run `tools/audit_public_api.py --write` after compatible additions. Breaking changes must first enter `governance/api_deprecations.json`, retain the old entry point, and emit `FutureWarning`. See [`API_STABILITY.md`](API_STABILITY.md) for the lifecycle.
+
+### Model evidence / 模型证据
+
+中文：内置模型不得直接在 domain catalog 中自行声明成熟度。真实基准登记在 `torch_like/models/model_evidence.json`，由注册器合并并由 `tools/audit_model_catalog.py` 校验模型归属、证据等级及配置/报告路径。新增或晋升证据前阅读 [`MODEL_EVIDENCE.md`](MODEL_EVIDENCE.md)。
+
+English: Built-in domain catalogs must not self-assign maturity. Real benchmarks are registered in `torch_like/models/model_evidence.json`, merged by the registry, and validated by `tools/audit_model_catalog.py` for model ownership, evidence levels, and config/report paths. Read [`MODEL_EVIDENCE.md`](MODEL_EVIDENCE.md) before adding or promoting evidence.
+
+### AutoML protocol trust / AutoML 协议可信性
+
+中文：新增 split 类型必须实现并通过 `torch_like.automl.audit_split_protocol` 的硬校验，不能只依赖配置层推断“应该没有泄漏”。运行前审计产物为 `protocol_audit.json`；测试至少覆盖有效协议和一个人为构造的泄漏协议。
+
+English: Every new split type must implement and pass the hard checks in `torch_like.automl.audit_split_protocol`; configuration-level assumptions are insufficient. The pre-training audit artifact is `protocol_audit.json`, and tests must cover both a valid protocol and one deliberately leaked protocol.
+
+### AutoML evaluation trust / AutoML 评估可信性
+
+中文：排行榜信任等级由 `trust.level` 声明。`development` 保持快速单种子兼容；`validated` 必须至少 3 个评估种子，并通过 `torch_like.automl.audit_evaluation_trust`。新增候选规划逻辑必须保持每个候选获得完整种子覆盖、唯一 trial id、统一单 trial 超时和统一 PyTorch 训练预算；运行产物必须包含 `evaluation_trust_audit.json`。
+
+English: Leaderboard trust is declared through `trust.level`. `development` keeps fast single-seed compatibility; `validated` requires at least three evaluation seeds and must pass `torch_like.automl.audit_evaluation_trust`. New candidate-planning logic must preserve full seed coverage for every candidate, unique trial ids, uniform per-trial timeout, and a uniform PyTorch training budget. Runs must include `evaluation_trust_audit.json`.
+
+### AutoML example governance / AutoML 示例治理
+
+中文：新增或修改 `examples/*.yaml` 后必须运行 `python tools/validate_automl_examples.py`。该脚本只做配置层校验，不读取外部数据集；它检查 task_id 唯一性、`validated` 与 `benchmark` 命名语义、三种子要求、显式算法预算覆盖和基础产物目录。CI 会执行同一脚本。
+
+English: After adding or changing `examples/*.yaml`, run `python tools/validate_automl_examples.py`. The script validates configuration structure without reading external datasets. It checks unique task ids, `validated` and `benchmark` naming semantics, the three-seed requirement, explicit-algorithm budget coverage, and a basic artifact directory contract. CI runs the same script.
+
+### AutoML run artifact governance / AutoML 运行产物治理
+
+中文：完成排行榜运行后，使用 `python tools/validate_automl_runs.py runs/<task_id>` 审计实际产物。该脚本检查核心 JSON/CSV/报告文件、协议审计状态、信任等级一致性、trial 数量、封存测试状态、排行榜中是否泄露 `test_*` 指标，以及 `validated` 运行的完整种子覆盖。CI 使用 `--allow-empty --skip-legacy runs` 固定入口并跳过旧协议历史产物；本地完成的当前契约运行应指定具体 run 目录。
+
+English: After a leaderboard run finishes, audit the artifacts with `python tools/validate_automl_runs.py runs/<task_id>`. The script checks core JSON/CSV/report files, protocol audit status, trust-level consistency, trial count, sealed-test status, absence of leaked `test_*` metrics in the leaderboard, and full seed coverage for `validated` runs. CI uses `--allow-empty --skip-legacy runs` to keep the entry point active while ignoring pre-trust-audit historical runs; local completed current-contract runs should pass an explicit run directory.
+
+- 新增可选参数兼容；新增必填参数不兼容。 / Adding optional parameters is compatible; adding required parameters is not.
+- 删除参数、修改默认值、改变参数 kind 或替换符号均视为破坏性变化。 / Removing parameters, changing defaults or parameter kind, and replacing symbols are breaking changes.
+- 弃用至少跨两个 minor 版本和 90 天，删除时台账状态必须为 `removed`。 / Deprecation spans at least two minor releases and 90 days, and the ledger status must be `removed` at deletion.
+- 不要通过手工编辑生成基线绕过 transition validator。 / Never manually edit the generated baseline to bypass transition validation.
+
 ## AutoML Boundary / 自动适配边界
 
 ### Task Adapter Governance / 任务适配器治理
@@ -733,14 +776,18 @@ RUL adapters must inherit `RULModel`, return one scalar per sample, and support 
 and `loss_step`. Dataset-specific discovery and label derivation belong in `torch_like.data` or
 `torch_like.automl.data`, never in model classes.
 
-中文：`torch_like.automl` 比较的是“预处理器 + 特征策略 + 算法 + 超参数”完整管线。数据划分必须在搜索前固定，输入和目标预处理器只能在 inner training 数据拟合，排行榜只能按 outer validation 指标排序。`group_cv` 与 `rolling_origin` 的封存测试数据不得传入候选进程，只能在最终管线选定后评估一次。
+中文：`torch_like.automl` 比较的是“预处理器 + 特征策略 + 算法 + 超参数”完整管线。数据划分必须在搜索前固定，输入和目标预处理器只能在 inner training 数据拟合，排行榜只能按 validation 指标排序。所有划分协议的测试数据均不得传入候选进程，只能在最终管线选定并重训后评估一次。
 
-English: `torch_like.automl` compares complete preprocessing, feature, algorithm, and hyperparameter pipelines. Splits must be fixed before search, input and target preprocessors fit inner-training data only, and rankings use outer-validation metrics. Sealed test data under `group_cv`, `rolling_origin`, and anomaly predefined-time protocols must not enter candidate processes and are evaluated once after final selection.
+English: `torch_like.automl` compares complete preprocessing, feature, algorithm, and hyperparameter pipelines. Splits must be fixed before search, input and target preprocessors fit training data only, and rankings use validation metrics. Test data under every split protocol must stay outside candidate processes and be evaluated once after final selection and retraining.
 
 Rules / 规则:
 
 - Built-in PyTorch models remain in the model registry; sklearn estimators are backend candidates and do not pretend to be `nn.Module` models.
 - Trial failures must be serialized and isolated from the remaining search.
+- Resume must verify config, dataset fingerprint/profile, split, and candidate plan before reusing terminal trials.
+- A completed sealed-test record is immutable and must not trigger another final retraining during resume.
+- Multi-seed runs use one isolated trial per pipeline/seed pair; incomplete seed coverage cannot enter ranking.
+- `max_trials` counts pipeline configurations. Resource planning must multiply it by the number of evaluation seeds.
 - Overlapping windows may not use random/stratified splitting.
 - Forecasting targets may not overlap across windows in v1; use `stride >= prediction_length` and `rolling_origin`.
 - PyTorch early stopping must use inner validation, never the outer ranking fold.
@@ -748,6 +795,8 @@ Rules / 规则:
 - Anomaly scores are not operational decisions until a threshold is selected on validation data; test labels must never tune that threshold.
 - ESA-ADB reports must distinguish the local uniform-grid approximation from the official event-ID/time-domain evaluator.
 - joblib artifacts are trusted-local only and require hashes plus dependency versions.
+- New AutoML adapters must register a `CandidateSpec` and provide a backend execution adapter; candidate planning must not grow task-specific model-name branches.
+- `load_best()` must verify artifact hashes before deserializing trusted-local model files.
 - New executable tasks require a task metric contract, split contract, backend adapter, negative tests, and bilingual documentation.
 
 ## Reinforcement Learning Domain / 强化学习域

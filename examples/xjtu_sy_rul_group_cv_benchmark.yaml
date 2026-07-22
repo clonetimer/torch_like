@@ -23,10 +23,13 @@ split:
   cv_folds: 4
   test_groups: [35Hz12kN/Bearing1_2]
 
+trust:
+  level: validated
+
 resources:
   device: auto
   max_parallel_trials: 1
-  max_total_minutes: 240
+  max_total_minutes: 720
   timeout_per_trial_minutes: 30
   max_cpu_workers: 4
 
@@ -35,6 +38,7 @@ search:
   max_trials: 8
   preprocessing: [standard]
   algorithms: [LightGBMRegressor, TCNRUL, LogTransRUL]
+  evaluation_seeds: [11, 29, 47]
   torch_epochs: 100
   torch_batch_size: 32
   torch_learning_rate: 0.001

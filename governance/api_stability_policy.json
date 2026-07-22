@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "policy_id": "torch-like-public-api-stability",
+  "policy_version": "1.0",
+  "protected_namespaces": [
+    "torch_like",
+    "torch_like.models",
+    "torch_like.nn",
+    "torch_like.data",
+    "torch_like.automl"
+  ],
+  "minimum_minor_releases": 2,
+  "minimum_deprecation_days": 90,
+  "warning_category": "FutureWarning",
+  "allowed_change_types": [
+    "remove",
+    "rename",
+    "signature",
+    "replace"
+  ],
+  "allowed_statuses": [
+    "active",
+    "removed",
+    "cancelled"
+  ]
+}

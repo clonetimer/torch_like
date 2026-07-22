@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from torch_like.models.catalog_evidence import get_evidence_record, list_evidence_records
 from torch_like.models.registry import (
     MODEL_DOMAINS,
     MODEL_ZOO,
@@ -13,6 +14,8 @@ from torch_like.models.registry import (
     list_domains,
     list_models,
     list_models_by_family,
+    list_models_by_fidelity,
+    list_models_by_maturity,
     list_models_by_support,
     model_zoo,
     register_model,
@@ -365,8 +368,12 @@ __all__ = [
     "list_models",
     "list_models_by_support",
     "list_models_by_family",
+    "list_models_by_fidelity",
+    "list_models_by_maturity",
     "get_model_info",
     "create_model",
+    "get_evidence_record",
+    "list_evidence_records",
     *MODEL_EXPORTS,
 ]
 

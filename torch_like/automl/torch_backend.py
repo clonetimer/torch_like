@@ -59,8 +59,53 @@ def _fit_transform_sequences(x: np.ndarray, train_indices: np.ndarray, preproces
     return transformed, {"imputer": imputer, "scaler": scaler}
 
 
+def _fit_transform_tabular(x: np.ndarray, train_indices: np.ndarray, preprocessing: str):
+    values = np.asarray(x, dtype=np.float32)
+    if values.ndim != 2:
+        raise ValueError("PyTorch tabular candidates require a 2D feature matrix")
+    imputer = SimpleImputer(strategy="median").fit(values[train_indices])
+    transformed = imputer.transform(values)
+    if preprocessing == "standard":
+        scaler: Any = StandardScaler()
+    elif preprocessing == "robust":
+        scaler = RobustScaler()
+    elif preprocessing == "minmax":
+        scaler = MinMaxScaler()
+    elif preprocessing == "none":
+        scaler = None
+    else:
+        raise ValueError(f"Unsupported preprocessing: {preprocessing}")
+    if scaler is not None:
+        scaler.fit(imputer.transform(values[train_indices]))
+        transformed = scaler.transform(transformed)
+    return transformed.astype(np.float32), {"imputer": imputer, "scaler": scaler}
+
+
 def _build_model(candidate: AlgorithmCandidate, task_type: TaskType, sequence_length: int, feature_dim: int, y):
     parameters = dict(candidate.parameters)
+    if task_type in {TaskType.TABULAR_CLASSIFICATION, TaskType.MULTILABEL_CLASSIFICATION}:
+        from torch_like.models.tabular import (
+            NODE,
+            SAINT,
+            FTTransformer,
+            TabNet,
+        )
+
+        classes = {
+            "FTTransformer": FTTransformer,
+            "TabNet": TabNet,
+            "NODE": NODE,
+            "SAINT": SAINT,
+        }
+        if candidate.name in classes:
+            kwargs = {
+                "input_dim": feature_dim,
+                "output_dim": int(y.shape[1])
+                if task_type == TaskType.MULTILABEL_CLASSIFICATION
+                else int(len(np.unique(y))),
+                **parameters,
+            }
+            return classes[candidate.name](**kwargs), kwargs
     if task_type == TaskType.TIME_SERIES_FORECASTING:
         from torch_like.models import DLinear, PatchTST, TSMixer
 
@@ -159,13 +204,21 @@ def run_torch_candidate(
     torch_device = torch.device(resolved_device)
     if torch_device.type == "cuda" and not torch.cuda.is_available():
         raise RuntimeError(f"CUDA device requested but unavailable: {resolved_device}")
-    transformed, preprocessor = _fit_transform_sequences(x, split.train, candidate.preprocessing)
+    if task_type in {TaskType.TABULAR_CLASSIFICATION, TaskType.MULTILABEL_CLASSIFICATION}:
+        transformed, preprocessor = _fit_transform_tabular(x, split.train, candidate.preprocessing)
+        sequence_length, feature_dim = 1, transformed.shape[1]
+    else:
+        transformed, preprocessor = _fit_transform_sequences(x, split.train, candidate.preprocessing)
+        sequence_length, feature_dim = transformed.shape[1], transformed.shape[2]
     labels = np.asarray(y)
     label_encoder = None
     target_scaler = None
-    if task_type == TaskType.TIME_SERIES_CLASSIFICATION:
+    if task_type in {TaskType.TABULAR_CLASSIFICATION, TaskType.TIME_SERIES_CLASSIFICATION}:
         label_encoder = LabelEncoder().fit(labels[split.train])
         encoded = label_encoder.transform(labels).astype(np.int64)
+        target_tensor = torch.from_numpy(encoded)
+    elif task_type == TaskType.MULTILABEL_CLASSIFICATION:
+        encoded = labels.astype(np.float32)
         target_tensor = torch.from_numpy(encoded)
     elif task_type == TaskType.TIME_SERIES_FORECASTING:
         target_scaler = StandardScaler().fit(labels[split.train].reshape(-1, labels.shape[-1]))
@@ -178,8 +231,8 @@ def run_torch_candidate(
     model, model_kwargs = _build_model(
         candidate,
         task_type,
-        transformed.shape[1],
-        transformed.shape[2],
+        sequence_length,
+        feature_dim,
         labels[split.train],
     )
     model = model.to(torch_device)
@@ -213,14 +266,21 @@ def run_torch_candidate(
         return output
 
     def loss_step(output: torch.Tensor, batch_y: torch.Tensor) -> torch.Tensor:
-        if task_type == TaskType.TIME_SERIES_CLASSIFICATION:
+        if task_type in {TaskType.TABULAR_CLASSIFICATION, TaskType.TIME_SERIES_CLASSIFICATION}:
             return F.cross_entropy(output, batch_y)
+        if task_type == TaskType.MULTILABEL_CLASSIFICATION:
+            return F.binary_cross_entropy_with_logits(output, batch_y.to(device=output.device, dtype=output.dtype))
         output = constrain(output)
         if loss_name == "mae":
             return F.l1_loss(output, batch_y)
         if loss_name == "huber":
             return F.huber_loss(output, batch_y)
         return F.mse_loss(output, batch_y)
+
+    def forward_loss(batch_x: torch.Tensor, batch_y: torch.Tensor) -> torch.Tensor:
+        if task_type == TaskType.TABULAR_CLASSIFICATION:
+            return model.loss_step(model.make_tabular_batch(batch_x, y=batch_y))
+        return loss_step(forward_model(batch_x), batch_y)
 
     def evaluate_loss(indices: np.ndarray) -> float:
         loader = DataLoader(
@@ -237,7 +297,7 @@ def run_torch_candidate(
             for batch_x, batch_y in loader:
                 batch_x = batch_x.to(torch_device, non_blocking=True)
                 batch_y = batch_y.to(torch_device, non_blocking=True)
-                loss = loss_step(forward_model(batch_x), batch_y)
+                loss = forward_loss(batch_x, batch_y)
                 total_loss += float(loss) * len(batch_x)
                 total_samples += len(batch_x)
         model.train()
@@ -271,8 +331,7 @@ def run_torch_candidate(
             batch_x = batch_x.to(torch_device, non_blocking=True)
             batch_y = batch_y.to(torch_device, non_blocking=True)
             optimizer.zero_grad(set_to_none=True)
-            output = forward_model(batch_x)
-            loss = loss_step(output, batch_y)
+            loss = forward_loss(batch_x, batch_y)
             if not torch.isfinite(loss):
                 raise FloatingPointError(f"NaN or infinite loss at epoch {epoch}")
             loss.backward()
@@ -332,7 +391,13 @@ def run_torch_candidate(
         "monitor": "train_loss" if final_only else "validation_loss",
         "optimizer": optimizer_name,
         "weight_decay": weight_decay,
-        "loss": "cross_entropy" if task_type == TaskType.TIME_SERIES_CLASSIFICATION else loss_name,
+        "loss": (
+            "binary_cross_entropy_with_logits"
+            if task_type == TaskType.MULTILABEL_CLASSIFICATION
+            else "cross_entropy"
+            if task_type in {TaskType.TABULAR_CLASSIFICATION, TaskType.TIME_SERIES_CLASSIFICATION}
+            else loss_name
+        ),
         "grad_clip_norm": grad_clip_norm,
         "lr_scheduler": lr_scheduler_name,
         "early_stopping_patience": early_stopping_patience,
@@ -364,9 +429,12 @@ def run_torch_candidate(
     model.eval()
     test_output = predict_indices(split.test)
     val_output = test_output if final_only else predict_indices(split.val)
-    if task_type == TaskType.TIME_SERIES_CLASSIFICATION:
+    if task_type in {TaskType.TABULAR_CLASSIFICATION, TaskType.TIME_SERIES_CLASSIFICATION}:
         val_prediction = label_encoder.inverse_transform(val_output.argmax(dim=-1).numpy())
         test_prediction = label_encoder.inverse_transform(test_output.argmax(dim=-1).numpy())
+    elif task_type == TaskType.MULTILABEL_CLASSIFICATION:
+        val_prediction = (torch.sigmoid(val_output).numpy() >= 0.5).astype(np.int64)
+        test_prediction = (torch.sigmoid(test_output).numpy() >= 0.5).astype(np.int64)
     else:
         val_prediction = val_output.numpy()
         test_prediction = test_output.numpy()

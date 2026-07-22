@@ -41,7 +41,7 @@ if ($LASTEXITCODE -ne 0) {
 
 Push-Location ([System.IO.Path]::GetTempPath())
 try {
-    & $EnvironmentPython -I -c "import importlib.metadata as m; import torch_like as tl; assert m.version('torch_like') == tl.__version__; assert tl.list_domains(); print({'version': tl.__version__, 'module': tl.__file__, 'domains': len(tl.list_domains())})"
+    & $EnvironmentPython -I -c "import importlib.metadata as m; import torch_like as tl; info = tl.get_model_info('ModernTCN', domain='forecasting'); assert m.version('torch_like') == tl.__version__; assert tl.list_domains(); assert info['implementation_fidelity'] == 'paper_aligned'; assert info['maturity'] == 'unassessed'; print({'version': tl.__version__, 'module': tl.__file__, 'domains': len(tl.list_domains()), 'catalog_schema': 2})"
     if ($LASTEXITCODE -ne 0) {
         throw "Installed-package smoke test failed with exit code $LASTEXITCODE"
     }

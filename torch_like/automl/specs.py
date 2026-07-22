@@ -64,6 +64,18 @@ class SearchStrategy(StringEnum):
     RANDOM = "random"
 
 
+class CandidatePolicy(StringEnum):
+    PRODUCTION = "production"
+    TORCH_LIKE_ONLY = "torch_like_only"
+    BASELINE_ONLY = "baseline_only"
+    PREFER_TORCH_LIKE = "prefer_torch_like"
+
+
+class LeaderboardTrustLevel(StringEnum):
+    DEVELOPMENT = "development"
+    VALIDATED = "validated"
+
+
 @dataclass(frozen=True)
 class DatasetSpec:
     path: str
@@ -220,9 +232,11 @@ class ResourceSpec:
 @dataclass(frozen=True)
 class SearchSpec:
     strategy: SearchStrategy = SearchStrategy.RANDOM
+    candidate_policy: CandidatePolicy = CandidatePolicy.PRODUCTION
     max_trials: int = 20
     preprocessing: tuple[str, ...] = ("standard", "robust", "none")
     algorithms: tuple[str, ...] | None = None
+    evaluation_seeds: tuple[int, ...] | None = None
     pruning_enabled: bool = False
     pruning_target_reduction: float = 0.5
     torch_epochs: int = 10
@@ -241,9 +255,18 @@ class SearchSpec:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "strategy", SearchStrategy(self.strategy))
+        object.__setattr__(self, "candidate_policy", CandidatePolicy(self.candidate_policy))
         object.__setattr__(self, "preprocessing", tuple(self.preprocessing))
         if self.algorithms is not None:
             object.__setattr__(self, "algorithms", tuple(self.algorithms))
+        if self.evaluation_seeds is not None:
+            object.__setattr__(self, "evaluation_seeds", tuple(int(seed) for seed in self.evaluation_seeds))
+            if not self.evaluation_seeds:
+                raise ValueError("evaluation_seeds must be non-empty when provided")
+            if len(set(self.evaluation_seeds)) != len(self.evaluation_seeds):
+                raise ValueError("evaluation_seeds must not contain duplicates")
+            if any(seed < 0 for seed in self.evaluation_seeds):
+                raise ValueError("evaluation_seeds must be non-negative")
         if self.max_trials <= 0:
             raise ValueError("max_trials must be positive")
         if self.torch_epochs <= 0 or self.torch_batch_size <= 0 or self.torch_learning_rate <= 0:
@@ -304,6 +327,23 @@ class PretrainingSpec:
 
 
 @dataclass(frozen=True)
+class TrustSpec:
+    level: LeaderboardTrustLevel = LeaderboardTrustLevel.DEVELOPMENT
+    minimum_evaluation_seeds: int | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "level", LeaderboardTrustLevel(self.level))
+        if self.minimum_evaluation_seeds is not None and self.minimum_evaluation_seeds <= 0:
+            raise ValueError("minimum_evaluation_seeds must be positive when provided")
+        if (
+            self.level == LeaderboardTrustLevel.VALIDATED
+            and self.minimum_evaluation_seeds is not None
+            and self.minimum_evaluation_seeds < 3
+        ):
+            raise ValueError("validated trust requires minimum_evaluation_seeds >= 3")
+
+
+@dataclass(frozen=True)
 class ArtifactSpec:
     output_dir: str = "runs"
     save_predictions: bool = True
@@ -321,6 +361,7 @@ class LeaderboardConfig:
     search: SearchSpec = field(default_factory=SearchSpec)
     ranking: RankingSpec = field(default_factory=RankingSpec)
     pretraining: PretrainingSpec = field(default_factory=PretrainingSpec)
+    trust: TrustSpec = field(default_factory=TrustSpec)
     artifacts: ArtifactSpec = field(default_factory=ArtifactSpec)
     seed: int = 42
 
@@ -400,6 +441,7 @@ class LeaderboardConfig:
             search=SearchSpec(**value.get("search", {})),
             ranking=RankingSpec(**value.get("ranking", {})),
             pretraining=PretrainingSpec(**value.get("pretraining", {})),
+            trust=TrustSpec(**value.get("trust", {})),
             artifacts=ArtifactSpec(**value.get("artifacts", {})),
             seed=int(value.get("seed", 42)),
         )

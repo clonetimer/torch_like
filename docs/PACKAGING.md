@@ -6,6 +6,10 @@
 
 English: The project uses a PEP 517/PEP 621 `pyproject.toml` and setuptools to build wheels. A wheel contains only the `torch_like` Python package, excluding `runner/`, `tests/`, `examples/`, `tools/`, and local temporary data.
 
+中文：`torch_like/models/catalog_schema_v2.json` 属于运行时 registry 契约，必须随 wheel 分发。隔离安装验收会读取模型 schema v2 字段，防止源码环境和安装环境使用不同的 catalog 规则。
+
+English: `torch_like/models/catalog_schema_v2.json` is part of the runtime registry contract and must ship in the wheel. Isolated installation verifies schema-v2 metadata so source checkouts and installed packages cannot silently use different catalog rules.
+
 ## 本地构建 / Local Build
 
 中文：推荐使用项目指定解释器执行构建脚本。脚本通过当前环境中的 setuptools 和 wheel 构建，不会下载项目运行依赖。

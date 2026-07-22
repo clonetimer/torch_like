@@ -1,0 +1,56 @@
+task_id: forda-time-series-classification
+
+dataset:
+  path: runs/data_cache/forda/forda_long.csv
+  format: csv
+  label_columns: [label]
+  feature_columns: [value]
+  entity_column: sample_id
+  time_column: time
+  split_column: split
+  sample_mode: full_sequence
+  label_granularity: sample
+  scale: user_defined
+
+task:
+  type: time_series_classification
+
+split:
+  type: predefined
+  seed: 42
+
+resources:
+  device: cpu
+  max_parallel_trials: 1
+  max_total_minutes: 60
+  timeout_per_trial_minutes: 10
+  max_cpu_workers: 2
+
+search:
+  strategy: grid
+  candidate_policy: production
+  max_trials: 4
+  preprocessing: [standard]
+  algorithms:
+    - LogisticRegression
+    - ExtraTreesClassifier
+    - InceptionTime
+    - ROCKET
+  evaluation_seeds: [11]
+  torch_epochs: 10
+  torch_batch_size: 32
+  torch_learning_rate: 0.001
+  torch_optimizer: adamw
+  torch_weight_decay: 0.0001
+  torch_grad_clip_norm: 1.0
+  torch_early_stopping_patience: 3
+  torch_restore_best: true
+
+ranking:
+  primary_metric: f1_macro
+  additional_metrics: [precision_macro, recall_macro, accuracy]
+
+artifacts:
+  output_dir: runs
+  save_predictions: true
+  save_checkpoints: true

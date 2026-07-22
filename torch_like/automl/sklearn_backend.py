@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+from collections import Counter
 from dataclasses import asdict, dataclass
 from typing import Any
 
@@ -32,7 +33,8 @@ from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 
-from torch_like.automl.specs import SearchSpec, SearchStrategy, TaskType
+from torch_like.automl.candidate_registry import list_candidate_specs
+from torch_like.automl.specs import CandidatePolicy, SearchSpec, SearchStrategy, TaskType
 
 CLASSIFICATION_TASKS = {
     TaskType.TABULAR_CLASSIFICATION,
@@ -176,38 +178,97 @@ class AlgorithmCandidate:
         params = ",".join(f"{key}={value}" for key, value in sorted(self.parameters.items()))
         return f"{self.backend}:{feature}+{self.preprocessing}+{self.name}[{params}]".replace(":+", ":")
 
+    @property
+    def model_family(self) -> str:
+        return "torch_like" if self.backend in {"pytorch", "anomaly_pytorch"} else "baseline"
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
-def _algorithm_grids(task_type: TaskType) -> dict[str, list[dict[str, Any]]]:
-    if task_type in CLASSIFICATION_TASKS:
-        grids = {
-            "LogisticRegression": [{"C": value} for value in (0.1, 1.0, 10.0)],
-            "RandomForestClassifier": [{"n_estimators": 100, "max_depth": depth} for depth in (None, 12)],
-            "ExtraTreesClassifier": [{"n_estimators": 100, "max_depth": None}],
-            "HistGradientBoostingClassifier": [{"learning_rate": value} for value in (0.05, 0.1)],
-        }
-        if _lightgbm_available():
-            grids["LightGBMClassifier"] = [
-                {"n_estimators": 300, "learning_rate": 0.05, "num_leaves": 31},
-                {"n_estimators": 500, "learning_rate": 0.03, "num_leaves": 15},
-            ]
-        return grids
-    if task_type in REGRESSION_TASKS:
-        grids = {
-            "Ridge": [{"alpha": value} for value in (0.1, 1.0, 10.0)],
-            "RandomForestRegressor": [{"n_estimators": 100, "max_depth": depth} for depth in (None, 12)],
-            "ExtraTreesRegressor": [{"n_estimators": 100, "max_depth": None}],
-            "HistGradientBoostingRegressor": [{"learning_rate": value} for value in (0.05, 0.1)],
-        }
-        if _lightgbm_available():
-            grids["LightGBMRegressor"] = [
-                {"n_estimators": 300, "learning_rate": 0.05, "num_leaves": 31},
-                {"n_estimators": 500, "learning_rate": 0.03, "num_leaves": 15},
-            ]
-        return grids
-    raise ValueError(f"No first-stage sklearn algorithms for task {task_type.value!r}")
+def _apply_candidate_policy(candidates: list[AlgorithmCandidate], search: SearchSpec) -> list[AlgorithmCandidate]:
+    policy = search.candidate_policy
+    if policy == CandidatePolicy.PRODUCTION:
+        return candidates
+
+    allowed_family = {
+        CandidatePolicy.TORCH_LIKE_ONLY: "torch_like",
+        CandidatePolicy.BASELINE_ONLY: "baseline",
+    }.get(policy)
+    if allowed_family is not None:
+        rejected = sorted({candidate.name for candidate in candidates if candidate.model_family != allowed_family})
+        if rejected and search.algorithms is not None:
+            raise ValueError(f"candidate_policy={policy.value!r} rejects explicitly requested algorithms: {rejected}")
+        return [candidate for candidate in candidates if candidate.model_family == allowed_family]
+
+    # Stable family ordering lets budget truncation spend remaining trials on
+    # torch_like variants while retaining baseline anchors for comparison.
+    return sorted(candidates, key=lambda candidate: candidate.model_family != "torch_like")
+
+
+def _limit_candidates(candidates: list[AlgorithmCandidate], search: SearchSpec, seed: int) -> list[AlgorithmCandidate]:
+    if not candidates:
+        return []
+    if search.strategy == SearchStrategy.NONE:
+        return candidates[:1]
+    anchors: list[AlgorithmCandidate] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        if candidate.name not in seen:
+            anchors.append(candidate)
+            seen.add(candidate.name)
+    if search.max_trials < len(anchors):
+        if search.algorithms is not None:
+            raise ValueError(
+                f"max_trials={search.max_trials} cannot cover all {len(anchors)} explicitly requested algorithms"
+            )
+        if search.candidate_policy == CandidatePolicy.PREFER_TORCH_LIKE and search.max_trials >= 2:
+            torch_anchors = [candidate for candidate in anchors if candidate.model_family == "torch_like"]
+            baseline_anchors = [candidate for candidate in anchors if candidate.model_family == "baseline"]
+            if torch_anchors and baseline_anchors:
+                return [*torch_anchors[: search.max_trials - 1], baseline_anchors[0]]
+        return anchors[: search.max_trials]
+    anchor_ids = {id(candidate) for candidate in anchors}
+    variants = [candidate for candidate in candidates if id(candidate) not in anchor_ids]
+    remaining = search.max_trials - len(anchors)
+    if (
+        search.strategy == SearchStrategy.RANDOM
+        and search.candidate_policy == CandidatePolicy.PREFER_TORCH_LIKE
+        and len(variants) > remaining
+    ):
+        rng = np.random.default_rng(seed)
+        torch_variants = [candidate for candidate in variants if candidate.model_family == "torch_like"]
+        baseline_variants = [candidate for candidate in variants if candidate.model_family == "baseline"]
+        rng.shuffle(torch_variants)
+        rng.shuffle(baseline_variants)
+        variants = [*torch_variants, *baseline_variants]
+    elif search.strategy == SearchStrategy.RANDOM and len(variants) > remaining:
+        rng = np.random.default_rng(seed)
+        selected = sorted(rng.choice(len(variants), size=remaining, replace=False).tolist())
+        variants = [variants[index] for index in selected]
+    elif search.strategy == SearchStrategy.GRID and len(variants) > remaining:
+        selected_variants: list[AlgorithmCandidate] = []
+        preprocessing = {candidate.preprocessing for candidate in anchors}
+        name_counts = Counter(candidate.name for candidate in anchors)
+        pair_counts = Counter((candidate.name, candidate.preprocessing) for candidate in anchors)
+        indexed_variants = list(enumerate(variants))
+        while indexed_variants and len(selected_variants) < remaining:
+            position, (_, candidate) = min(
+                enumerate(indexed_variants),
+                key=lambda item: (
+                    item[1][1].preprocessing in preprocessing,
+                    pair_counts[(item[1][1].name, item[1][1].preprocessing)],
+                    name_counts[item[1][1].name],
+                    item[1][0],
+                ),
+            )
+            indexed_variants.pop(position)
+            selected_variants.append(candidate)
+            preprocessing.add(candidate.preprocessing)
+            name_counts[candidate.name] += 1
+            pair_counts[(candidate.name, candidate.preprocessing)] += 1
+        variants = selected_variants
+    return [*anchors, *variants[:remaining]]
 
 
 def build_candidates(
@@ -257,52 +318,30 @@ def build_candidates(
             for parameters in parameter_grid
             if preprocessing != search.preprocessing[0] or parameters != parameter_grid[0]
         )
-        if search.strategy == SearchStrategy.NONE:
-            candidates = candidates[:1]
-        elif search.strategy == SearchStrategy.RANDOM and len(candidates) > search.max_trials:
-            rng = np.random.default_rng(seed)
-            selected = sorted(rng.choice(len(candidates), size=search.max_trials, replace=False).tolist())
-            candidates = [candidates[index] for index in selected]
-        return candidates[: search.max_trials]
-    grids = _algorithm_grids(task_type)
-    if task_type == TaskType.TIME_SERIES_FORECASTING:
-        grids = {"Ridge": grids["Ridge"]}
-    if search.algorithms is not None and set(search.algorithms) & LIGHTGBM_CANDIDATES and not _lightgbm_available():
-        raise ImportError("LightGBM candidates require: pip install 'torch_like[lightgbm]'")
-    torch_grids: dict[str, list[dict[str, Any]]] = {}
-    baseline_grids: dict[str, list[dict[str, Any]]] = {}
-    if is_sequence and equal_sequence_lengths and task_type == TaskType.TIME_SERIES_CLASSIFICATION:
-        torch_grids = {
-            "InceptionTime": [{"d_model": 32, "num_blocks": 3}],
-            "ROCKET": [{"num_kernels": 128}],
-        }
-    elif is_sequence and equal_sequence_lengths and task_type == TaskType.RUL_REGRESSION:
-        torch_grids = {
-            "THGNN": [{"d_model": 32, "graph_depth": 1}],
-            "InformerRUL": [{"d_model": 32, "n_heads": 4, "e_layers": 1, "d_ff": 64}],
-            "AutoformerRUL": [{"d_model": 32, "n_heads": 4, "e_layers": 1, "d_ff": 64}],
-            "LogTransRUL": [{"d_model": 32, "n_heads": 4, "e_layers": 1, "d_ff": 64}],
-            "TCNRUL": [{"d_model": 32, "e_layers": 2, "d_ff": 64, "kernel_size": 5}],
-            "PatchTSTRUL": [
-                {"d_model": 32, "n_heads": 4, "e_layers": 1, "d_ff": 64, "patch_len": 16, "patch_stride": 8}
-            ],
-            "TransformerRUL": [{"d_model": 32, "n_heads": 4, "e_layers": 1, "d_ff": 64}],
-        }
-    elif is_sequence and equal_sequence_lengths and task_type == TaskType.TIME_SERIES_FORECASTING:
-        baseline_grids = {"LastValue": [{}]}
-        torch_grids = {
-            "DLinear": [{"moving_avg": 25, "individual": True, "use_norm": True}],
-            "PatchTST": [{"d_model": 32, "n_heads": 4, "e_layers": 1, "d_ff": 64, "patch_len": 16}],
-            "TSMixer": [{"e_layers": 2, "d_ff": 64}],
-        }
+        return _limit_candidates(_apply_candidate_policy(candidates, search), search, seed)
+
+    specs = list(
+        list_candidate_specs(
+            task_type,
+            is_sequence=is_sequence,
+            equal_sequence_lengths=equal_sequence_lengths,
+            include_experimental=search.algorithms is not None,
+        )
+    )
     if search.algorithms is not None:
-        available = set(grids) | set(torch_grids) | set(baseline_grids)
+        available = {spec.name for spec in specs}
         unknown = set(search.algorithms) - available
         if unknown:
             raise ValueError(f"Unsupported algorithms for {task_type.value}: {sorted(unknown)}")
-        grids = {name: grids[name] for name in search.algorithms if name in grids}
-        baseline_grids = {name: baseline_grids[name] for name in search.algorithms if name in baseline_grids}
-        torch_grids = {name: torch_grids[name] for name in search.algorithms if name in torch_grids}
+        by_name = {spec.name: spec for spec in specs}
+        specs = [by_name[name] for name in search.algorithms]
+    unavailable = [spec for spec in specs if spec.optional_dependency == "lightgbm" and not _lightgbm_available()]
+    if unavailable and search.algorithms is not None:
+        raise ImportError("LightGBM candidates require: pip install 'torch_like[lightgbm]'")
+    specs = [spec for spec in specs if spec not in unavailable]
+    grids = {spec.name: list(spec.parameter_grid) for spec in specs if spec.backend == "sklearn"}
+    baseline_grids = {spec.name: list(spec.parameter_grid) for spec in specs if spec.backend == "baseline"}
+    torch_grids = {spec.name: list(spec.parameter_grid) for spec in specs if spec.backend == "pytorch"}
     feature_strategies: tuple[str | None, ...] = (None,)
     if task_type == TaskType.TIME_SERIES_FORECASTING:
         feature_strategies = ("flatten",)
@@ -331,13 +370,7 @@ def build_candidates(
         for name, parameter_grid in torch_grids.items()
         for parameters in parameter_grid
     )
-    if search.strategy == SearchStrategy.NONE:
-        candidates = candidates[:1]
-    elif search.strategy == SearchStrategy.RANDOM and len(candidates) > search.max_trials:
-        rng = np.random.default_rng(seed)
-        selected = sorted(rng.choice(len(candidates), size=search.max_trials, replace=False).tolist())
-        candidates = [candidates[index] for index in selected]
-    return candidates[: search.max_trials]
+    return _limit_candidates(_apply_candidate_policy(candidates, search), search, seed)
 
 
 def _scaler(name: str):
@@ -358,19 +391,19 @@ def _estimator(candidate: AlgorithmCandidate, task_type: TaskType, seed: int, wo
     multi_target = task_type in {TaskType.MULTI_TARGET_REGRESSION, TaskType.TIME_SERIES_FORECASTING}
     if candidate.name == "LogisticRegression":
         model = LogisticRegression(max_iter=1000, random_state=seed, **params)
-        return MultiOutputClassifier(model, n_jobs=workers) if multilabel else model
+        return MultiOutputClassifier(model, n_jobs=1) if multilabel else model
     if candidate.name == "RandomForestClassifier":
         return RandomForestClassifier(random_state=seed, n_jobs=workers, **params)
     if candidate.name == "ExtraTreesClassifier":
         return ExtraTreesClassifier(random_state=seed, n_jobs=workers, **params)
     if candidate.name == "HistGradientBoostingClassifier":
         model = HistGradientBoostingClassifier(random_state=seed, **params)
-        return MultiOutputClassifier(model, n_jobs=workers) if multilabel else model
+        return MultiOutputClassifier(model, n_jobs=1) if multilabel else model
     if candidate.name == "LightGBMClassifier":
         from lightgbm import LGBMClassifier
 
         model = LGBMClassifier(random_state=seed, n_jobs=workers, verbosity=-1, **params)
-        return MultiOutputClassifier(model, n_jobs=workers) if multilabel else model
+        return MultiOutputClassifier(model, n_jobs=1) if multilabel else model
     if candidate.name == "Ridge":
         return Ridge(**params)
     if candidate.name == "RandomForestRegressor":
@@ -379,12 +412,12 @@ def _estimator(candidate: AlgorithmCandidate, task_type: TaskType, seed: int, wo
         return ExtraTreesRegressor(random_state=seed, n_jobs=workers, **params)
     if candidate.name == "HistGradientBoostingRegressor":
         model = HistGradientBoostingRegressor(random_state=seed, **params)
-        return MultiOutputRegressor(model, n_jobs=workers) if multi_target else model
+        return MultiOutputRegressor(model, n_jobs=1) if multi_target else model
     if candidate.name == "LightGBMRegressor":
         from lightgbm import LGBMRegressor
 
         model = LGBMRegressor(random_state=seed, n_jobs=workers, verbosity=-1, **params)
-        return MultiOutputRegressor(model, n_jobs=workers) if multi_target else model
+        return MultiOutputRegressor(model, n_jobs=1) if multi_target else model
     raise ValueError(f"Unsupported algorithm: {candidate.name}")
 
 

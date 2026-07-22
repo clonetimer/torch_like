@@ -19,15 +19,29 @@ def _print_json(value) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(prog="torch-like", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("validate", "plan", "run"):
+    for name in ("validate", "plan"):
         command = commands.add_parser(name)
         command.add_argument("--config", required=True, type=Path)
+    run = commands.add_parser("run")
+    run.add_argument("--config", required=True, type=Path)
+    run.add_argument("--resume", action="store_true", help="resume an immutable interrupted task")
     show = commands.add_parser("show")
     show.add_argument("run_dir", type=Path)
+    show.add_argument(
+        "--family",
+        choices=("all", "torch_like", "baseline"),
+        default="all",
+        help="show the overall leaderboard or one independently ranked model family",
+    )
     args = parser.parse_args()
 
     if args.command == "show":
-        leaderboard_path = args.run_dir / "leaderboard.csv"
+        filename = {
+            "all": "leaderboard.csv",
+            "torch_like": "leaderboard_torch_like.csv",
+            "baseline": "leaderboard_baselines.csv",
+        }[args.family]
+        leaderboard_path = args.run_dir / filename
         if not leaderboard_path.is_file():
             parser.error(f"Leaderboard does not exist: {leaderboard_path}")
         print(pd.read_csv(leaderboard_path).to_string(index=False))
@@ -41,7 +55,7 @@ def main() -> int:
         task.validate()
         _print_json(task.build_plan())
     else:
-        result = task.run()
+        result = task.run(resume=args.resume)
         _print_json(
             {
                 "run_dir": str(result.run_dir),

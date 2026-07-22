@@ -17,6 +17,10 @@ list_domains = _models.list_domains
 list_models = _models.list_models
 list_models_by_support = _models.list_models_by_support
 list_models_by_family = _models.list_models_by_family
+list_models_by_fidelity = _models.list_models_by_fidelity
+list_models_by_maturity = _models.list_models_by_maturity
+get_evidence_record = _models.get_evidence_record
+list_evidence_records = _models.list_evidence_records
 get_model_info = _models.get_model_info
 create_model = _models.create_model
 
@@ -28,6 +32,10 @@ _REGISTRY_EXPORTS = (
     "list_models",
     "list_models_by_support",
     "list_models_by_family",
+    "list_models_by_fidelity",
+    "list_models_by_maturity",
+    "get_evidence_record",
+    "list_evidence_records",
     "get_model_info",
     "create_model",
 )

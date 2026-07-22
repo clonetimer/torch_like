@@ -4,6 +4,18 @@
 
 English: `torch_like` is a local PyTorch-native model framework. Its goal is to make high-value models importable, instantiable, device-movable, serializable, and composable like regular `torch.nn` modules.
 
+长期里程碑、退出条件和当前 M1 路径见 [`docs/ROADMAP.md`](docs/ROADMAP.md)。完整 registry 能力与成熟度审计见 [`docs/MODEL_CATALOG_AUDIT.md`](docs/MODEL_CATALOG_AUDIT.md)。
+
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for long-term milestones and exit criteria, and [`docs/MODEL_CATALOG_AUDIT.md`](docs/MODEL_CATALOG_AUDIT.md) for the complete registry capability and maturity audit.
+
+公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
+
+Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
+
+模型成熟度只由可审计的本地证据登记驱动，详见 [`docs/MODEL_EVIDENCE.md`](docs/MODEL_EVIDENCE.md)。
+
+Model maturity is driven only by auditable local evidence records; see [`docs/MODEL_EVIDENCE.md`](docs/MODEL_EVIDENCE.md).
+
 ## 定位边界 / Scope Boundary
 
 中文：`torch_like` 是模型框架优先，不是完整训练平台，也不是 `torch.nn` 的逐层复刻。
@@ -52,6 +64,8 @@ English: The compatibility target is the `nn.Module` object model, not every spe
 - English: The registry supports `create_model(name, domain=..., **kwargs)`.
 - 中文：registry 支持 `list_domains()`、`list_models(...)` 和 `get_model_info(...)`，返回的元数据副本可安全修改。
 - English: The registry exposes `list_domains()`, `list_models(...)`, and `get_model_info(...)`; returned metadata snapshots are safe to modify.
+- 中文：registry 以兼容方式同时返回旧 `integration_level` 和 schema v2 的一致性、范围、执行、成熟度与证据字段，并支持 `list_models_by_fidelity(...)`、`list_models_by_maturity(...)` 查询。
+- English: Registry snapshots retain legacy `integration_level` while adding schema-v2 fidelity, scope, execution, maturity, and evidence fields, queryable through `list_models_by_fidelity(...)` and `list_models_by_maturity(...)`.
 
 ## 当前模型覆盖 / Current Model Coverage
 
@@ -561,7 +575,49 @@ XJTU-SY 文献筛选、协议差异、本地常规实验结果和候选否决记
 
 中文：`torch_like.automl` 提供 CSV 数据画像、`row/full_sequence/sliding_window` 样本化、防泄漏划分、scikit-learn 与部分 `torch_like` 模型候选、预处理竞争、隔离 trial、验证集排名和可复现产物。详细配置、CLI 和 Python API 见 [`docs/AUTOML.md`](docs/AUTOML.md)。
 
-English: `torch_like.automl` provides CSV profiling, `row/full_sequence/sliding_window` sampling, group CV, rolling-origin forecasting, sealed final tests, scikit-learn and selected `torch_like` candidates, preprocessing competition, isolated trials, and reproducible artifacts. See [`docs/AUTOML.md`](docs/AUTOML.md) for configuration, CLI, and Python APIs.
+English: `torch_like.automl` provides CSV profiling, `row/full_sequence/sliding_window` sampling, registry-driven candidates, sealed final tests for every split protocol, preprocessing competition, isolated trials, reproducible artifacts, and `load_best()` inference bundles. See [`docs/AUTOML.md`](docs/AUTOML.md) for configuration, CLI, and Python APIs.
+
+中文：排行榜候选策略支持 `production`、`torch_like_only`、`baseline_only` 和 `prefer_torch_like`，用于区分“寻找实际最优管线”和“验证框架模型”两类目标。每次运行同时输出总榜、`torch_like` 模型榜和传统基线榜，但只由总榜冠军执行一次最终封存测试。
+
+English: Candidate policies distinguish practical model selection from framework validation: `production`, `torch_like_only`, `baseline_only`, and `prefer_torch_like`. Every run exports overall, torch-like, and baseline leaderboards, while only the overall winner receives the one-shot sealed test.
+
+中文：非图时序分类可以通过 `sample_mode: full_sequence` 调用 `torch_like` 的 `InceptionTime` 与 `ROCKET`，并与 sklearn 序列特征基线共同进入排行榜。FordA 示例见 [`examples/time_series_classification_leaderboard.yaml`](examples/time_series_classification_leaderboard.yaml)。
+
+English: Non-graph time-series classification can use `sample_mode: full_sequence` to rank `torch_like` `InceptionTime` and `ROCKET` alongside sklearn sequence-feature baselines. The FordA example is in [`examples/time_series_classification_leaderboard.yaml`](examples/time_series_classification_leaderboard.yaml).
+
+中文：多标签分类支持每个标签一列的 0/1 CSV 目标，排行榜可以同时比较 sklearn 多输出包装器和 `torch_like` 表格神经网络候选。
+
+English: Multilabel classification supports one 0/1 CSV column per label, and the leaderboard can compare sklearn multi-output wrappers with `torch_like` tabular neural candidates.
+
+Tabular classification leaderboards can compare sklearn/LightGBM baselines with `torch_like` neural candidates including `FTTransformer`, `TabNet`, `NODE`, and `SAINT` under the same split and ranking protocol.
+
+表格分类排行榜可以在相同数据划分和排名协议下，让 sklearn/LightGBM 基线与 `torch_like` 的 `FTTransformer`、`TabNet`、`NODE`、`SAINT` 神经网络候选共同竞争。
+
+中文：所有划分协议现在都只按验证指标排列候选，测试数据仅在最佳管线选定并重训后解封一次。`load_best()` 可恢复可信本地的入选管线、预处理器和 PyTorch 状态并执行推理。
+
+Interrupted immutable tasks can continue with `torch-like run --config task.yaml --resume`; completed and failed trial records are reused, and a completed sealed test is never reopened automatically.
+
+不可变排行榜任务中断后可通过 `torch-like run --config task.yaml --resume` 继续；已完成和已失败的 trial 记录都会复用，已经完成的封存测试不会被自动再次打开。
+
+Multi-seed ranking is available through `search.evaluation_seeds`. Each pipeline/seed pair runs in isolation; only complete seed coverage is ranked, with metric and rank stability exported before one-shot sealed testing.
+
+可通过 `search.evaluation_seeds` 启用多种子排名。每个管线与种子组合独立运行，只有完成全部种子的管线才参与排名，并在一次性封存测试前输出指标与名次稳定性。
+
+Validated leaderboard trust can be declared with `trust.level: validated`; this requires at least three evaluation seeds and writes `evaluation_trust_audit.json` with seed-coverage and budget checks. The default `development` level remains suitable for smoke tests and model-adapter work.
+
+可通过 `trust.level: validated` 声明验证级排行榜；该模式要求至少 3 个评估种子，并写出包含种子覆盖和预算检查的 `evaluation_trust_audit.json`。默认 `development` 等级仍适合 smoke 测试和模型适配开发。
+
+Benchmark trust tiers and promotion rules are maintained in [`docs/AUTOML_BENCHMARK_TRUST.md`](docs/AUTOML_BENCHMARK_TRUST.md). A validated rolling-origin forecasting template is available at [`examples/forecasting_rolling_validated.yaml`](examples/forecasting_rolling_validated.yaml).
+
+排行榜可信分层和晋升规则见 [`docs/AUTOML_BENCHMARK_TRUST.md`](docs/AUTOML_BENCHMARK_TRUST.md)。验证级 rolling-origin 预测模板见 [`examples/forecasting_rolling_validated.yaml`](examples/forecasting_rolling_validated.yaml)。
+
+AutoML YAML examples are statically checked by `python tools/validate_automl_examples.py` and by CI, so example drift is treated as a governance failure.
+
+AutoML YAML 示例由 `python tools/validate_automl_examples.py` 和 CI 做静态检查；示例漂移会被视为治理失败。
+
+Completed leaderboard runs can be audited with `python tools/validate_automl_runs.py runs/<task_id>`. To scan a mixed local `runs/` folder, use `python tools/validate_automl_runs.py --skip-legacy runs`. For `validated` runs, the checker requires passed protocol audits, complete seed coverage, one completed sealed-test record, and no test metrics leaked into `leaderboard.csv`.
+
+已完成的排行榜运行可用 `python tools/validate_automl_runs.py runs/<task_id>` 审计。扫描混合了旧协议产物的本地 `runs/` 文件夹时，使用 `python tools/validate_automl_runs.py --skip-legacy runs`。对于 `validated` 运行，检查器要求协议审计通过、种子覆盖完整、封存测试完成且 `leaderboard.csv` 不泄露测试指标。
 
 ESA-ADB anomaly leaderboards load selected channels directly from the raw mission ZIP, use validation-only threshold selection, rank corrected event-wise F0.5, and open the test period only for the selected detector. See [`docs/ESA_ADB_MODEL_EVALUATION.md`](docs/ESA_ADB_MODEL_EVALUATION.md) and [`examples/esa_mission1_anomaly_leaderboard.yaml`](examples/esa_mission1_anomaly_leaderboard.yaml).
 

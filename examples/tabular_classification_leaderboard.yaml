@@ -1,0 +1,54 @@
+task_id: tabular-classification
+
+dataset:
+  path: data/classification.csv
+  format: csv
+  label_columns: [label]
+  label_join_key: sample_id
+  sample_mode: row
+  scale: user_defined
+
+task:
+  type: tabular_classification
+
+split:
+  type: stratified
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
+  seed: 42
+
+resources:
+  device: cpu
+  max_parallel_trials: 1
+  max_total_minutes: 60
+  timeout_per_trial_minutes: 10
+  max_cpu_workers: 2
+
+search:
+  strategy: random
+  candidate_policy: production
+  max_trials: 12
+  preprocessing: [standard, robust, none]
+  algorithms:
+    - LogisticRegression
+    - RandomForestClassifier
+    - ExtraTreesClassifier
+    - HistGradientBoostingClassifier
+    - FTTransformer
+    - TabNet
+    - NODE
+    - SAINT
+  evaluation_seeds: [11, 29, 47]
+  torch_epochs: 30
+  torch_early_stopping_patience: 6
+  torch_restore_best: true
+
+ranking:
+  primary_metric: f1_macro
+  additional_metrics: [precision_macro, recall_macro, accuracy]
+
+artifacts:
+  output_dir: runs
+  save_predictions: true
+  save_checkpoints: true

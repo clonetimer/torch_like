@@ -1,5 +1,7 @@
 """Auditable dataset-to-leaderboard automation built on torch_like."""
 
+from torch_like.automl.bundle import ModelBundle, load_best
+from torch_like.automl.candidate_registry import CandidateSpec, list_candidate_specs, register_candidate
 from torch_like.automl.config import load_config
 from torch_like.automl.data import (
     DatasetProfile,
@@ -15,13 +17,16 @@ from torch_like.automl.data import (
     split_group_cv,
     split_rolling_origin,
 )
+from torch_like.automl.protocol import EvaluationTrustAudit, ProtocolAudit, audit_evaluation_trust, audit_split_protocol
 from torch_like.automl.specs import (
     ArtifactSpec,
+    CandidatePolicy,
     DatasetFormat,
     DatasetScale,
     DatasetSpec,
     LabelGranularity,
     LeaderboardConfig,
+    LeaderboardTrustLevel,
     PretrainingSpec,
     RankingSpec,
     ResourceSpec,
@@ -32,22 +37,29 @@ from torch_like.automl.specs import (
     SplitType,
     TaskSpec,
     TaskType,
+    TrustSpec,
 )
 from torch_like.automl.task import LeaderboardResult, LeaderboardTask, TrialResult
 
 __all__ = [
     "ArtifactSpec",
+    "CandidatePolicy",
+    "CandidateSpec",
     "DataSplit",
     "DatasetProfile",
     "DatasetScale",
     "DatasetFormat",
     "DatasetSpec",
+    "EvaluationTrustAudit",
     "GroupCVSplit",
     "LabelGranularity",
     "LeaderboardConfig",
+    "LeaderboardTrustLevel",
     "LeaderboardResult",
     "LeaderboardTask",
+    "ModelBundle",
     "PreparedData",
+    "ProtocolAudit",
     "RollingOriginSplit",
     "PretrainingSpec",
     "RankingSpec",
@@ -60,11 +72,17 @@ __all__ = [
     "TaskSpec",
     "TaskType",
     "TrialResult",
+    "TrustSpec",
     "ValidationFold",
     "load_config",
+    "load_best",
+    "audit_split_protocol",
+    "audit_evaluation_trust",
+    "list_candidate_specs",
     "prepare_csv_dataset",
     "prepare_dataset",
     "prepare_xjtu_sy_dataset",
+    "register_candidate",
     "split_dataset",
     "split_group_cv",
     "split_rolling_origin",

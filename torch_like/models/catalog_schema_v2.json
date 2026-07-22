@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "policy_id": "torch-like-model-catalog-schema",
+  "policy_version": "1.0",
+  "target_catalog_schema_version": 2,
+  "default_maturity": "unassessed",
+  "default_benchmark_evidence": "unassessed",
+  "allowed_implementation_fidelity": [
+    "framework_oriented",
+    "paper_aligned",
+    "reference"
+  ],
+  "allowed_implementation_scope": [
+    "full",
+    "core",
+    "subset",
+    "mlstm_only"
+  ],
+  "allowed_execution_profile": [
+    "standard",
+    "dense",
+    "portable",
+    "portable_scan",
+    "lsh"
+  ],
+  "maturity_levels": [
+    "unassessed",
+    "contract_validated",
+    "benchmarked",
+    "production_ready"
+  ],
+  "benchmark_evidence_levels": [
+    "unassessed",
+    "smoke_only",
+    "single_dataset",
+    "multi_dataset"
+  ],
+  "legacy_integration_levels": {
+    "framework_oriented": {
+      "implementation_fidelity": "framework_oriented",
+      "implementation_scope": "full",
+      "execution_profile": "standard"
+    },
+    "framework_oriented_dense": {
+      "implementation_fidelity": "framework_oriented",
+      "implementation_scope": "full",
+      "execution_profile": "dense"
+    },
+    "framework_oriented_lsh": {
+      "implementation_fidelity": "framework_oriented",
+      "implementation_scope": "full",
+      "execution_profile": "lsh"
+    },
+    "paper_aligned": {
+      "implementation_fidelity": "paper_aligned",
+      "implementation_scope": "full",
+      "execution_profile": "standard"
+    },
+    "paper_aligned_core": {
+      "implementation_fidelity": "paper_aligned",
+      "implementation_scope": "core",
+      "execution_profile": "standard"
+    },
+    "paper_aligned_dense": {
+      "implementation_fidelity": "paper_aligned",
+      "implementation_scope": "full",
+      "execution_profile": "dense"
+    },
+    "paper_aligned_mlstm_reference": {
+      "implementation_fidelity": "reference",
+      "implementation_scope": "mlstm_only",
+      "execution_profile": "standard"
+    },
+    "paper_aligned_portable": {
+      "implementation_fidelity": "paper_aligned",
+      "implementation_scope": "full",
+      "execution_profile": "portable"
+    },
+    "paper_aligned_portable_scan": {
+      "implementation_fidelity": "paper_aligned",
+      "implementation_scope": "full",
+      "execution_profile": "portable_scan"
+    },
+    "paper_aligned_portable_subset": {
+      "implementation_fidelity": "paper_aligned",
+      "implementation_scope": "subset",
+      "execution_profile": "portable"
+    },
+    "paper_aligned_reference": {
+      "implementation_fidelity": "reference",
+      "implementation_scope": "full",
+      "execution_profile": "standard"
+    },
+    "user_registered": {
+      "implementation_fidelity": "framework_oriented",
+      "implementation_scope": "full",
+      "execution_profile": "standard"
+    }
+  }
+}

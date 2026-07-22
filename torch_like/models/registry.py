@@ -7,6 +7,9 @@ from importlib import import_module
 from threading import RLock
 from typing import Any, TypedDict
 
+from torch_like.models.catalog_evidence import evidence_metadata_for_model
+from torch_like.models.catalog_schema import DERIVED_METADATA_FIELDS, derive_catalog_v2_metadata
+
 
 class ModelMetadata(TypedDict):
     """Normalized metadata stored for every registered model."""
@@ -15,6 +18,12 @@ class ModelMetadata(TypedDict):
     family: str
     layer: str
     integration_level: str
+    implementation_fidelity: str
+    implementation_scope: str
+    execution_profile: str
+    maturity: str
+    benchmark_evidence: str
+    evidence_record: str | None
     supports: list[str]
     paper: str
     description: str
@@ -52,7 +61,7 @@ _METADATA_DEFAULTS = {
     "complexity": "Not specified",
 }
 _METADATA_FIELDS = frozenset(_METADATA_DEFAULTS)
-_METADATA_OPTIONAL_FIELDS = frozenset({"automl_default"})
+_METADATA_OPTIONAL_FIELDS = frozenset({"automl_default", *DERIVED_METADATA_FIELDS})
 _METADATA_ALLOWED_FIELDS = _METADATA_FIELDS | _METADATA_OPTIONAL_FIELDS
 _REGISTRY_LOCK = RLock()
 _BOOTSTRAPPED = False
@@ -68,6 +77,7 @@ def _normalize_metadata(
     metadata: Mapping[str, Any],
     *,
     require_complete: bool,
+    evidence_metadata: Mapping[str, Any] | None = None,
 ) -> ModelMetadata:
     if not isinstance(cls, type):
         raise TypeError("cls must be a class")
@@ -80,7 +90,12 @@ def _normalize_metadata(
         if missing:
             raise ValueError(f"Missing model metadata fields: {sorted(missing)}")
 
-    normalized = {**_METADATA_DEFAULTS, **metadata}
+    evidence_metadata = evidence_metadata or {}
+    conflicts = {field for field, value in evidence_metadata.items() if field in metadata and metadata[field] != value}
+    if conflicts:
+        raise ValueError(f"Catalog metadata conflicts with audited evidence fields: {sorted(conflicts)}")
+    effective_metadata = {**metadata, **evidence_metadata}
+    normalized = {**_METADATA_DEFAULTS, **effective_metadata}
     for field in _METADATA_FIELDS - {"supports"}:
         _validate_identifier(normalized[field], field)
 
@@ -91,15 +106,17 @@ def _normalize_metadata(
         raise ValueError("supports must contain only non-empty strings")
     if len(set(supports)) != len(supports):
         raise ValueError("supports must not contain duplicates")
-    automl_default = metadata.get("automl_default", True)
+    automl_default = effective_metadata.get("automl_default", True)
     if not isinstance(automl_default, bool):
         raise TypeError("automl_default must be a bool")
+    v2_metadata = derive_catalog_v2_metadata(normalized["integration_level"], effective_metadata)
 
     return ModelMetadata(
         cls=cls,
         family=normalized["family"],
         layer=normalized["layer"],
         integration_level=normalized["integration_level"],
+        **v2_metadata,
         supports=list(supports),
         paper=normalized["paper"],
         description=normalized["description"],
@@ -161,6 +178,7 @@ def register_model_catalog(domain: str, catalog: Mapping[str, Mapping[str, Any]]
             config["cls"],
             {key: value for key, value in config.items() if key != "cls"},
             require_complete=True,
+            evidence_metadata=evidence_metadata_for_model(domain, name),
         )
 
     with _REGISTRY_LOCK:
@@ -277,6 +295,20 @@ def list_models_by_family(family: str, domain: str = "forecasting") -> ModelCata
 
     _validate_identifier(family, "family")
     return {name: meta for name, meta in list_models(domain).items() if meta["family"] == family}
+
+
+def list_models_by_maturity(maturity: str, domain: str = "forecasting") -> ModelCatalog:
+    """Return models in *domain* carrying one explicit maturity state."""
+
+    _validate_identifier(maturity, "maturity")
+    return {name: meta for name, meta in list_models(domain).items() if meta["maturity"] == maturity}
+
+
+def list_models_by_fidelity(fidelity: str, domain: str = "forecasting") -> ModelCatalog:
+    """Return models in *domain* carrying one implementation-fidelity state."""
+
+    _validate_identifier(fidelity, "fidelity")
+    return {name: meta for name, meta in list_models(domain).items() if meta["implementation_fidelity"] == fidelity}
 
 
 def create_model(name: str, domain: str = "forecasting", **kwargs: Any) -> Any:

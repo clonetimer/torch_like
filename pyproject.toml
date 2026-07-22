@@ -71,5 +71,8 @@ select = ["E4", "E7", "E9", "F", "I", "B"]
 where = ["."]
 include = ["torch_like*"]
 
+[tool.setuptools.package-data]
+"torch_like.models" = ["catalog_schema_v2.json", "model_evidence.json"]
+
 [tool.setuptools.dynamic]
 version = { attr = "torch_like.__version__" }

@@ -8,7 +8,6 @@ import json
 import multiprocessing as mp
 import os
 import platform
-import shutil
 import subprocess
 import time
 import traceback
@@ -36,6 +35,7 @@ from torch_like.automl.data import (
     split_group_cv,
     split_rolling_origin,
 )
+from torch_like.automl.protocol import EvaluationTrustAudit, ProtocolAudit, audit_evaluation_trust, audit_split_protocol
 from torch_like.automl.sklearn_backend import (
     AlgorithmCandidate,
     build_candidates,
@@ -72,6 +72,8 @@ class TrialResult:
     parameter_count: int | None
     artifact_dir: str
     error: str | None = None
+    candidate_index: int | None = None
+    seed: int | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -290,10 +292,16 @@ def _trial_worker(payload: dict[str, Any], queue) -> None:
             raise FloatingPointError("Validation predictions contain NaN or infinite values")
         if np.issubdtype(test_prediction.dtype, np.number) and not np.isfinite(test_prediction).all():
             raise FloatingPointError("Test predictions contain NaN or infinite values")
+        selection_only = payload.get("selection_only", False)
+        if selection_only:
+            test_metrics = {}
         if payload["save_predictions"] and payload["task_type"] != TaskType.ANOMALY_DETECTION:
-            _prediction_frame(payload["sample_ids"][split.test], y[split.test], test_prediction).to_csv(
-                trial_dir / "predictions.csv", index=False
-            )
+            prediction_indices = split.val if selection_only else split.test
+            prediction_values = val_prediction if selection_only else test_prediction
+            prediction_name = "validation_predictions.csv" if selection_only else "predictions.csv"
+            _prediction_frame(
+                payload["sample_ids"][prediction_indices], y[prediction_indices], prediction_values
+            ).to_csv(trial_dir / prediction_name, index=False)
         result = TrialResult(
             trial_id=payload["trial_id"],
             name=candidate.trial_name,
@@ -303,6 +311,8 @@ def _trial_worker(payload: dict[str, Any], queue) -> None:
             test_metrics=test_metrics,
             parameter_count=parameter_count,
             artifact_dir=str(trial_dir),
+            candidate_index=payload.get("candidate_index"),
+            seed=payload["seed"],
         )
         _json_dump(trial_dir / "metrics.json", result.to_dict())
         _json_dump(trial_dir / "config.json", {"candidate": candidate.to_dict(), "seed": payload["seed"]})
@@ -327,6 +337,8 @@ def _trial_worker(payload: dict[str, Any], queue) -> None:
             parameter_count=None,
             artifact_dir=str(trial_dir),
             error=message,
+            candidate_index=payload.get("candidate_index"),
+            seed=payload["seed"],
         )
         _json_dump(trial_dir / "error.json", result.to_dict())
         queue.put(result)
@@ -449,6 +461,8 @@ def _cv_trial_worker(payload: dict[str, Any], queue) -> None:
             test_metrics={},
             parameter_count=parameter_count,
             artifact_dir=str(trial_dir),
+            candidate_index=payload.get("candidate_index"),
+            seed=payload["seed"],
         )
         _json_dump(trial_dir / "fold_metrics.json", fold_metrics)
         _json_dump(trial_dir / "metrics.json", result.to_dict())
@@ -477,6 +491,8 @@ def _cv_trial_worker(payload: dict[str, Any], queue) -> None:
             parameter_count=None,
             artifact_dir=str(trial_dir),
             error=message,
+            candidate_index=payload.get("candidate_index"),
+            seed=payload["seed"],
         )
         _json_dump(trial_dir / "error.json", result.to_dict())
         queue.put(result)
@@ -503,6 +519,8 @@ def _run_isolated_trial(payload: dict[str, Any], timeout_seconds: float) -> Tria
             parameter_count=None,
             artifact_dir=str(trial_dir),
             error=f"Trial exceeded {timeout_seconds:.1f} seconds",
+            candidate_index=payload.get("candidate_index"),
+            seed=payload["seed"],
         )
         _json_dump(trial_dir / "error.json", result.to_dict())
         return result
@@ -520,9 +538,34 @@ def _run_isolated_trial(payload: dict[str, Any], timeout_seconds: float) -> Tria
             parameter_count=None,
             artifact_dir=str(trial_dir),
             error=f"Trial process exited with code {process.exitcode} without a result",
+            candidate_index=payload.get("candidate_index"),
+            seed=payload["seed"],
         )
         _json_dump(trial_dir / "error.json", result.to_dict())
         return result
+
+
+def _load_trial_result(
+    trial_dir: Path,
+    trial_id: str,
+    candidate: AlgorithmCandidate,
+    candidate_index: int,
+    seed: int,
+) -> TrialResult | None:
+    for name in ("metrics.json", "error.json"):
+        path = trial_dir / name
+        if not path.is_file():
+            continue
+        result = TrialResult(**json.loads(path.read_text(encoding="utf-8")))
+        if (
+            result.trial_id != trial_id
+            or result.name != candidate.trial_name
+            or result.candidate_index != candidate_index
+            or result.seed != seed
+        ):
+            raise ValueError(f"Stored trial identity does not match the immutable plan: {path}")
+        return result
+    return None
 
 
 class LeaderboardTask:
@@ -532,6 +575,8 @@ class LeaderboardTask:
         self.config = config
         self._data: PreparedData | None = None
         self._split: DataSplit | GroupCVSplit | RollingOriginSplit | None = None
+        self._protocol_audit: ProtocolAudit | None = None
+        self._evaluation_trust_audit: EvaluationTrustAudit | None = None
 
     def validate(self) -> None:
         if self.config.task.type not in SUPPORTED_TASKS:
@@ -557,6 +602,22 @@ class LeaderboardTask:
             self._data = prepare_dataset(self.config.dataset)
         return self._data.profile.to_dict()
 
+    def _evaluation_seeds(self) -> tuple[int, ...]:
+        return self.config.search.evaluation_seeds or (self.config.seed,)
+
+    def _planned_trials(self, candidates: list[AlgorithmCandidate]) -> list[tuple[int, AlgorithmCandidate, int, str]]:
+        seeds = self._evaluation_seeds()
+        return [
+            (
+                candidate_index,
+                candidate,
+                seed,
+                f"trial-{candidate_index:04d}" if len(seeds) == 1 else f"trial-{candidate_index:04d}-seed-{seed:010d}",
+            )
+            for candidate_index, candidate in enumerate(candidates)
+            for seed in seeds
+        ]
+
     def build_plan(self) -> dict[str, Any]:
         data = self._data or prepare_dataset(self.config.dataset)
         if self.config.split.type == SplitType.GROUP_CV:
@@ -565,6 +626,7 @@ class LeaderboardTask:
             split = split_rolling_origin(data, self.config.split)
         else:
             split = split_dataset(data, self.config.split, self.config.task.type)
+        protocol_audit = audit_split_protocol(data, split, self.config.split, self.config.task.type)
         equal_lengths = len(set(data.sequence_lengths)) <= 1
         candidates = build_candidates(
             self.config.task.type,
@@ -573,6 +635,11 @@ class LeaderboardTask:
             equal_sequence_lengths=equal_lengths,
             seed=self.config.seed,
         )
+        if not candidates:
+            raise ValueError(
+                f"candidate_policy={self.config.search.candidate_policy.value!r} produced no compatible "
+                f"candidates for {self.config.task.type.value}"
+            )
         primary = self.config.ranking.primary_metric or default_primary_metric(self.config.task.type)
         available_metrics = supported_metrics(self.config.task.type)
         if self.config.task.type == TaskType.MULTI_TARGET_REGRESSION:
@@ -587,16 +654,25 @@ class LeaderboardTask:
             )
         if primary == "weighted_nrmse" and self.config.ranking.target_weights is None:
             raise ValueError("weighted_nrmse requires ranking.target_weights")
-        self._data, self._split = data, split
+        planned_trials = self._planned_trials(candidates)
+        evaluation_trust_audit = audit_evaluation_trust(self.config, candidates, planned_trials, protocol_audit)
+        self._data, self._split, self._protocol_audit = data, split, protocol_audit
+        self._evaluation_trust_audit = evaluation_trust_audit
         plan = {
             "task_id": self.config.task_id,
             "task_type": self.config.task.type.value,
+            "trust_level": self.config.trust.level.value,
             "primary_metric": primary,
             "metric_direction": metric_direction(primary),
+            "candidate_policy": self.config.search.candidate_policy.value,
             "samples": len(data.x),
             "candidate_count": len(candidates),
+            "trial_count": len(candidates) * len(self._evaluation_seeds()),
+            "evaluation_seeds": list(self._evaluation_seeds()),
             "candidates": [candidate.to_dict() for candidate in candidates],
             "warnings": list(data.profile.warnings),
+            "protocol_audit": protocol_audit.to_dict(),
+            "evaluation_trust_audit": evaluation_trust_audit.to_dict(),
         }
         if isinstance(split, (GroupCVSplit, RollingOriginSplit)):
             plan.update(
@@ -617,7 +693,7 @@ class LeaderboardTask:
                     "protocol": (
                         "predefined_validation_sealed_test"
                         if self.config.task.type == TaskType.ANOMALY_DETECTION
-                        else "single_split"
+                        else "single_validation_sealed_test"
                     ),
                     "split_sizes": {
                         "train": len(split.train),
@@ -628,56 +704,176 @@ class LeaderboardTask:
             )
         return plan
 
-    def run(self) -> LeaderboardResult:
+    def run(self, *, resume: bool = False) -> LeaderboardResult:
         self.validate()
         plan = self.build_plan()
-        assert self._data is not None and self._split is not None
+        assert self._data is not None and self._split is not None and self._protocol_audit is not None
+        assert self._evaluation_trust_audit is not None
         run_dir = self.config.run_dir
-        if run_dir.exists() and any(run_dir.iterdir()):
-            raise FileExistsError(f"Run directory already exists and is not empty: {run_dir}")
+        self._prepare_run_directory(run_dir, plan, resume=resume)
         trials_dir = run_dir / "trials"
         trials_dir.mkdir(parents=True, exist_ok=True)
-        _json_dump(run_dir / "config.json", self.config.to_dict())
-        _json_dump(run_dir / "dataset_profile.json", self._data.profile.to_dict())
-        _json_dump(run_dir / "data_split.json", self._split.to_dict())
-        _json_dump(run_dir / "plan.json", plan)
-        _json_dump(run_dir / "environment.json", self._environment())
 
         candidates = [AlgorithmCandidate(**candidate) for candidate in plan["candidates"]]
         if self.config.task.type == TaskType.ANOMALY_DETECTION:
             return self._run_anomaly_detection(run_dir, trials_dir, plan, candidates)
         if isinstance(self._split, (GroupCVSplit, RollingOriginSplit)):
             return self._run_cross_validation(run_dir, trials_dir, plan, candidates)
+        return self._run_single_split(run_dir, trials_dir, plan, candidates)
 
+    def _prepare_run_directory(self, run_dir: Path, plan: dict[str, Any], *, resume: bool) -> None:
+        assert self._data is not None and self._split is not None
+        expected = {
+            "config.json": self.config.to_dict(),
+            "dataset_profile.json": self._data.profile.to_dict(),
+            "data_split.json": self._split.to_dict(),
+            "protocol_audit.json": self._protocol_audit.to_dict(),
+            "evaluation_trust_audit.json": self._evaluation_trust_audit.to_dict(),
+            "plan.json": plan,
+        }
+        non_empty = run_dir.exists() and any(run_dir.iterdir())
+        if non_empty and not resume:
+            raise FileExistsError(f"Run directory already exists and is not empty: {run_dir}")
+        run_dir.mkdir(parents=True, exist_ok=True)
+        for name, value in expected.items():
+            path = run_dir / name
+            normalized = json.loads(json.dumps(value, ensure_ascii=False, default=str))
+            if path.is_file():
+                stored = json.loads(path.read_text(encoding="utf-8"))
+                if stored != normalized:
+                    raise ValueError(f"Cannot resume because immutable task state changed: {path}")
+            else:
+                _json_dump(path, value)
+        environment_path = run_dir / "environment.json"
+        if not environment_path.is_file():
+            _json_dump(environment_path, self._environment())
+
+    @staticmethod
+    def _completed_sealed_test(run_dir: Path) -> dict[str, Any] | None:
+        path = run_dir / "sealed_test_metrics.json"
+        if not path.is_file():
+            return None
+        record = json.loads(path.read_text(encoding="utf-8"))
+        return record if record.get("status") == "completed" else None
+
+    def _run_single_split(
+        self,
+        run_dir: Path,
+        trials_dir: Path,
+        plan: dict[str, Any],
+        candidates: list[AlgorithmCandidate],
+    ) -> LeaderboardResult:
+        assert self._data is not None and isinstance(self._split, DataSplit)
+        split = self._split
+        development = np.concatenate((split.train, split.val))
+        local_train = np.arange(len(split.train), dtype=np.int64)
+        local_val = np.arange(len(split.train), len(development), dtype=np.int64)
+        local_split = DataSplit(local_train, local_val, local_val)
         results: list[TrialResult] = []
         task_started = time.monotonic()
         total_limit = self.config.resources.max_total_minutes * 60
         timeout = self.config.resources.timeout_per_trial_minutes * 60
-        for index, candidate in enumerate(candidates):
+        for candidate_index, candidate, seed, trial_id in self._planned_trials(candidates):
+            trial_dir = trials_dir / trial_id
+            stored = _load_trial_result(trial_dir, trial_id, candidate, candidate_index, seed)
+            if stored is not None:
+                results.append(stored)
+                continue
             elapsed = time.monotonic() - task_started
             if elapsed >= total_limit:
                 break
-            trial_id = f"trial-{index:04d}"
             payload = self._trial_payload(
                 trial_id,
-                trials_dir / trial_id,
+                trial_dir,
                 candidate,
-                x=self._data.x,
-                y=self._data.y,
-                sample_ids=self._data.sample_ids,
+                x=self._data.x[development],
+                y=self._data.y[development],
+                sample_ids=self._data.sample_ids[development],
                 target_weights=self._target_weights(),
+                candidate_index=candidate_index,
+                seed=seed,
             )
-            payload["split"] = self._split
+            payload["split"] = local_split
+            payload["selection_only"] = True
             results.append(_run_isolated_trial(payload, min(timeout, total_limit - elapsed)))
 
-        leaderboard = self._build_leaderboard(results, plan["primary_metric"])
-        leaderboard.to_csv(run_dir / "leaderboard.csv", index=False)
+        leaderboard = self._build_leaderboard(results, plan["primary_metric"], candidates)
+        self._write_leaderboards(run_dir, leaderboard)
         _json_dump(run_dir / "trials.json", [result.to_dict() for result in results])
-        self._export_best(run_dir, leaderboard, results)
+        sealed_test = self._evaluate_selected_on_single_test(
+            run_dir,
+            leaderboard,
+            results,
+            candidates,
+            development,
+            timeout,
+            max(0.0, total_limit - (time.monotonic() - task_started)),
+        )
+        _json_dump(run_dir / "sealed_test_metrics.json", sealed_test)
         (run_dir / "final_report.md").write_text(
-            self._report(leaderboard, results, plan["primary_metric"]), encoding="utf-8"
+            self._report(leaderboard, results, plan["primary_metric"], sealed_test=sealed_test), encoding="utf-8"
         )
         return LeaderboardResult(run_dir, leaderboard, tuple(results), plan["primary_metric"])
+
+    def _evaluate_selected_on_single_test(
+        self,
+        run_dir: Path,
+        leaderboard: pd.DataFrame,
+        results: list[TrialResult],
+        candidates: list[AlgorithmCandidate],
+        development: np.ndarray,
+        timeout: float,
+        remaining_time: float,
+    ) -> dict[str, Any]:
+        assert self._data is not None and isinstance(self._split, DataSplit)
+        completed = self._completed_sealed_test(run_dir)
+        if completed is not None:
+            return completed
+        if leaderboard.empty or leaderboard.iloc[0]["status"] != "completed":
+            return {"status": "not_run", "reason": "No completed validation trial"}
+        if remaining_time <= 0:
+            return {"status": "not_run", "reason": "Task time budget exhausted before final retraining"}
+        best_id = str(leaderboard.iloc[0]["trial_id"])
+        candidate_index = int(leaderboard.iloc[0]["candidate_index"])
+        candidate = candidates[candidate_index]
+        candidate_results = [result for result in results if result.candidate_index == candidate_index]
+        selected_epochs = self._selected_training_epochs(candidate_results, candidate)
+        final_seed = self._evaluation_seeds()[0]
+        final_split = DataSplit(train=development, val=self._split.test, test=self._split.test)
+        payload = self._trial_payload(
+            best_id,
+            run_dir / "best_model",
+            candidate,
+            x=self._data.x,
+            y=self._data.y,
+            sample_ids=self._data.sample_ids,
+            target_weights=self._target_weights(),
+            candidate_index=candidate_index,
+            seed=final_seed,
+        )
+        payload["split"] = final_split
+        payload["final_only"] = True
+        if selected_epochs is not None:
+            payload["torch_epochs"] = selected_epochs
+            payload["torch_early_stopping_patience"] = None
+            payload["torch_restore_best"] = False
+        final_result = _run_isolated_trial(payload, min(timeout, remaining_time))
+        record = {
+            "status": final_result.status,
+            "selected_trial_id": best_id,
+            "selected_pipeline": candidate.trial_name,
+            "development_samples": len(development),
+            "test_samples": len(self._split.test),
+            "test_metrics": final_result.test_metrics,
+            "selected_training_epochs": selected_epochs,
+            "evaluation_seeds": list(self._evaluation_seeds()),
+            "final_training_seed": final_seed,
+            "duration_seconds": final_result.duration_seconds,
+            "artifact_dir": final_result.artifact_dir,
+            "error": final_result.error,
+        }
+        _json_dump(run_dir / "best_model" / "selection.json", record)
+        return record
 
     def _run_anomaly_detection(
         self,
@@ -696,37 +892,47 @@ class LeaderboardTask:
         task_started = time.monotonic()
         total_limit = self.config.resources.max_total_minutes * 60
         timeout = self.config.resources.timeout_per_trial_minutes * 60
-        for index, candidate in enumerate(candidates):
+        for candidate_index, candidate, seed, trial_id in self._planned_trials(candidates):
+            trial_dir = trials_dir / trial_id
+            stored = _load_trial_result(trial_dir, trial_id, candidate, candidate_index, seed)
+            if stored is not None:
+                results.append(stored)
+                continue
             elapsed = time.monotonic() - task_started
             if elapsed >= total_limit:
                 break
-            trial_id = f"trial-{index:04d}"
             payload = self._trial_payload(
                 trial_id,
-                trials_dir / trial_id,
+                trial_dir,
                 candidate,
                 x=self._data.x[development],
                 y=self._data.y[development],
                 sample_ids=self._data.sample_ids[development],
                 target_weights=None,
+                candidate_index=candidate_index,
+                seed=seed,
             )
             payload["split"] = local_split
             payload["anomaly_validation_only"] = True
             results.append(_run_isolated_trial(payload, min(timeout, total_limit - elapsed)))
 
-        leaderboard = self._build_leaderboard(results, plan["primary_metric"])
-        leaderboard.to_csv(run_dir / "leaderboard.csv", index=False)
+        leaderboard = self._build_leaderboard(results, plan["primary_metric"], candidates)
+        self._write_leaderboards(run_dir, leaderboard)
         _json_dump(run_dir / "trials.json", [result.to_dict() for result in results])
         sealed_test: dict[str, Any]
         remaining = max(0.0, total_limit - (time.monotonic() - task_started))
-        if leaderboard.empty or leaderboard.iloc[0]["status"] != "completed":
+        completed = self._completed_sealed_test(run_dir)
+        if completed is not None:
+            sealed_test = completed
+        elif leaderboard.empty or leaderboard.iloc[0]["status"] != "completed":
             sealed_test = {"status": "not_run", "reason": "No completed validation trial"}
         elif remaining <= 0:
             sealed_test = {"status": "not_run", "reason": "Task time budget exhausted before sealed test"}
         else:
             best_id = str(leaderboard.iloc[0]["trial_id"])
-            candidate_index = int(best_id.removeprefix("trial-"))
+            candidate_index = int(leaderboard.iloc[0]["candidate_index"])
             candidate = candidates[candidate_index]
+            final_seed = self._evaluation_seeds()[0]
             payload = self._trial_payload(
                 best_id,
                 run_dir / "best_model",
@@ -735,6 +941,8 @@ class LeaderboardTask:
                 y=self._data.y,
                 sample_ids=self._data.sample_ids,
                 target_weights=None,
+                candidate_index=candidate_index,
+                seed=final_seed,
             )
             payload["split"] = split
             payload["anomaly_validation_only"] = False
@@ -757,6 +965,8 @@ class LeaderboardTask:
                 "test_timestamp_range": test_timestamps,
                 "threshold": threshold,
                 "threshold_selected_on": "validation",
+                "evaluation_seeds": list(self._evaluation_seeds()),
+                "final_training_seed": final_seed,
                 "test_metrics": final_result.test_metrics,
                 "duration_seconds": final_result.duration_seconds,
                 "artifact_dir": final_result.artifact_dir,
@@ -790,19 +1000,25 @@ class LeaderboardTask:
         task_started = time.monotonic()
         total_limit = self.config.resources.max_total_minutes * 60
         timeout = self.config.resources.timeout_per_trial_minutes * 60
-        for index, candidate in enumerate(candidates):
+        for candidate_index, candidate, seed, trial_id in self._planned_trials(candidates):
+            trial_dir = trials_dir / trial_id
+            stored = _load_trial_result(trial_dir, trial_id, candidate, candidate_index, seed)
+            if stored is not None:
+                results.append(stored)
+                continue
             elapsed = time.monotonic() - task_started
             if elapsed >= total_limit:
                 break
-            trial_id = f"trial-{index:04d}"
             payload = self._trial_payload(
                 trial_id,
-                trials_dir / trial_id,
+                trial_dir,
                 candidate,
                 x=self._data.x[development],
                 y=self._data.y[development],
                 sample_ids=self._data.sample_ids[development],
                 target_weights=target_weights,
+                candidate_index=candidate_index,
+                seed=seed,
             )
             payload["folds"] = local_folds
             payload["cv_protocol"] = "group_cv" if isinstance(split, GroupCVSplit) else "rolling_origin"
@@ -811,8 +1027,8 @@ class LeaderboardTask:
                 payload["groups"] = self._data.groups[development]
             results.append(_run_isolated_trial(payload, min(timeout, total_limit - elapsed)))
 
-        leaderboard = self._build_leaderboard(results, plan["primary_metric"])
-        leaderboard.to_csv(run_dir / "leaderboard.csv", index=False)
+        leaderboard = self._build_leaderboard(results, plan["primary_metric"], candidates)
+        self._write_leaderboards(run_dir, leaderboard)
         _json_dump(run_dir / "trials.json", [result.to_dict() for result in results])
         sealed_test = self._evaluate_selected_on_sealed_test(
             run_dir,
@@ -841,24 +1057,19 @@ class LeaderboardTask:
         remaining_time: float,
     ) -> dict[str, Any]:
         assert self._data is not None and isinstance(self._split, (GroupCVSplit, RollingOriginSplit))
+        completed = self._completed_sealed_test(run_dir)
+        if completed is not None:
+            return completed
         if leaderboard.empty or leaderboard.iloc[0]["status"] != "completed":
             return {"status": "not_run", "reason": "No completed validation trial"}
         if remaining_time <= 0:
             return {"status": "not_run", "reason": "Task time budget exhausted before final retraining"}
         best_id = str(leaderboard.iloc[0]["trial_id"])
-        candidate_index = int(best_id.removeprefix("trial-"))
+        candidate_index = int(leaderboard.iloc[0]["candidate_index"])
         candidate = candidates[candidate_index]
-        selected_epochs = None
-        if candidate.backend == "pytorch":
-            fold_metrics_path = Path(results[candidate_index].artifact_dir) / "fold_metrics.json"
-            fold_records = json.loads(fold_metrics_path.read_text(encoding="utf-8"))
-            best_epochs = [
-                record["training"]["best_epoch"]
-                for record in fold_records
-                if record.get("training") and record["training"].get("best_epoch")
-            ]
-            if best_epochs:
-                selected_epochs = max(1, int(round(float(np.median(best_epochs)))))
+        candidate_results = [result for result in results if result.candidate_index == candidate_index]
+        selected_epochs = self._selected_training_epochs(candidate_results, candidate)
+        final_seed = self._evaluation_seeds()[0]
         split = DataSplit(
             train=self._split.development,
             val=self._split.test,
@@ -872,6 +1083,8 @@ class LeaderboardTask:
             y=self._data.y,
             sample_ids=self._data.sample_ids,
             target_weights=target_weights,
+            candidate_index=candidate_index,
+            seed=final_seed,
         )
         payload["split"] = split
         payload["final_only"] = True
@@ -903,12 +1116,38 @@ class LeaderboardTask:
             "test_timestamp_range": test_timestamps,
             "test_metrics": final_result.test_metrics,
             "selected_training_epochs": selected_epochs,
+            "evaluation_seeds": list(self._evaluation_seeds()),
+            "final_training_seed": final_seed,
             "duration_seconds": final_result.duration_seconds,
             "artifact_dir": final_result.artifact_dir,
             "error": final_result.error,
         }
         _json_dump(run_dir / "best_model" / "selection.json", record)
         return record
+
+    @staticmethod
+    def _selected_training_epochs(results: list[TrialResult], candidate: AlgorithmCandidate) -> int | None:
+        if candidate.backend != "pytorch":
+            return None
+        best_epochs = []
+        for result in results:
+            if result.status != "completed":
+                continue
+            artifact_dir = Path(result.artifact_dir)
+            fold_metrics_path = artifact_dir / "fold_metrics.json"
+            if fold_metrics_path.is_file():
+                fold_records = json.loads(fold_metrics_path.read_text(encoding="utf-8"))
+                best_epochs.extend(
+                    record["training"]["best_epoch"]
+                    for record in fold_records
+                    if record.get("training") and record["training"].get("best_epoch")
+                )
+            else:
+                summary_path = artifact_dir / "training_summary.json"
+                summary = json.loads(summary_path.read_text(encoding="utf-8")) if summary_path.is_file() else {}
+                if summary.get("best_epoch"):
+                    best_epochs.append(summary["best_epoch"])
+        return max(1, int(round(float(np.median(best_epochs))))) if best_epochs else None
 
     def _trial_payload(
         self,
@@ -920,13 +1159,17 @@ class LeaderboardTask:
         y: np.ndarray,
         sample_ids: np.ndarray,
         target_weights: np.ndarray | None,
+        candidate_index: int | None = None,
+        seed: int | None = None,
     ) -> dict[str, Any]:
+        resolved_seed = self.config.seed if seed is None else seed
         return {
             "trial_id": trial_id,
             "trial_dir": str(trial_dir),
             "candidate": candidate,
             "task_type": self.config.task.type,
-            "seed": self.config.seed,
+            "seed": resolved_seed,
+            "candidate_index": candidate_index,
             "workers": self.config.resources.max_cpu_workers,
             "device": self.config.resources.device,
             "x": x,
@@ -965,18 +1208,107 @@ class LeaderboardTask:
         )
 
     @staticmethod
-    def _build_leaderboard(results: list[TrialResult], primary: str) -> pd.DataFrame:
+    def _family_leaderboard(leaderboard: pd.DataFrame, family: str) -> pd.DataFrame:
+        if leaderboard.empty or "model_family" not in leaderboard:
+            return leaderboard.iloc[0:0].copy()
+        frame = leaderboard[leaderboard["model_family"] == family].copy()
+        if frame.empty:
+            return frame
+        if "rank" in frame:
+            frame = frame.rename(columns={"rank": "overall_rank"})
+        else:
+            frame.insert(0, "overall_rank", None)
+        completed = frame["status"] == "completed"
+        frame.insert(0, "family_rank", [*range(1, int(completed.sum()) + 1), *([None] * int((~completed).sum()))])
+        return frame
+
+    @classmethod
+    def _write_leaderboards(cls, run_dir: Path, leaderboard: pd.DataFrame) -> None:
+        leaderboard.to_csv(run_dir / "leaderboard.csv", index=False)
+        cls._family_leaderboard(leaderboard, "torch_like").to_csv(run_dir / "leaderboard_torch_like.csv", index=False)
+        cls._family_leaderboard(leaderboard, "baseline").to_csv(run_dir / "leaderboard_baselines.csv", index=False)
+
+    def _build_leaderboard(
+        self,
+        results: list[TrialResult],
+        primary: str,
+        candidates: list[AlgorithmCandidate],
+    ) -> pd.DataFrame:
         rows = []
-        for result in results:
-            row = {
-                "trial_id": result.trial_id,
-                "pipeline": result.name,
-                "status": result.status,
-                "duration_seconds": result.duration_seconds,
-                "parameter_count": result.parameter_count,
-                **{f"val_{key}": value for key, value in result.validation_metrics.items()},
-                **{f"test_{key}": value for key, value in result.test_metrics.items()},
+        expected_seeds = self._evaluation_seeds()
+        seed_ranks: dict[int, dict[int, int]] = {}
+        for seed in expected_seeds:
+            seed_results = [
+                result
+                for result in results
+                if result.seed == seed and result.status == "completed" and primary in result.validation_metrics
+            ]
+            seed_results.sort(
+                key=lambda result: result.validation_metrics[primary],
+                reverse=metric_direction(primary) == "maximize",
+            )
+            seed_ranks[seed] = {
+                int(result.candidate_index): rank
+                for rank, result in enumerate(seed_results, start=1)
+                if result.candidate_index is not None
             }
+        grouped: dict[int, list[TrialResult]] = {}
+        for result in results:
+            if result.candidate_index is None:
+                raise ValueError(f"Trial lacks candidate_index: {result.trial_id}")
+            grouped.setdefault(result.candidate_index, []).append(result)
+        for candidate_index, candidate_results in sorted(grouped.items()):
+            candidate = candidates[candidate_index]
+            candidate_results.sort(
+                key=lambda item: expected_seeds.index(item.seed) if item.seed in expected_seeds else -1
+            )
+            completed_results = [result for result in candidate_results if result.status == "completed"]
+            completed_seeds = {result.seed for result in completed_results}
+            complete_coverage = completed_seeds == set(expected_seeds)
+            representative = completed_results[0] if completed_results else candidate_results[0]
+            status = (
+                "completed" if complete_coverage else "partial" if completed_results else candidate_results[0].status
+            )
+            row = {
+                "trial_id": representative.trial_id,
+                "candidate_index": candidate_index,
+                "pipeline": representative.name,
+                "backend": candidate.backend,
+                "model_family": candidate.model_family,
+                "status": status,
+                "seed_count": len(expected_seeds),
+                "completed_seed_count": len(completed_seeds),
+                "evaluation_seeds": ",".join(str(seed) for seed in expected_seeds),
+                "duration_seconds": float(sum(result.duration_seconds for result in candidate_results)),
+                "parameter_count": next(
+                    (result.parameter_count for result in completed_results if result.parameter_count is not None), None
+                ),
+            }
+            ranks = [
+                seed_ranks[seed][candidate_index] for seed in expected_seeds if candidate_index in seed_ranks[seed]
+            ]
+            if len(expected_seeds) > 1:
+                row.update(
+                    {
+                        "seed_ranks": ",".join(str(rank) for rank in ranks),
+                        "rank_mean_across_seeds": float(np.mean(ranks)) if ranks else None,
+                        "rank_std_across_seeds": float(np.std(ranks)) if ranks else None,
+                        "rank_min_across_seeds": min(ranks) if ranks else None,
+                        "rank_max_across_seeds": max(ranks) if ranks else None,
+                    }
+                )
+            metric_names = sorted({key for result in completed_results for key in result.validation_metrics})
+            for key in metric_names:
+                values = [
+                    result.validation_metrics[key] for result in completed_results if key in result.validation_metrics
+                ]
+                row[f"val_{key}"] = float(np.mean(values))
+                if len(expected_seeds) > 1:
+                    row[f"val_{key}_seed_std"] = float(np.std(values))
+            test_metric_names = sorted({key for result in completed_results for key in result.test_metrics})
+            for key in test_metric_names:
+                values = [result.test_metrics[key] for result in completed_results if key in result.test_metrics]
+                row[f"test_{key}"] = float(np.mean(values))
             rows.append(row)
         frame = pd.DataFrame(rows)
         metric_column = f"val_{primary}"
@@ -991,30 +1323,6 @@ class LeaderboardTask:
             frame = pd.concat([ranked, failed], ignore_index=True)
             frame.insert(0, "rank", [*range(1, len(ranked) + 1), *([None] * len(failed))])
         return frame
-
-    @staticmethod
-    def _export_best(run_dir: Path, leaderboard: pd.DataFrame, results: list[TrialResult]) -> None:
-        if leaderboard.empty or leaderboard.iloc[0]["status"] != "completed":
-            return
-        best_id = str(leaderboard.iloc[0]["trial_id"])
-        result = next(item for item in results if item.trial_id == best_id)
-        best_dir = run_dir / "best_model"
-        best_dir.mkdir(exist_ok=True)
-        source = Path(result.artifact_dir) / "pipeline.joblib"
-        if source.exists():
-            shutil.copy2(source, best_dir / "pipeline.joblib")
-        for name in (
-            "last_checkpoint.pt",
-            "best_checkpoint.pt",
-            "preprocessor.joblib",
-            "artifact_manifest.json",
-            "training_history.json",
-            "training_summary.json",
-        ):
-            source = Path(result.artifact_dir) / name
-            if source.exists():
-                shutil.copy2(source, best_dir / name)
-        _json_dump(best_dir / "trial.json", result.to_dict())
 
     def _environment(self) -> dict[str, Any]:
         try:
@@ -1037,6 +1345,7 @@ class LeaderboardTask:
             "git_commit": git_commit,
             "pid": os.getpid(),
             "seed": self.config.seed,
+            "evaluation_seeds": list(self._evaluation_seeds()),
             "dataset_fingerprint": self._data.profile.fingerprint if self._data else None,
         }
 
@@ -1057,11 +1366,60 @@ class LeaderboardTask:
             f"- Task / 任务: `{self.config.task_id}`",
             f"- Task type / 任务类型: `{self.config.task.type.value}`",
             f"- Primary metric / 主指标: `{primary}` (validation ranking / 验证集排名)",
+            f"- Evaluation seeds / 评估种子: `{list(self._evaluation_seeds())}`",
+            f"- Candidate policy / 候选策略: `{self.config.search.candidate_policy.value}`",
             f"- Completed trials / 完成试验: {completed}",
             f"- Failed trials / 失败试验: {failures}",
             f"- Best pipeline / 最佳管线: `{best}`",
             "",
         ]
+        completed_rows = leaderboard[leaderboard["status"] == "completed"].head(5) if not leaderboard.empty else None
+        if completed_rows is not None and not completed_rows.empty:
+            metric_column = f"val_{primary}"
+            std_column = f"{metric_column}_seed_std"
+            lines.extend(
+                [
+                    "## Top Candidates / 前五名候选",
+                    "",
+                    "| Rank / 排名 | Pipeline / 管线 | Validation / 验证均值 | Seed std / 种子标准差 | "
+                    "Mean seed rank / 种子平均名次 |",
+                    "|---:|---|---:|---:|---:|",
+                ]
+            )
+            for _, row in completed_rows.iterrows():
+                rank = int(row["rank"])
+                metric = float(row[metric_column])
+                std = row.get(std_column)
+                mean_rank = row.get("rank_mean_across_seeds")
+                std_text = "n/a" if pd.isna(std) else f"{float(std):.6f}"
+                mean_rank_text = "n/a" if pd.isna(mean_rank) else f"{float(mean_rank):.3f}"
+                lines.append(f"| {rank} | `{row['pipeline']}` | {metric:.6f} | {std_text} | {mean_rank_text} |")
+            lines.append("")
+        for family, title in (
+            ("torch_like", "Torch-like Candidates / torch_like 模型榜"),
+            ("baseline", "Baseline Candidates / 基线模型榜"),
+        ):
+            family_rows = self._family_leaderboard(leaderboard, family)
+            if family_rows.empty:
+                continue
+            family_rows = family_rows[family_rows["status"] == "completed"].head(5)
+            if family_rows.empty:
+                continue
+            metric_column = f"val_{primary}"
+            lines.extend(
+                [
+                    f"## {title}",
+                    "",
+                    "| Family rank / 族内排名 | Overall rank / 总排名 | Pipeline / 管线 | Validation / 验证均值 |",
+                    "|---:|---:|---|---:|",
+                ]
+            )
+            for _, row in family_rows.iterrows():
+                lines.append(
+                    f"| {int(row['family_rank'])} | {int(row['overall_rank'])} | "
+                    f"`{row['pipeline']}` | {float(row[metric_column]):.6f} |"
+                )
+            lines.append("")
         if sealed_test is None:
             lines.extend(
                 [
@@ -1072,11 +1430,14 @@ class LeaderboardTask:
             )
         else:
             metrics = sealed_test.get("test_metrics", {})
-            protocol = (
-                "rolling-origin backtesting"
-                if isinstance(self._split, RollingOriginSplit)
-                else "group cross-validation"
-            )
+            if isinstance(self._split, RollingOriginSplit):
+                protocol = "rolling-origin backtesting"
+            elif isinstance(self._split, GroupCVSplit):
+                protocol = "group cross-validation"
+            elif self.config.task.type == TaskType.ANOMALY_DETECTION:
+                protocol = "predefined chronological validation"
+            else:
+                protocol = "a fixed development split"
             lines.extend(
                 [
                     f"This run ranks candidates only by {protocol}. The sealed test data are exposed once, "

@@ -23,9 +23,17 @@ jobs:
         run: python -m ruff format --check torch_like runner tests examples tools
       - name: Validate model candidate pool
         run: python tools/validate_candidate_pool.py
+      - name: Validate AutoML examples
+        run: python tools/validate_automl_examples.py
+      - name: Validate AutoML run artifact contract
+        run: python tools/validate_automl_runs.py --allow-empty --skip-legacy runs
+      - name: Check model catalog audit
+        run: python tools/audit_model_catalog.py --check
+      - name: Check public API baseline
+        run: python tools/audit_public_api.py --check
       - name: Test with coverage
         run: python -m pytest --cov=torch_like --cov-report=term-missing
       - name: Build wheel
         run: python -m pip wheel . --no-deps --wheel-dir dist
       - name: Verify wheel metadata
-        run: python -m pip install --force-reinstall --no-deps dist/torch_like-*.whl && cd /tmp && python -I -c "import importlib.metadata as m; import torch_like as tl; assert m.version('torch_like') == tl.__version__; assert tl.list_domains()"
+        run: python -m pip install --force-reinstall --no-deps dist/torch_like-*.whl && cd /tmp && python -I -c "import importlib.metadata as m; import torch_like as tl; unassessed = tl.get_model_info('ModernTCN', domain='forecasting'); benchmarked = tl.get_model_info('DLinear', domain='forecasting'); assert m.version('torch_like') == tl.__version__; assert tl.list_domains(); assert unassessed['implementation_fidelity'] == 'paper_aligned'; assert unassessed['maturity'] == 'unassessed'; assert benchmarked['maturity'] == 'benchmarked'; assert tl.get_evidence_record(benchmarked['evidence_record'])['dataset'] == 'ETTh1'"

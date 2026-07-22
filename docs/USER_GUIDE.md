@@ -453,11 +453,20 @@ from torch_like.models.detection import GDN
 English: Useful for config-driven code, CLI tools, or batch experiments.
 
 ```python
-from torch_like.models import create_model, get_model_info, list_domains, list_models
+from torch_like.models import (
+    create_model,
+    get_model_info,
+    list_domains,
+    list_models,
+    list_models_by_fidelity,
+    list_models_by_maturity,
+)
 
 print(list_domains())
 print(list_models("forecasting").keys())
 print(get_model_info("Informer", domain="forecasting"))
+print(list_models_by_fidelity("paper_aligned", domain="forecasting").keys())
+print(list_models_by_maturity("unassessed", domain="forecasting").keys())
 
 model = create_model(
     "Informer",
@@ -470,6 +479,10 @@ model = create_model(
     pred_len=4,
 )
 ```
+
+中文：`integration_level` 在兼容期继续保留。新增的 `implementation_fidelity`、`implementation_scope`、`execution_profile`、`maturity`、`benchmark_evidence` 和 `evidence_record` 是可独立查询的 schema v2 字段。`unassessed` 表示尚无足够登记证据，不表示模型无价值或不可运行。
+
+English: `integration_level` remains available during the compatibility period. The additive `implementation_fidelity`, `implementation_scope`, `execution_profile`, `maturity`, `benchmark_evidence`, and `evidence_record` fields form schema v2. `unassessed` means that sufficient registered evidence is not yet available; it does not mean the model is unusable or valueless.
 
 ## Forecasting Usage / 预测模型用法
 
@@ -727,6 +740,83 @@ AutoML forecasting 使用独立的 rolling-origin 协议：`sequence_length` 定
 AutoML anomaly detection uses a predefined chronological protocol. Native `format: esa_adb` ingestion reads selected channels from the raw mission ZIP, applies zero-order-hold resampling, selects the binary threshold on validation data, and evaluates the sealed test only after model selection. See `examples/esa_mission1_anomaly_leaderboard.yaml`.
 
 AutoML 异常检测使用预定义的时间协议。`format: esa_adb` 可直接从原始任务 ZIP 读取指定通道，执行 zero-order hold 重采样，只在验证集选择二值阈值，并在模型选择完成后才评估封存测试集。
+
+All leaderboard split protocols keep test data outside candidate processes. After validation ranking, the selected pipeline is retrained once and exported as a trusted-local inference bundle:
+
+所有排行榜划分协议都不会把测试数据传入候选进程。完成验证排名后，入选管线只重训一次，并导出为可信本地推理包：
+
+```python
+from torch_like.automl import load_best, load_config, prepare_dataset
+
+bundle = load_best("runs/my-task", device="cpu")
+config = load_config(bundle.run_dir / "config.json")
+prepared = prepare_dataset(config.dataset)
+predictions = bundle.predict(prepared.x)
+```
+
+中文：`bundle.predict()` 接收与训练一致的已样本化 NumPy 输入；异常检测还可用 `bundle.score()` 获取连续异常分数。不要加载来源不可信的 joblib 或 PyTorch checkpoint。
+
+English: `bundle.predict()` consumes the same prepared NumPy input contract as training. Anomaly bundles also expose continuous scores through `bundle.score()`. Never load joblib or PyTorch checkpoints from untrusted sources.
+
+Interrupted tasks can reuse terminal trial artifacts without reopening a completed sealed test:
+
+中断任务可以复用已结束的 trial，并且不会再次打开已经完成的封存测试：
+
+```powershell
+torch-like run --config task.yaml --resume
+```
+
+```python
+result = LeaderboardTask(load_config("task.yaml")).run(resume=True)
+```
+
+中文：续跑要求配置、数据指纹、划分和候选计划完全一致；已记录为 OOM、NaN、超时或失败的 trial 保持终态，不会自动重试。
+
+English: Resume requires an exact configuration, data fingerprint, split, and candidate-plan match. Trials already recorded as OOM, NaN, timeout, or failed remain terminal and are not retried automatically.
+
+Use multiple independent seeds when ranking stability matters:
+
+需要评估排名稳定性时，可以配置多个独立随机种子：
+
+```yaml
+search:
+  max_trials: 6
+  evaluation_seeds: [11, 29, 47]
+```
+
+中文：每个“管线 + 种子”组合都是独立 trial。只有全部种子完成的管线才会参与排名；`leaderboard.csv` 会给出指标均值、种子标准差和跨种子名次稳定性。封存测试仍只执行一次。注意实际 trial 数约等于 `max_trials × evaluation_seeds 数量`。
+
+English: Every pipeline/seed pair is an independent trial. Only pipelines completing all seeds are ranked. `leaderboard.csv` reports metric means, seed standard deviations, and cross-seed rank stability, while the sealed test remains one-shot. Planned trial count is approximately `max_trials × number of evaluation_seeds`.
+
+Validated leaderboard trust / 验证级排行榜可信性:
+
+```yaml
+trust:
+  level: validated
+search:
+  evaluation_seeds: [11, 29, 47]
+```
+
+中文：默认 `trust.level: development` 适合快速验证模型是否能接入。需要把结果作为正式对比时，使用 `validated`；框架会要求至少 3 个评估种子，并写出 `evaluation_trust_audit.json`，证明每个候选管线获得同样的种子覆盖和训练预算。
+
+English: The default `trust.level: development` is suitable for quick model-integration checks. For formal comparisons, use `validated`; the framework requires at least three evaluation seeds and writes `evaluation_trust_audit.json` to prove equal seed coverage and training-budget treatment for every candidate pipeline.
+
+Benchmark trust tiers and promotion rules are maintained in [`AUTOML_BENCHMARK_TRUST.md`](AUTOML_BENCHMARK_TRUST.md). For a ready validated forecasting template, start from [`examples/forecasting_rolling_validated.yaml`](../examples/forecasting_rolling_validated.yaml).
+
+排行榜可信分层和晋升规则见 [`AUTOML_BENCHMARK_TRUST.md`](AUTOML_BENCHMARK_TRUST.md)。验证级预测模板见 [`examples/forecasting_rolling_validated.yaml`](../examples/forecasting_rolling_validated.yaml)。
+
+Choose the candidate pool according to the purpose of the task:
+
+根据排行榜任务的目的选择候选策略：
+
+```yaml
+search:
+  candidate_policy: production  # production | torch_like_only | baseline_only | prefer_torch_like
+```
+
+中文：`production` 用于寻找实际最优结果；`torch_like_only` 用于单独验证框架模型；`baseline_only` 用于快速建立传统基线；`prefer_torch_like` 在预算截断时优先分配给框架模型，同时尽可能保留基线锚点。运行后分别查看 `leaderboard.csv`、`leaderboard_torch_like.csv` 和 `leaderboard_baselines.csv`。只有总榜冠军会执行最终密封测试。
+
+English: Use `production` for the strongest practical result, `torch_like_only` for framework validation, `baseline_only` for a fast traditional reference, and `prefer_torch_like` to prioritize framework candidates under a constrained budget while retaining a baseline anchor when possible. Runs export overall, torch-like, and baseline leaderboards. Only the overall winner receives final sealed-test evaluation.
 
 ### THGNN
 
