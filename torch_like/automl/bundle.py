@@ -12,6 +12,7 @@ import joblib
 import numpy as np
 import torch
 
+from torch_like.automl.backends import get_backend
 from torch_like.automl.specs import TaskType
 from torch_like.models.detection import DetectionBatch
 from torch_like.models.registry import create_model
@@ -119,7 +120,7 @@ class ModelBundle:
         if scaler is not None:
             shape = values.shape
             values = scaler.transform(values.reshape(-1, shape[-1])).reshape(shape).astype(np.float32)
-        if self.backend == "anomaly_pytorch":
+        if get_backend(self.backend).kind == "torch":
             self.model.eval()
             with torch.inference_mode():
                 batch = torch.from_numpy(np.ascontiguousarray(values)).to(self.device)
@@ -141,19 +142,19 @@ class ModelBundle:
             if self.threshold is None:
                 raise ValueError("Anomaly bundle does not contain a selected threshold")
             return self.score(x) >= self.threshold
-        if self.backend == "sklearn":
+        if get_backend(self.backend).kind == "sklearn":
             prediction = np.asarray(self.model.predict(x))
             if self.task_type == TaskType.TIME_SERIES_FORECASTING:
                 prediction_length = int(self.candidate["target_shape"][0])
                 target_dim = int(self.candidate["target_shape"][1])
                 return prediction.reshape(len(prediction), prediction_length, target_dim)
             return prediction
-        if self.backend == "baseline" and self.candidate["name"] == "LastValue":
+        if get_backend(self.backend).kind == "baseline" and self.candidate["name"] == "LastValue":
             target_indices = self.candidate["forecast_target_indices"]
             target_shape = self.candidate["target_shape"]
             last_values = np.stack([np.asarray(sequence)[-1, target_indices] for sequence in x])
             return np.repeat(last_values[:, None, :], int(target_shape[0]), axis=1)
-        if self.backend == "pytorch":
+        if get_backend(self.backend).kind == "torch":
             return self._torch_output(x)
         raise ValueError(f"Unsupported model bundle backend: {self.backend}")
 
@@ -183,13 +184,13 @@ def load_best(run_dir: str | Path, *, device: str = "cpu") -> ModelBundle:
     manifest = json.loads((best_dir / "artifact_manifest.json").read_text(encoding="utf-8"))
     backend = candidate["backend"]
     torch_device = torch.device(device)
-    if backend in {"sklearn", "anomaly_baseline"}:
+    if get_backend(backend).kind == "sklearn":
         path = best_dir / "pipeline.joblib"
         _verify(path, manifest.get("sha256"))
         model = joblib.load(path)
-    elif backend == "baseline":
+    elif get_backend(backend).kind == "baseline":
         model = None
-    elif backend in {"pytorch", "anomaly_pytorch"}:
+    elif get_backend(backend).kind == "torch":
         checkpoint_info = manifest.get("checkpoint")
         if isinstance(checkpoint_info, dict):
             path = best_dir / checkpoint_info["path"]
@@ -199,7 +200,7 @@ def load_best(run_dir: str | Path, *, device: str = "cpu") -> ModelBundle:
             expected = manifest.get("sha256")
         _verify(path, expected)
         checkpoint = torch.load(path, map_location=torch_device, weights_only=False)
-        if backend == "anomaly_pytorch":
+        if get_backend(backend).detection_family:
             model = create_model(
                 candidate["name"],
                 domain="detection",

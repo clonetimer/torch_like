@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -246,16 +247,25 @@ def prepare_xjtu_sy_dataset(spec: DatasetSpec) -> PreparedData:
     )
 
 
-def prepare_dataset(spec: DatasetSpec) -> PreparedData:
-    if spec.format == DatasetFormat.CSV:
-        return prepare_csv_dataset(spec)
-    if spec.format == DatasetFormat.XJTU_SY:
-        return prepare_xjtu_sy_dataset(spec)
-    if spec.format == DatasetFormat.ESA_ADB:
-        from torch_like.automl.esa_data import prepare_esa_adb_dataset
+_FORMAT_LOADERS: dict[str, Callable[[DatasetSpec], PreparedData]] = {}
 
-        return prepare_esa_adb_dataset(spec)
-    raise ValueError(f"Unsupported dataset format: {spec.format}")
+
+def register_dataset_format(format: DatasetFormat, loader: Callable[[DatasetSpec], PreparedData]) -> None:
+    """Register a loader for a dataset format.
+
+    Built-in formats are registered at import time; third parties can add their
+    own format without editing this module.
+    """
+    if not callable(loader):
+        raise TypeError("loader must be callable")
+    _FORMAT_LOADERS[str(format)] = loader
+
+
+def prepare_dataset(spec: DatasetSpec) -> PreparedData:
+    loader = _FORMAT_LOADERS.get(str(spec.format))
+    if loader is None:
+        raise ValueError(f"Unsupported dataset format: {spec.format}")
+    return loader(spec)
 
 
 def _read_and_merge(spec: DatasetSpec) -> pd.DataFrame:
@@ -572,3 +582,14 @@ def split_rolling_origin(data: PreparedData, spec: SplitSpec) -> RollingOriginSp
             raise ValueError(f"rolling_origin fold {fold_index} produced an empty train or validation set")
         folds.append(ValidationFold(train, val))
     return RollingOriginSplit(development, test, tuple(folds))
+
+
+def _prepare_esa_adb_dataset(spec: DatasetSpec) -> PreparedData:
+    from torch_like.automl.esa_data import prepare_esa_adb_dataset
+
+    return prepare_esa_adb_dataset(spec)
+
+
+register_dataset_format(DatasetFormat.CSV, prepare_csv_dataset)
+register_dataset_format(DatasetFormat.XJTU_SY, prepare_xjtu_sy_dataset)
+register_dataset_format(DatasetFormat.ESA_ADB, _prepare_esa_adb_dataset)

@@ -22,3 +22,6 @@ runs/
 tmp_*/
 tmp_*.pdf
 tmp_*.pt
+
+# Archives / distribution artifacts
+*.zip

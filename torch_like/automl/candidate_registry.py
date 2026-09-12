@@ -7,6 +7,7 @@ from threading import RLock
 from typing import Any
 
 from torch_like.automl.specs import TaskType
+from torch_like.core import Scope
 
 
 @dataclass(frozen=True)
@@ -34,8 +35,13 @@ _LOCK = RLock()
 _CANDIDATES: dict[str, CandidateSpec] = {}
 
 
-def register_candidate(spec: CandidateSpec) -> CandidateSpec:
-    """Register an AutoML adapter without changing candidate planning code."""
+def register_candidate(spec: CandidateSpec, scope: "Scope | None" = None) -> CandidateSpec:
+    """Register an AutoML adapter without changing candidate planning code.
+
+    When ``scope`` is provided the registration is bound to that disposable
+    :class:`~torch_like.core.scope.Scope`: disposing it removes this entry (unless
+    another registration replaced it first), so a plugin can unregister on teardown.
+    """
 
     if not spec.name:
         raise ValueError("Candidate name must be non-empty")
@@ -46,7 +52,38 @@ def register_candidate(spec: CandidateSpec) -> CandidateSpec:
         if existing is not None and existing != spec:
             raise ValueError(f"AutoML candidate {spec.name!r} is already registered")
         _CANDIDATES[spec.name] = spec
+    if scope is not None:
+
+        def _dispose() -> None:
+            if _CANDIDATES.get(spec.name) is spec:
+                del _CANDIDATES[spec.name]
+
+        scope.add(_dispose)
     return spec
+
+
+def suppress_candidate(name: str, scope: "Scope | None" = None) -> CandidateSpec | None:
+    """Temporarily remove a registered candidate; restored when ``scope`` is disposed."""
+    with _LOCK:
+        previous = _CANDIDATES.pop(name, None)
+    if previous is None or scope is None:
+        return previous
+
+    def _restore() -> None:
+        if name not in _CANDIDATES:
+            _CANDIDATES[name] = previous
+
+    scope.add(_restore)
+    return previous
+
+
+def suppress_candidates_for_backend(backend: str, scope: "Scope | None" = None) -> tuple[str, ...]:
+    """Suppress every candidate targeting ``backend``; restored when ``scope`` is disposed."""
+    with _LOCK:
+        names = tuple(name for name, spec in _CANDIDATES.items() if spec.backend == backend)
+    for name in names:
+        suppress_candidate(name, scope)
+    return names
 
 
 def list_candidate_specs(
@@ -249,4 +286,10 @@ def _register_builtins() -> None:
 _register_builtins()
 
 
-__all__ = ["CandidateSpec", "list_candidate_specs", "register_candidate"]
+__all__ = [
+    "CandidateSpec",
+    "list_candidate_specs",
+    "register_candidate",
+    "suppress_candidate",
+    "suppress_candidates_for_backend",
+]

@@ -38,7 +38,7 @@ from torch_like.automl import (
     split_group_cv,
     split_rolling_origin,
 )
-from torch_like.automl.anomaly_backend import run_anomaly_candidate
+from torch_like.automl.anomaly_backend import run_anomaly_baseline, run_anomaly_pytorch
 from torch_like.automl.anomaly_catalog import discover_detection_model_grids
 from torch_like.automl.anomaly_metrics import evaluate_anomaly_scores, select_anomaly_threshold
 from torch_like.automl.esa_data import _channel_labels, _windows
@@ -393,7 +393,7 @@ class AutoMLBackendTests(unittest.TestCase):
             for index, candidate in enumerate(candidates):
                 trial_dir = root / str(index)
                 trial_dir.mkdir()
-                result = run_anomaly_candidate(
+                result = run_anomaly_baseline(
                     candidate,
                     x,
                     y,
@@ -402,16 +402,8 @@ class AutoMLBackendTests(unittest.TestCase):
                     channels=("a", "b"),
                     seed=13,
                     workers=1,
-                    device="cpu",
-                    epochs=1,
-                    batch_size=4,
-                    learning_rate=0.001,
-                    optimizer_name="adam",
-                    weight_decay=0,
-                    grad_clip_norm=None,
                     threshold_candidates=10,
                     trial_dir=trial_dir,
-                    save_checkpoint=True,
                     save_predictions=True,
                     validation_only=False,
                 )
@@ -432,7 +424,7 @@ class AutoMLBackendTests(unittest.TestCase):
             for index, candidate in enumerate(candidates):
                 trial_dir = root / str(index)
                 trial_dir.mkdir()
-                result = run_anomaly_candidate(
+                result = run_anomaly_pytorch(
                     candidate,
                     x,
                     y,

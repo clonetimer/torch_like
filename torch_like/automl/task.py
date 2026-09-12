@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import importlib.metadata
 import json
 import multiprocessing as mp
@@ -11,19 +10,21 @@ import platform
 import subprocess
 import time
 import traceback
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from queue import Empty
 from typing import Any
 
-import joblib
 import numpy as np
 import pandas as pd
 import sklearn
 import torch
 
-from torch_like.automl.anomaly_backend import run_anomaly_candidate
+from torch_like.automl.artifacts import json_dump as _json_dump
+from torch_like.automl.backends import get_backend
+from torch_like.automl.capabilities import assemble_capabilities
 from torch_like.automl.data import (
     DataSplit,
     GroupCVSplit,
@@ -35,19 +36,17 @@ from torch_like.automl.data import (
     split_group_cv,
     split_rolling_origin,
 )
+from torch_like.automl.events import bind_run_events, current_run_events, install_event_log, replay_event_log
 from torch_like.automl.protocol import EvaluationTrustAudit, ProtocolAudit, audit_evaluation_trust, audit_split_protocol
+from torch_like.automl.runners import attach_builtin_runners
 from torch_like.automl.sklearn_backend import (
     AlgorithmCandidate,
     build_candidates,
-    build_pipeline,
     default_primary_metric,
-    estimate_parameter_count,
-    evaluate_predictions,
     metric_direction,
     supported_metrics,
 )
 from torch_like.automl.specs import LabelGranularity, LeaderboardConfig, SplitType, TaskType
-from torch_like.automl.torch_backend import run_torch_candidate
 
 SUPPORTED_TASKS = {
     TaskType.TABULAR_CLASSIFICATION,
@@ -59,6 +58,10 @@ SUPPORTED_TASKS = {
     TaskType.MULTI_TARGET_REGRESSION,
     TaskType.ANOMALY_DETECTION,
 }
+
+# Bind the builtin execution handlers to their backend specs before any task runs
+# (module level, so worker subprocesses see them too).
+attach_builtin_runners()
 
 
 @dataclass(frozen=True)
@@ -94,18 +97,6 @@ class LeaderboardResult:
         return completed.get(str(self.leaderboard.iloc[0]["trial_id"]))
 
 
-def _json_dump(path: Path, value: Any) -> None:
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
-
-
-def _file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def _prediction_frame(sample_ids: np.ndarray, y_true: np.ndarray, y_pred: np.ndarray) -> pd.DataFrame:
     payload: dict[str, Any] = {"sample_id": sample_ids}
     true_2d = y_true.reshape(len(y_true), -1) if y_true.ndim > 1 else y_true[:, None]
@@ -116,178 +107,20 @@ def _prediction_frame(sample_ids: np.ndarray, y_true: np.ndarray, y_pred: np.nda
     return pd.DataFrame(payload)
 
 
-def _fit_targets(task_type: TaskType, targets: np.ndarray) -> np.ndarray:
-    return targets.reshape(len(targets), -1) if task_type == TaskType.TIME_SERIES_FORECASTING else targets
-
-
-def _reshape_predictions(task_type: TaskType, predictions: np.ndarray, targets: np.ndarray) -> np.ndarray:
-    return predictions.reshape(targets.shape) if task_type == TaskType.TIME_SERIES_FORECASTING else predictions
-
-
-def _last_value_forecast(x: np.ndarray, target_indices: list[int], target_shape: tuple[int, ...]) -> np.ndarray:
-    last_values = np.stack([np.asarray(sequence)[-1, target_indices] for sequence in x])
-    return np.repeat(last_values[:, None, :], target_shape[1], axis=1)
-
-
-def _write_sklearn_artifact(path: Path, pipeline, candidate: AlgorithmCandidate) -> None:
-    joblib.dump(pipeline, path)
-    optional_versions = {}
-    if candidate.name in {"LightGBMClassifier", "LightGBMRegressor"}:
-        optional_versions["lightgbm"] = importlib.metadata.version("lightgbm")
-    _json_dump(
-        path.parent / "artifact_manifest.json",
-        {
-            "backend": "sklearn",
-            "format": "joblib",
-            "trusted_local_only": True,
-            "sha256": _file_sha256(path),
-            "python": platform.python_version(),
-            "numpy": np.__version__,
-            "scikit_learn": sklearn.__version__,
-            **optional_versions,
-        },
-    )
-
-
-def _inner_group_split(fold: ValidationFold, groups: np.ndarray, seed: int) -> tuple[DataSplit, list[str]]:
-    outer_train_groups = np.unique(groups[fold.train].astype(str))
-    if len(outer_train_groups) < 2:
-        raise ValueError("PyTorch group-CV training requires at least two outer-train groups for inner validation")
-    shuffled = outer_train_groups.copy()
-    np.random.default_rng(seed).shuffle(shuffled)
-    inner_val_groups = shuffled[:1]
-    inner_val_mask = np.isin(groups[fold.train].astype(str), inner_val_groups)
-    inner_train = fold.train[~inner_val_mask]
-    inner_val = fold.train[inner_val_mask]
-    if min(len(inner_train), len(inner_val), len(fold.val)) == 0:
-        raise ValueError("Inner group validation produced an empty train, validation, or outer-validation set")
-    return DataSplit(inner_train, inner_val, fold.val), inner_val_groups.tolist()
-
-
-def _inner_time_split(fold: ValidationFold) -> DataSplit:
-    inner_val_count = max(1, int(round(len(fold.train) * 0.2)))
-    if inner_val_count >= len(fold.train):
-        raise ValueError("Rolling-origin outer-train window is too small for inner validation")
-    return DataSplit(fold.train[:-inner_val_count], fold.train[-inner_val_count:], fold.val)
-
-
 def _trial_worker(payload: dict[str, Any], queue) -> None:
     started = time.monotonic()
     trial_dir = Path(payload["trial_dir"])
     trial_dir.mkdir(parents=True, exist_ok=True)
     candidate: AlgorithmCandidate = payload["candidate"]
+    dispose_events = install_event_log(trial_dir) if payload.get("save_training_events") else None
     try:
-        x, y, split = payload["x"], payload["y"], payload["split"]
-        if payload["task_type"] == TaskType.ANOMALY_DETECTION:
-            anomaly_result = run_anomaly_candidate(
-                candidate,
-                x,
-                y,
-                split,
-                sample_ids=payload["sample_ids"],
-                channels=payload["feature_columns"],
-                seed=payload["seed"],
-                workers=payload["workers"],
-                device=payload["device"],
-                epochs=payload["torch_epochs"],
-                batch_size=payload["torch_batch_size"],
-                learning_rate=payload["torch_learning_rate"],
-                optimizer_name=payload["torch_optimizer"],
-                weight_decay=payload["torch_weight_decay"],
-                grad_clip_norm=payload["torch_grad_clip_norm"],
-                threshold_candidates=payload["anomaly_threshold_candidates"],
-                trial_dir=trial_dir,
-                save_checkpoint=payload["save_checkpoint"],
-                save_predictions=payload["save_predictions"],
-                validation_only=payload.get("anomaly_validation_only", False),
-            )
-            validation_metrics = anomaly_result.validation_metrics
-            test_metrics = anomaly_result.test_metrics
-            parameter_count = anomaly_result.parameter_count
-            val_prediction = anomaly_result.validation_scores
-            test_prediction = (
-                anomaly_result.validation_scores if anomaly_result.test_scores is None else anomaly_result.test_scores
-            )
-        elif candidate.backend == "pytorch":
-            validation_metrics, test_metrics, parameter_count, val_prediction, test_prediction = run_torch_candidate(
-                candidate,
-                payload["task_type"],
-                x,
-                y,
-                split,
-                seed=payload["seed"],
-                epochs=payload["torch_epochs"],
-                batch_size=payload["torch_batch_size"],
-                learning_rate=payload["torch_learning_rate"],
-                workers=payload["workers"],
-                device=payload["device"],
-                trial_dir=trial_dir,
-                save_checkpoint=payload["save_checkpoint"],
-                final_only=payload.get("final_only", False),
-                optimizer_name=payload["torch_optimizer"],
-                weight_decay=payload["torch_weight_decay"],
-                loss_name=payload["torch_loss"],
-                grad_clip_norm=payload["torch_grad_clip_norm"],
-                lr_scheduler_name=payload["torch_lr_scheduler"],
-                early_stopping_patience=payload["torch_early_stopping_patience"],
-                min_delta=payload["torch_min_delta"],
-                restore_best=payload["torch_restore_best"],
-                target_constraint=payload["torch_target_constraint"],
-            )
-        elif candidate.backend == "baseline":
-            final_only = payload.get("final_only", False)
-            val_indices = split.test if final_only else split.val
-            val_prediction = _last_value_forecast(
-                x[val_indices], payload["forecast_target_indices"], y[val_indices].shape
-            )
-            test_prediction = (
-                val_prediction
-                if final_only
-                else _last_value_forecast(x[split.test], payload["forecast_target_indices"], y[split.test].shape)
-            )
-            validation_metrics = (
-                {}
-                if final_only
-                else evaluate_predictions(payload["task_type"], y[split.val], val_prediction, payload["target_weights"])
-            )
-            test_metrics = evaluate_predictions(
-                payload["task_type"], y[split.test], test_prediction, payload["target_weights"]
-            )
-            parameter_count = 0
-            _json_dump(
-                trial_dir / "artifact_manifest.json",
-                {"backend": "baseline", "name": candidate.name, "parameter_count": 0},
-            )
-        else:
-            pipeline = build_pipeline(
-                candidate,
-                payload["task_type"],
-                seed=payload["seed"],
-                workers=payload["workers"],
-            )
-            pipeline.fit(x[split.train], _fit_targets(payload["task_type"], y[split.train]))
-            final_only = payload.get("final_only", False)
-            val_prediction = (
-                np.asarray(pipeline.predict(x[split.test]))
-                if final_only
-                else np.asarray(pipeline.predict(x[split.val]))
-            )
-            test_prediction = val_prediction if final_only else np.asarray(pipeline.predict(x[split.test]))
-            val_prediction = _reshape_predictions(
-                payload["task_type"], val_prediction, y[split.test] if final_only else y[split.val]
-            )
-            test_prediction = _reshape_predictions(payload["task_type"], test_prediction, y[split.test])
-            validation_metrics = (
-                {}
-                if final_only
-                else evaluate_predictions(payload["task_type"], y[split.val], val_prediction, payload["target_weights"])
-            )
-            test_metrics = evaluate_predictions(
-                payload["task_type"], y[split.test], test_prediction, payload["target_weights"]
-            )
-            parameter_count = estimate_parameter_count(pipeline)
-            if payload["save_checkpoint"]:
-                _write_sklearn_artifact(trial_dir / "pipeline.joblib", pipeline, candidate)
+        y, split = payload["y"], payload["split"]
+        backend = get_backend(candidate.backend)
+        if backend.runner is None:
+            raise ValueError(f"backend {candidate.backend!r} has no single-split runner registered")
+        validation_metrics, test_metrics, parameter_count, val_prediction, test_prediction = backend.runner(
+            candidate, payload, split, trial_dir
+        )
         if np.issubdtype(val_prediction.dtype, np.number) and not np.isfinite(val_prediction).all():
             raise FloatingPointError("Validation predictions contain NaN or infinite values")
         if np.issubdtype(test_prediction.dtype, np.number) and not np.isfinite(test_prediction).all():
@@ -342,6 +175,9 @@ def _trial_worker(payload: dict[str, Any], queue) -> None:
         )
         _json_dump(trial_dir / "error.json", result.to_dict())
         queue.put(result)
+    finally:
+        if dispose_events is not None:
+            dispose_events()
 
 
 def _cv_trial_worker(payload: dict[str, Any], queue) -> None:
@@ -349,77 +185,21 @@ def _cv_trial_worker(payload: dict[str, Any], queue) -> None:
     trial_dir = Path(payload["trial_dir"])
     trial_dir.mkdir(parents=True, exist_ok=True)
     candidate: AlgorithmCandidate = payload["candidate"]
+    dispose_events = install_event_log(trial_dir) if payload.get("save_training_events") else None
     try:
-        x, y = payload["x"], payload["y"]
+        y = payload["y"]
         fold_metrics = []
         parameter_count = None
         for fold_index, fold in enumerate(payload["folds"]):
             fold_dir = trial_dir / f"fold-{fold_index:02d}"
             fold_dir.mkdir(parents=True, exist_ok=True)
             fold_seed = payload["seed"] + fold_index
-            if candidate.backend == "pytorch":
-                if payload["cv_protocol"] == "group_cv":
-                    fold_split, inner_val_groups = _inner_group_split(fold, payload["groups"], fold_seed)
-                else:
-                    fold_split = _inner_time_split(fold)
-                    inner_val_groups = []
-                inner_metrics, validation_metrics, parameter_count, _, val_prediction = run_torch_candidate(
-                    candidate,
-                    payload["task_type"],
-                    x,
-                    y,
-                    fold_split,
-                    seed=fold_seed,
-                    epochs=payload["torch_epochs"],
-                    batch_size=payload["torch_batch_size"],
-                    learning_rate=payload["torch_learning_rate"],
-                    workers=payload["workers"],
-                    device=payload["device"],
-                    trial_dir=fold_dir,
-                    save_checkpoint=payload["save_checkpoint"],
-                    optimizer_name=payload["torch_optimizer"],
-                    weight_decay=payload["torch_weight_decay"],
-                    loss_name=payload["torch_loss"],
-                    grad_clip_norm=payload["torch_grad_clip_norm"],
-                    lr_scheduler_name=payload["torch_lr_scheduler"],
-                    early_stopping_patience=payload["torch_early_stopping_patience"],
-                    min_delta=payload["torch_min_delta"],
-                    restore_best=payload["torch_restore_best"],
-                    target_constraint=payload["torch_target_constraint"],
-                )
-            elif candidate.backend == "baseline":
-                inner_metrics = None
-                inner_val_groups = []
-                val_prediction = _last_value_forecast(
-                    x[fold.val], payload["forecast_target_indices"], y[fold.val].shape
-                )
-                validation_metrics = evaluate_predictions(
-                    payload["task_type"], y[fold.val], val_prediction, payload["target_weights"]
-                )
-                parameter_count = 0
-                _json_dump(
-                    fold_dir / "artifact_manifest.json",
-                    {"backend": "baseline", "name": candidate.name, "parameter_count": 0},
-                )
-            else:
-                inner_metrics = None
-                inner_val_groups = []
-                pipeline = build_pipeline(
-                    candidate,
-                    payload["task_type"],
-                    seed=fold_seed,
-                    workers=payload["workers"],
-                )
-                pipeline.fit(x[fold.train], _fit_targets(payload["task_type"], y[fold.train]))
-                val_prediction = _reshape_predictions(
-                    payload["task_type"], np.asarray(pipeline.predict(x[fold.val])), y[fold.val]
-                )
-                validation_metrics = evaluate_predictions(
-                    payload["task_type"], y[fold.val], val_prediction, payload["target_weights"]
-                )
-                parameter_count = estimate_parameter_count(pipeline)
-                if payload["save_checkpoint"]:
-                    _write_sklearn_artifact(fold_dir / "pipeline.joblib", pipeline, candidate)
+            backend = get_backend(candidate.backend)
+            if backend.cv_runner is None:
+                raise ValueError(f"backend {candidate.backend!r} has no cross-validation runner registered")
+            inner_metrics, validation_metrics, parameter_count, val_prediction, inner_val_groups = backend.cv_runner(
+                candidate, payload, fold, fold_dir, fold_seed
+            )
             if np.issubdtype(val_prediction.dtype, np.number) and not np.isfinite(val_prediction).all():
                 raise FloatingPointError(f"Validation predictions contain NaN or infinite values in fold {fold_index}")
             if payload["save_predictions"]:
@@ -496,9 +276,21 @@ def _cv_trial_worker(payload: dict[str, Any], queue) -> None:
         )
         _json_dump(trial_dir / "error.json", result.to_dict())
         queue.put(result)
+    finally:
+        if dispose_events is not None:
+            dispose_events()
 
 
 def _run_isolated_trial(payload: dict[str, Any], timeout_seconds: float) -> TrialResult:
+    """Run one trial, then replay its recorded events onto the current run emitter."""
+    result = _spawn_isolated_trial(payload, timeout_seconds)
+    emitter = current_run_events()
+    if emitter is not None:
+        replay_event_log(Path(payload["trial_dir"]), emitter, trial_id=payload["trial_id"])
+    return result
+
+
+def _spawn_isolated_trial(payload: dict[str, Any], timeout_seconds: float) -> TrialResult:
     context = mp.get_context("spawn")
     queue = context.Queue(maxsize=1)
     worker = _cv_trial_worker if "folds" in payload else _trial_worker
@@ -704,22 +496,29 @@ class LeaderboardTask:
             )
         return plan
 
-    def run(self, *, resume: bool = False) -> LeaderboardResult:
+    def run(self, *, resume: bool = False, on_event: Callable[..., None] | None = None) -> LeaderboardResult:
         self.validate()
-        plan = self.build_plan()
-        assert self._data is not None and self._split is not None and self._protocol_audit is not None
-        assert self._evaluation_trust_audit is not None
-        run_dir = self.config.run_dir
-        self._prepare_run_directory(run_dir, plan, resume=resume)
-        trials_dir = run_dir / "trials"
-        trials_dir.mkdir(parents=True, exist_ok=True)
+        # Capabilities and the run's event stream are mounted for this run only:
+        # suppressed backends are restored and the run emitter detached on the way
+        # out, success or not.
+        with assemble_capabilities(self.config) as scope:
+            bind_run_events(scope)
+            if on_event is not None:
+                current_run_events().on(on_event)
+            plan = self.build_plan()
+            assert self._data is not None and self._split is not None and self._protocol_audit is not None
+            assert self._evaluation_trust_audit is not None
+            run_dir = self.config.run_dir
+            self._prepare_run_directory(run_dir, plan, resume=resume)
+            trials_dir = run_dir / "trials"
+            trials_dir.mkdir(parents=True, exist_ok=True)
 
-        candidates = [AlgorithmCandidate(**candidate) for candidate in plan["candidates"]]
-        if self.config.task.type == TaskType.ANOMALY_DETECTION:
-            return self._run_anomaly_detection(run_dir, trials_dir, plan, candidates)
-        if isinstance(self._split, (GroupCVSplit, RollingOriginSplit)):
-            return self._run_cross_validation(run_dir, trials_dir, plan, candidates)
-        return self._run_single_split(run_dir, trials_dir, plan, candidates)
+            candidates = [AlgorithmCandidate(**candidate) for candidate in plan["candidates"]]
+            if self.config.task.type == TaskType.ANOMALY_DETECTION:
+                return self._run_anomaly_detection(run_dir, trials_dir, plan, candidates)
+            if isinstance(self._split, (GroupCVSplit, RollingOriginSplit)):
+                return self._run_cross_validation(run_dir, trials_dir, plan, candidates)
+            return self._run_single_split(run_dir, trials_dir, plan, candidates)
 
     def _prepare_run_directory(self, run_dir: Path, plan: dict[str, Any], *, resume: bool) -> None:
         assert self._data is not None and self._split is not None
@@ -1127,7 +926,7 @@ class LeaderboardTask:
 
     @staticmethod
     def _selected_training_epochs(results: list[TrialResult], candidate: AlgorithmCandidate) -> int | None:
-        if candidate.backend != "pytorch":
+        if not get_backend(candidate.backend).tracks_epochs:
             return None
         best_epochs = []
         for result in results:
@@ -1197,6 +996,7 @@ class LeaderboardTask:
             ),
             "feature_columns": self._data.feature_columns if self._data is not None else (),
             "anomaly_threshold_candidates": self.config.search.anomaly_threshold_candidates,
+            "save_training_events": self.config.artifacts.save_training_events,
         }
 
     def _target_weights(self) -> np.ndarray | None:

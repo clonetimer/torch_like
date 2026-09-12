@@ -19,7 +19,9 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from torch_like.automl.anomaly_metrics import evaluate_anomaly_scores, select_anomaly_threshold
 from torch_like.automl.data import DataSplit
+from torch_like.automl.events import training_events
 from torch_like.automl.sklearn_backend import AlgorithmCandidate
+from torch_like.automl.specs import TaskType
 from torch_like.models.detection import DetectionBatch
 from torch_like.models.registry import create_model
 
@@ -268,54 +270,20 @@ def _score_frame(
     return pd.DataFrame(payload)
 
 
-def run_anomaly_candidate(
-    candidate: AlgorithmCandidate,
-    x: np.ndarray,
+def _finalize_anomaly_run(
     y: np.ndarray,
     split: DataSplit,
+    val_scores: np.ndarray,
+    test_scores: np.ndarray | None,
+    parameter_count: int,
     *,
     sample_ids: np.ndarray,
     channels: tuple[str, ...],
-    seed: int,
-    workers: int,
-    device: str,
-    epochs: int,
-    batch_size: int,
-    learning_rate: float,
-    optimizer_name: str,
-    weight_decay: float,
-    grad_clip_norm: float | None,
     threshold_candidates: int,
     trial_dir: Path,
-    save_checkpoint: bool,
     save_predictions: bool,
-    validation_only: bool,
 ) -> AnomalyRunResult:
-    transformed = _preprocess(x, split.train, candidate.preprocessing, trial_dir)
-    if candidate.backend == "anomaly_baseline":
-        val_scores, test_scores, parameter_count = _run_baseline(
-            candidate, transformed, split, seed, workers, trial_dir, validation_only
-        )
-    elif candidate.backend == "anomaly_pytorch":
-        val_scores, test_scores, parameter_count = _run_pytorch(
-            candidate,
-            transformed,
-            split,
-            seed=seed,
-            workers=workers,
-            device=device,
-            epochs=epochs,
-            batch_size=batch_size,
-            learning_rate=learning_rate,
-            optimizer_name=optimizer_name,
-            weight_decay=weight_decay,
-            grad_clip_norm=grad_clip_norm,
-            trial_dir=trial_dir,
-            save_checkpoint=save_checkpoint,
-            validation_only=validation_only,
-        )
-    else:
-        raise ValueError(f"Unsupported anomaly backend: {candidate.backend}")
+    """Shared tail: pick the threshold, score, persist artifacts, package the result."""
     threshold, validation_metrics = select_anomaly_threshold(y[split.val], val_scores, candidates=threshold_candidates)
     test_metrics = {} if test_scores is None else evaluate_anomaly_scores(y[split.test], test_scores, threshold)
     _json_dump(
@@ -345,4 +313,102 @@ def run_anomaly_candidate(
     )
 
 
-__all__ = ["AnomalyRunResult", "run_anomaly_candidate"]
+def run_anomaly_baseline(
+    candidate: AlgorithmCandidate,
+    x: np.ndarray,
+    y: np.ndarray,
+    split: DataSplit,
+    *,
+    sample_ids: np.ndarray,
+    channels: tuple[str, ...],
+    seed: int,
+    workers: int,
+    threshold_candidates: int,
+    trial_dir: Path,
+    save_predictions: bool,
+    validation_only: bool,
+) -> AnomalyRunResult:
+    """Score with a classical detector -- bound to the ``anomaly_baseline`` backend."""
+    training_events.emit(
+        "training_start", candidate=candidate.name, backend=candidate.backend, task_type=TaskType.ANOMALY_DETECTION.value
+    )
+    transformed = _preprocess(x, split.train, candidate.preprocessing, trial_dir)
+    val_scores, test_scores, parameter_count = _run_baseline(
+        candidate, transformed, split, seed, workers, trial_dir, validation_only
+    )
+    training_events.emit("training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count)
+    return _finalize_anomaly_run(
+        y,
+        split,
+        val_scores,
+        test_scores,
+        parameter_count,
+        sample_ids=sample_ids,
+        channels=channels,
+        threshold_candidates=threshold_candidates,
+        trial_dir=trial_dir,
+        save_predictions=save_predictions,
+    )
+
+
+def run_anomaly_pytorch(
+    candidate: AlgorithmCandidate,
+    x: np.ndarray,
+    y: np.ndarray,
+    split: DataSplit,
+    *,
+    sample_ids: np.ndarray,
+    channels: tuple[str, ...],
+    seed: int,
+    workers: int,
+    device: str,
+    epochs: int,
+    batch_size: int,
+    learning_rate: float,
+    optimizer_name: str,
+    weight_decay: float,
+    grad_clip_norm: float | None,
+    threshold_candidates: int,
+    trial_dir: Path,
+    save_checkpoint: bool,
+    save_predictions: bool,
+    validation_only: bool,
+) -> AnomalyRunResult:
+    """Score with a torch detection model -- bound to the ``anomaly_pytorch`` backend."""
+    training_events.emit(
+        "training_start", candidate=candidate.name, backend=candidate.backend, task_type=TaskType.ANOMALY_DETECTION.value
+    )
+    transformed = _preprocess(x, split.train, candidate.preprocessing, trial_dir)
+    val_scores, test_scores, parameter_count = _run_pytorch(
+        candidate,
+        transformed,
+        split,
+        seed=seed,
+        workers=workers,
+        device=device,
+        epochs=epochs,
+        batch_size=batch_size,
+        learning_rate=learning_rate,
+        optimizer_name=optimizer_name,
+        weight_decay=weight_decay,
+        grad_clip_norm=grad_clip_norm,
+        trial_dir=trial_dir,
+        save_checkpoint=save_checkpoint,
+        validation_only=validation_only,
+    )
+    training_events.emit("training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count)
+    return _finalize_anomaly_run(
+        y,
+        split,
+        val_scores,
+        test_scores,
+        parameter_count,
+        sample_ids=sample_ids,
+        channels=channels,
+        threshold_candidates=threshold_candidates,
+        trial_dir=trial_dir,
+        save_predictions=save_predictions,
+    )
+
+
+__all__ = ["AnomalyRunResult", "run_anomaly_baseline", "run_anomaly_pytorch"]

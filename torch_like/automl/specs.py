@@ -236,6 +236,7 @@ class SearchSpec:
     max_trials: int = 20
     preprocessing: tuple[str, ...] = ("standard", "robust", "none")
     algorithms: tuple[str, ...] | None = None
+    backends: tuple[str, ...] | None = None
     evaluation_seeds: tuple[int, ...] | None = None
     pruning_enabled: bool = False
     pruning_target_reduction: float = 0.5
@@ -259,6 +260,8 @@ class SearchSpec:
         object.__setattr__(self, "preprocessing", tuple(self.preprocessing))
         if self.algorithms is not None:
             object.__setattr__(self, "algorithms", tuple(self.algorithms))
+        if self.backends is not None:
+            object.__setattr__(self, "backends", tuple(self.backends))
         if self.evaluation_seeds is not None:
             object.__setattr__(self, "evaluation_seeds", tuple(int(seed) for seed in self.evaluation_seeds))
             if not self.evaluation_seeds:
@@ -349,6 +352,7 @@ class ArtifactSpec:
     save_predictions: bool = True
     save_checkpoints: bool = True
     trusted_local_joblib_only: bool = True
+    save_training_events: bool = False
 
 
 @dataclass(frozen=True)

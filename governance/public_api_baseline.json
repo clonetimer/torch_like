@@ -23855,6 +23855,12 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": true
+        },
+        {
+          "name": "save_training_events",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
         }
       ]
     },
@@ -24926,6 +24932,12 @@
           "default": null
         },
         {
+          "name": "backends",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
           "name": "evaluation_seeds",
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
@@ -25487,6 +25499,12 @@
           "name": "spec",
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": true,
+          "default": null
+        },
+        {
+          "name": "scope",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
           "default": null
         }
       ]

@@ -17,6 +17,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, RobustScaler, StandardScaler
 from torch.utils.data import DataLoader, TensorDataset
 
+from torch_like.automl.events import training_events
 from torch_like.automl.sklearn_backend import AlgorithmCandidate, evaluate_predictions
 from torch_like.automl.specs import TaskType
 
@@ -236,6 +237,14 @@ def run_torch_candidate(
         labels[split.train],
     )
     model = model.to(torch_device)
+    training_events.emit(
+        "training_start",
+        candidate=candidate.name,
+        backend=candidate.backend,
+        task_type=task_type.value,
+        device=resolved_device,
+        epochs=epochs,
+    )
 
     def forward_model(batch_x: torch.Tensor) -> torch.Tensor:
         if task_type == TaskType.TIME_SERIES_FORECASTING:
@@ -374,6 +383,7 @@ def run_torch_candidate(
                 "improved": improved,
             }
         )
+        training_events.emit("epoch_end", **history[-1])
         if save_checkpoint:
             torch.save(checkpoint_payload(epoch + 1), trial_dir / "last_checkpoint.pt")
         if early_stopping_patience is not None and epochs_without_improvement >= early_stopping_patience:
@@ -405,6 +415,7 @@ def run_torch_candidate(
         "restore_best": restore_best,
         "target_constraint": target_constraint,
     }
+    training_events.emit("training_end", summary=training_summary, candidate=candidate.name, backend=candidate.backend)
     (trial_dir / "training_history.json").write_text(
         json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8"
     )

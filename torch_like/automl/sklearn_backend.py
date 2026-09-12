@@ -7,6 +7,8 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from torch_like.automl.backends import backends_by_kind, get_backend, has_backend
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -180,7 +182,7 @@ class AlgorithmCandidate:
 
     @property
     def model_family(self) -> str:
-        return "torch_like" if self.backend in {"pytorch", "anomaly_pytorch"} else "baseline"
+        return get_backend(self.backend).model_family
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -282,8 +284,17 @@ def build_candidates(
     if task_type == TaskType.ANOMALY_DETECTION:
         from torch_like.automl.anomaly_catalog import ANOMALY_BASELINE_GRIDS, discover_detection_model_grids
 
-        baseline_grids = {name: list(grid) for name, grid in ANOMALY_BASELINE_GRIDS.items()}
-        torch_grids = discover_detection_model_grids(include_experimental=search.algorithms is not None)
+        # Honour capability assembly: a suppressed anomaly backend contributes no candidates.
+        baseline_grids = (
+            {name: list(grid) for name, grid in ANOMALY_BASELINE_GRIDS.items()}
+            if has_backend("anomaly_baseline")
+            else {}
+        )
+        torch_grids = (
+            discover_detection_model_grids(include_experimental=search.algorithms is not None)
+            if has_backend("anomaly_pytorch")
+            else {}
+        )
         available = set(baseline_grids) | set(torch_grids)
         if search.algorithms is not None:
             unknown = set(search.algorithms) - available
@@ -339,9 +350,9 @@ def build_candidates(
     if unavailable and search.algorithms is not None:
         raise ImportError("LightGBM candidates require: pip install 'torch_like[lightgbm]'")
     specs = [spec for spec in specs if spec not in unavailable]
-    grids = {spec.name: list(spec.parameter_grid) for spec in specs if spec.backend == "sklearn"}
-    baseline_grids = {spec.name: list(spec.parameter_grid) for spec in specs if spec.backend == "baseline"}
-    torch_grids = {spec.name: list(spec.parameter_grid) for spec in specs if spec.backend == "pytorch"}
+    grids = {spec.name: list(spec.parameter_grid) for spec in specs if get_backend(spec.backend).kind == "sklearn"}
+    baseline_grids = {spec.name: list(spec.parameter_grid) for spec in specs if get_backend(spec.backend).kind == "baseline"}
+    torch_grids = {spec.name: list(spec.parameter_grid) for spec in specs if get_backend(spec.backend).kind == "torch"}
     feature_strategies: tuple[str | None, ...] = (None,)
     if task_type == TaskType.TIME_SERIES_FORECASTING:
         feature_strategies = ("flatten",)

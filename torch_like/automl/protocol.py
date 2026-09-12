@@ -8,6 +8,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from torch_like.automl.backends import get_backend, has_backend
 from torch_like.automl.data import DataSplit, GroupCVSplit, PreparedData, RollingOriginSplit, ValidationFold
 from torch_like.automl.specs import LeaderboardConfig, LeaderboardTrustLevel, SplitSpec, SplitType, TaskType
 
@@ -302,7 +303,7 @@ def audit_evaluation_trust(
     backends = sorted({str(_candidate_field(candidate, "backend")) for candidate in candidates})
     families = sorted({str(_candidate_field(candidate, "model_family")) for candidate in candidates})
     details.update({"candidate_backends": backends, "candidate_families": families})
-    if any(_candidate_field(candidate, "backend") == "pytorch" for candidate in candidates):
+    if any(has_backend(name) and get_backend(name).tracks_epochs for name in backends):
         checks.append("uniform_torch_training_budget")
     if level == LeaderboardTrustLevel.DEVELOPMENT and len(seeds) == 1:
         warnings.append("single_seed_development_run")
