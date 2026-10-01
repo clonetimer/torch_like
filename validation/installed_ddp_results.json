@@ -1,0 +1,22 @@
+{
+  "0": {
+    "parameters_synchronized": true,
+    "global_metrics_exact": true,
+    "val_samples": 7,
+    "schema": 3,
+    "events": 4,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/installed/torch_like/__init__.py"
+  },
+  "1": {
+    "parameters_synchronized": true,
+    "global_metrics_exact": true,
+    "val_samples": 7,
+    "schema": 3,
+    "events": 0,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/installed/torch_like/__init__.py"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.9.0",
+  "import_path": "/mnt/data/tl090/installed/torch_like/__init__.py",
+  "working_directory": "/tmp",
+  "models": 165,
+  "sklearn_lazy_import": true,
+  "save_load_identical": true,
+  "native_sklearn_estimator": "sklearn.ensemble._forest",
+  "dependencies_reused_from_host": true,
+  "wheel_sha256": "ed40a0df083cfa6aa5fd7bbd9efb0161a5b149d5871a6485c56db1846e41e909"
+}

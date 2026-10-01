@@ -1,13 +1,17 @@
 {
   "schema_version": 1,
   "policy_id": "torch-like-public-api-stability",
-  "policy_version": "1.0",
+  "policy_version": "1.1",
   "protected_namespaces": [
     "torch_like",
     "torch_like.models",
     "torch_like.nn",
     "torch_like.data",
-    "torch_like.automl"
+    "torch_like.automl",
+    "torch_like.classical",
+    "torch_like.contracts",
+    "torch_like.evaluation",
+    "torch_like.training"
   ],
   "minimum_minor_releases": 2,
   "minimum_deprecation_days": 90,

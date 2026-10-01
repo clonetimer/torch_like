@@ -17,19 +17,26 @@ English: The core goal of `torch_like` is to be a local PyTorch-style model libr
 Paths / 路径:
 
 - `torch_like/models/`
+- `torch_like/classical/`
 - `torch_like/nn/`
 - `torch_like/utils/`
 - `torch_like/data/`
+- `torch_like/evaluation/`
+- `torch_like/training/`
 - `torch_like/automl/`
 - `governance/task_adapter_approvals.json`
 
-中文：这里放可复用 API、模型定义、任务 batch、registry 和基础工具。
+中文：这里放可复用 API、模型定义、任务 batch、数据适配、数据集级评估、训练生命周期、registry 和基础工具。
 
-English: This layer contains reusable APIs, model definitions, task batches, registry utilities, and basic helpers.
+English: This layer contains reusable APIs, model definitions, task batches, data adapters, dataset-level evaluation, training lifecycle, registry utilities, and basic helpers.
 
 中文：`torch_like/automl/` 是可选编排子层，只通过公开 registry 和任务协议调用模型；它可以训练、比较和导出管线，但不得在运行时修改模型源代码或绕过模型治理。
 
 English: `torch_like/automl/` is an optional orchestration sublayer that consumes public registry and task contracts. It may train, compare, and export pipelines, but may not mutate model source code at runtime or bypass model governance.
+
+中文：`torch_like/data/` 负责可复用 DataLoader 物化；`torch_like/training/` 负责单优化器训练生命周期和 BatchAdapter；`torch_like/evaluation/` 负责跨完整数据集计算的指标。三者不得相互复制任务公式或数据转换。
+
+English: `torch_like/data/` owns reusable DataLoader materialization, `torch_like/training/` owns the single-optimizer lifecycle and BatchAdapter contracts, and `torch_like/evaluation/` owns whole-dataset metric computation. These layers must not duplicate task formulas or data conversion logic.
 
 AutoML module boundaries / AutoML 模块边界:
 
@@ -80,8 +87,8 @@ Rules / 规则:
 - English: Runners may depend on data loading and training loops.
 - 中文：runner 不应该定义模型结构。
 - English: Runners should not define model architectures.
-- 中文：如果某段逻辑对所有模型通用，可以抽到 `runner/common.py` 或 `torch_like/data/`。
-- English: If logic is shared across models, move it to `runner/common.py` or `torch_like/data/`.
+- 中文：如果某段逻辑对所有模型通用，应优先抽到 `torch_like/data/`、`torch_like/training/` 或 `torch_like/evaluation/`；只有实验编排逻辑才保留在 `runner/common.py`。
+- English: If logic is shared across models, prefer `torch_like/data/`, `torch_like/training/`, or `torch_like/evaluation/`; keep only experiment-orchestration helpers in `runner/common.py`.
 
 ### 3. Verification layer / 验证层
 
@@ -212,23 +219,24 @@ Current domains / 当前域:
 
 ## Import Boundary / 导入边界
 
-中文：用户可通过两种方式使用模型。
+中文：PyTorch-native 模型提供 domain import、兼容的顶层短入口和 registry/factory 构造；sklearn 算法通过独立的 `torch_like.classical` 暴露原生 estimator，不伪装成 `nn.Module`。
 
-English: Users can access models in two ways.
+English: PyTorch-native models support domain imports, compatible top-level shortcuts, and registry/factory construction. sklearn algorithms use the separate `torch_like.classical` namespace and remain native estimators rather than pretending to be `nn.Module` objects.
 
 ```python
 import torch_like as tl
-model = tl.PatchTST(...)
+model = tl.create("PatchTST", domain="forecasting", ...)
+baseline = tl.create("RandomForestRegressor", backend="sklearn", ...)
 ```
 
 ```python
-from torch_like.models import create_model
-model = create_model("PatchTST", domain="forecasting", ...)
+from torch_like.models.forecasting import PatchTST
+from torch_like.classical import RandomForestRegressor
 ```
 
-中文：新增模型要支持这两种方式。
+中文：每个模型 domain 的 `__init__.py` 只承担 lazy facade；完整元数据登记放在私有 `_catalog.py`。新增模型不得重新把所有实现强导入到 `__init__.py`。
 
-English: New models should support both access patterns.
+English: Each model-domain `__init__.py` is only a lazy facade; full metadata registration lives in private `_catalog.py`. New models must not reintroduce eager imports of every implementation into `__init__.py`.
 
 ## Data Boundary / 数据边界
 

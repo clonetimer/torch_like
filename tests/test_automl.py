@@ -158,6 +158,22 @@ class AutoMLDataTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "valid PyTorch device"):
             ResourceSpec(device="not-a-device")
 
+    def test_trial_subprocess_environment_caps_native_thread_pools(self):
+        with mock.patch.dict("os.environ", {"UNRELATED_TORCH_LIKE_TEST": "kept"}, clear=False):
+            env = automl_task_module._trial_subprocess_env({"workers": 2})
+
+        self.assertEqual(env["UNRELATED_TORCH_LIKE_TEST"], "kept")
+        for name in (
+            "OMP_NUM_THREADS",
+            "OMP_THREAD_LIMIT",
+            "MKL_NUM_THREADS",
+            "OPENBLAS_NUM_THREADS",
+            "NUMEXPR_NUM_THREADS",
+            "VECLIB_MAXIMUM_THREADS",
+            "BLIS_NUM_THREADS",
+        ):
+            self.assertEqual(env[name], "2")
+
     def test_xjtu_sy_folder_adapter_generates_bounded_rul_sequences(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

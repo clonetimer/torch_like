@@ -30,6 +30,25 @@ class CandidateSpec:
             and (not self.requires_equal_lengths or equal_sequence_lengths)
         )
 
+    def model_spec(self):
+        """Return the shared algorithm contract when this candidate has one.
+
+        External optional backends (for example LightGBM) and baseline-only
+        algorithms intentionally return ``None`` because they are not part of
+        the torch_like/sklearn compatibility catalogs.
+        """
+
+        from torch_like.automl.backends import get_backend
+        from torch_like.classical import has_estimator
+        from torch_like.contracts import get_model_spec
+
+        kind = get_backend(self.backend).kind
+        if kind == "torch":
+            return get_model_spec(self.name, backend="torch_like")
+        if kind == "sklearn" and has_estimator(self.name):
+            return get_model_spec(self.name, backend="sklearn")
+        return None
+
 
 _LOCK = RLock()
 _CANDIDATES: dict[str, CandidateSpec] = {}

@@ -1,0 +1,50 @@
+{
+  "test_real_two_rank_gloo_domain0/rank1.json": {
+    "FTTransformer_runtime_loss": true,
+    "DLinear_step_fn": true,
+    "f1_exact": true,
+    "forecast_epochs": 2,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_domain0/rank0.json": {
+    "FTTransformer_runtime_loss": true,
+    "DLinear_step_fn": true,
+    "f1_exact": true,
+    "forecast_epochs": 2,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_early_0/rank1.json": {
+    "epochs_ran": 2,
+    "best_epoch": 1,
+    "restored_best": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_early_0/rank0.json": {
+    "epochs_ran": 2,
+    "best_epoch": 1,
+    "restored_best": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_empty_0/rank1.json": {
+    "empty_rank_supported": true,
+    "val_samples": 1,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_empty_0/rank0.json": {
+    "empty_rank_supported": true,
+    "val_samples": 1,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  }
+}

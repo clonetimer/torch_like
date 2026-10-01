@@ -1,42 +1,20 @@
-"""Diagnosis task interfaces."""
+"""Lazy public facade for the ``diagnosis`` model domain."""
 
-from torch_like.models.diagnosis.common import DiagnosisBatch, DiagnosisConfig, DiagnosisModel
-from torch_like.models.diagnosis.inception_time import InceptionTime, InceptionTimeConfig
-from torch_like.models.diagnosis.rocket import ROCKET, ROCKETConfig
-from torch_like.models.registry import register_model_catalog
+from __future__ import annotations
 
-model_zoo = {
-    "InceptionTime": {
-        "cls": InceptionTime,
-        "family": "inception_time_series",
-        "layer": "Time-series diagnosis / classification",
-        "integration_level": "paper_aligned",
-        "supports": ["multiscale_convolution", "residual_connection", "time_series_classification"],
-        "paper": "InceptionTime: Finding AlexNet for Time Series Classification (DMKD 2020)",
-        "description": "Residual multiscale Inception network for time-series classification and diagnosis",
-        "complexity": "O(B * L * D * sum(kernel_sizes) * blocks) multiscale temporal convolution",
-    },
-    "ROCKET": {
-        "cls": ROCKET,
-        "family": "random_convolution_features",
-        "layer": "Time-series diagnosis / classification",
-        "integration_level": "framework_oriented",
-        "supports": ["random_convolution", "time_series_classification", "fixed_features", "linear_classifier"],
-        "paper": "ROCKET: Exceptionally Fast and Accurate Time Series Classification Using Random Convolutional Kernels (KDD 2020)",
-        "description": "Fixed random convolutional kernel features with trainable linear classifier for diagnosis",
-        "complexity": "O(B * kernels * L * input_dim) random convolution feature extraction",
-    },
-}
+from torch_like.models._domain_exports import DOMAIN_ALL
+from torch_like.models._lazy import resolve_domain_export
 
-register_model_catalog("diagnosis", model_zoo)
+_DOMAIN = 'diagnosis'
+__all__ = list(DOMAIN_ALL[_DOMAIN])
 
-__all__ = [
-    "DiagnosisConfig",
-    "DiagnosisBatch",
-    "DiagnosisModel",
-    "InceptionTimeConfig",
-    "InceptionTime",
-    "ROCKETConfig",
-    "ROCKET",
-    "model_zoo",
-]
+
+def __getattr__(name: str):
+    try:
+        return resolve_domain_export(_DOMAIN, globals(), name)
+    except AttributeError as exc:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from exc
+
+
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | set(__all__))

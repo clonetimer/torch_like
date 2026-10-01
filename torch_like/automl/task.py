@@ -4,17 +4,18 @@ from __future__ import annotations
 
 import importlib.metadata
 import json
-import multiprocessing as mp
 import os
+import pickle
 import platform
+import signal
 import subprocess
+import sys
 import time
 import traceback
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from queue import Empty
 from typing import Any
 
 import numpy as np
@@ -47,6 +48,17 @@ from torch_like.automl.sklearn_backend import (
     supported_metrics,
 )
 from torch_like.automl.specs import LabelGranularity, LeaderboardConfig, SplitType, TaskType
+
+def _torch_like_version() -> str:
+    """Return the installed distribution version or the source-tree version."""
+
+    try:
+        return importlib.metadata.version("torch_like")
+    except importlib.metadata.PackageNotFoundError:
+        from torch_like import __version__
+
+        return __version__
+
 
 SUPPORTED_TASKS = {
     TaskType.TABULAR_CLASSIFICATION,
@@ -107,6 +119,15 @@ def _prediction_frame(sample_ids: np.ndarray, y_true: np.ndarray, y_pred: np.nda
     return pd.DataFrame(payload)
 
 
+def _publish_trial_result(channel: Any, result: TrialResult) -> None:
+    """Publish a worker result through a Pipe connection or queue-like test double."""
+
+    if hasattr(channel, "send"):
+        channel.send(result)
+    else:
+        channel.put(result)
+
+
 def _trial_worker(payload: dict[str, Any], queue) -> None:
     started = time.monotonic()
     trial_dir = Path(payload["trial_dir"])
@@ -149,7 +170,7 @@ def _trial_worker(payload: dict[str, Any], queue) -> None:
         )
         _json_dump(trial_dir / "metrics.json", result.to_dict())
         _json_dump(trial_dir / "config.json", {"candidate": candidate.to_dict(), "seed": payload["seed"]})
-        queue.put(result)
+        _publish_trial_result(queue, result)
     except BaseException as exc:  # noqa: BLE001 - a failed trial must not terminate the search
         message = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
         lowered = str(exc).lower()
@@ -174,7 +195,7 @@ def _trial_worker(payload: dict[str, Any], queue) -> None:
             seed=payload["seed"],
         )
         _json_dump(trial_dir / "error.json", result.to_dict())
-        queue.put(result)
+        _publish_trial_result(queue, result)
     finally:
         if dispose_events is not None:
             dispose_events()
@@ -250,7 +271,7 @@ def _cv_trial_worker(payload: dict[str, Any], queue) -> None:
             trial_dir / "config.json",
             {"candidate": candidate.to_dict(), "seed": payload["seed"], "cv_folds": len(payload["folds"])},
         )
-        queue.put(result)
+        _publish_trial_result(queue, result)
     except BaseException as exc:  # noqa: BLE001 - a failed trial must not terminate the search
         message = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
         lowered = str(exc).lower()
@@ -275,7 +296,7 @@ def _cv_trial_worker(payload: dict[str, Any], queue) -> None:
             seed=payload["seed"],
         )
         _json_dump(trial_dir / "error.json", result.to_dict())
-        queue.put(result)
+        _publish_trial_result(queue, result)
     finally:
         if dispose_events is not None:
             dispose_events()
@@ -290,36 +311,134 @@ def _run_isolated_trial(payload: dict[str, Any], timeout_seconds: float) -> Tria
     return result
 
 
-def _spawn_isolated_trial(payload: dict[str, Any], timeout_seconds: float) -> TrialResult:
-    context = mp.get_context("spawn")
-    queue = context.Queue(maxsize=1)
-    worker = _cv_trial_worker if "folds" in payload else _trial_worker
-    process = context.Process(target=worker, args=(payload, queue))
-    process.start()
-    process.join(timeout_seconds)
-    if process.is_alive():
+def _terminate_trial_process(process: subprocess.Popen[str]) -> None:
+    """Terminate an isolated trial and its descendants as far as the platform allows."""
+
+    if process.poll() is not None:
+        return
+    if os.name != "nt":
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return
+        try:
+            process.wait(timeout=5)
+            return
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                return
+    else:
         process.terminate()
-        process.join(5)
-        trial_dir = Path(payload["trial_dir"])
-        result = TrialResult(
-            trial_id=payload["trial_id"],
-            name=payload["candidate"].trial_name,
-            status="timeout",
-            duration_seconds=timeout_seconds,
-            validation_metrics={},
-            test_metrics={},
-            parameter_count=None,
-            artifact_dir=str(trial_dir),
-            error=f"Trial exceeded {timeout_seconds:.1f} seconds",
-            candidate_index=payload.get("candidate_index"),
-            seed=payload["seed"],
-        )
-        _json_dump(trial_dir / "error.json", result.to_dict())
-        return result
+        try:
+            process.wait(timeout=5)
+            return
+        except subprocess.TimeoutExpired:
+            process.kill()
+
+
+def _trial_subprocess_env(payload: dict[str, Any]) -> dict[str, str]:
+    """Build a resource-bounded environment for an isolated trial.
+
+    ``max_cpu_workers`` is part of the public AutoML resource contract.  Native
+    math runtimes do not automatically honor that Python-level value and may
+    otherwise create one thread per host CPU in every trial interpreter.  On a
+    long-lived parent process this can exhaust the process/thread budget and
+    make a later mixed sklearn/PyTorch trial appear to deadlock.
+
+    The environment is set *before* the child interpreter imports NumPy,
+    scikit-learn, LightGBM, or PyTorch so the common BLAS/OpenMP runtimes see a
+    consistent upper bound from process start.
+    """
+
+    workers = max(1, int(payload.get("workers", 1)))
+    env = os.environ.copy()
+    for name in (
+        "OMP_NUM_THREADS",
+        "OMP_THREAD_LIMIT",
+        "MKL_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "NUMEXPR_NUM_THREADS",
+        "VECLIB_MAXIMUM_THREADS",
+        "BLIS_NUM_THREADS",
+    ):
+        env[name] = str(workers)
+    return env
+
+
+def _spawn_isolated_trial(payload: dict[str, Any], timeout_seconds: float) -> TrialResult:
+    """Run a trial in a fresh Python interpreter.
+
+    A real subprocess is deliberately used instead of ``multiprocessing``.  ML
+    runtimes commonly initialize native thread pools (OpenMP/MKL/BLAS/PyTorch);
+    repeatedly forking or spawning workers from a long-lived, multi-threaded
+    parent can make later trials non-reentrant.  A fresh interpreter provides a
+    stable isolation boundary on Linux, macOS, and Windows and keeps timeout
+    cleanup explicit.
+
+    Child stderr is written to a temporary file rather than ``PIPE``.  Some ML
+    libraries can leave short-lived descendants behind; a descendant inheriting
+    a pipe descriptor can keep ``Popen.communicate()`` waiting after the actual
+    trial process has exited.  Waiting on the trial PID and reading a file after
+    exit avoids making pipe EOF part of the trial lifecycle contract.
+    """
+
+    trial_dir = Path(payload["trial_dir"])
+    trial_dir.mkdir(parents=True, exist_ok=True)
+    payload_path = trial_dir / ".trial_payload.pkl"
+    stderr_path = trial_dir / ".trial_stderr.log"
+    with payload_path.open("wb") as stream:
+        pickle.dump(payload, stream, protocol=pickle.HIGHEST_PROTOCOL)
+
+    command = [sys.executable, "-m", "torch_like.automl._trial_process", str(payload_path)]
+    process: subprocess.Popen[bytes] | None = None
     try:
-        return queue.get(timeout=2)
-    except Empty:
-        trial_dir = Path(payload["trial_dir"])
+        with stderr_path.open("wb") as stderr_stream:
+            process = subprocess.Popen(
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=stderr_stream,
+                start_new_session=os.name != "nt",
+                env=_trial_subprocess_env(payload),
+            )
+            try:
+                process.wait(timeout=timeout_seconds)
+            except subprocess.TimeoutExpired:
+                _terminate_trial_process(process)
+                process.wait()
+                result = TrialResult(
+                    trial_id=payload["trial_id"],
+                    name=payload["candidate"].trial_name,
+                    status="timeout",
+                    duration_seconds=timeout_seconds,
+                    validation_metrics={},
+                    test_metrics={},
+                    parameter_count=None,
+                    artifact_dir=str(trial_dir),
+                    error=f"Trial exceeded {timeout_seconds:.1f} seconds",
+                    candidate_index=payload.get("candidate_index"),
+                    seed=payload["seed"],
+                )
+                _json_dump(trial_dir / "error.json", result.to_dict())
+                return result
+
+        result = _load_trial_result(
+            trial_dir,
+            payload["trial_id"],
+            payload["candidate"],
+            int(payload.get("candidate_index", 0)),
+            int(payload["seed"]),
+        )
+        if result is not None:
+            return result
+
+        details = stderr_path.read_text(encoding="utf-8", errors="replace").strip()
+        if len(details) > 4000:
+            details = details[-4000:]
+        error = f"Trial subprocess exited with code {process.returncode} without a result"
+        if details:
+            error = f"{error}\n{details}"
         result = TrialResult(
             trial_id=payload["trial_id"],
             name=payload["candidate"].trial_name,
@@ -329,12 +448,22 @@ def _spawn_isolated_trial(payload: dict[str, Any], timeout_seconds: float) -> Tr
             test_metrics={},
             parameter_count=None,
             artifact_dir=str(trial_dir),
-            error=f"Trial process exited with code {process.exitcode} without a result",
+            error=error,
             candidate_index=payload.get("candidate_index"),
             seed=payload["seed"],
         )
         _json_dump(trial_dir / "error.json", result.to_dict())
         return result
+    finally:
+        payload_path.unlink(missing_ok=True)
+        if process is not None and process.poll() is None:
+            _terminate_trial_process(process)
+        try:
+            stderr_path.unlink(missing_ok=True)
+        except OSError:
+            # A platform-specific orphan may transiently retain the file handle;
+            # the hidden diagnostic file is harmless and not part of the API.
+            pass
 
 
 def _load_trial_result(
@@ -1141,7 +1270,7 @@ class LeaderboardTask:
             "platform": platform.platform(),
             "torch": torch.__version__,
             "scikit_learn": sklearn.__version__,
-            "torch_like": importlib.metadata.version("torch_like"),
+            "torch_like": _torch_like_version(),
             "git_commit": git_commit,
             "pid": os.getpid(),
             "seed": self.config.seed,

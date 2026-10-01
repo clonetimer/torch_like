@@ -32,6 +32,10 @@ class PublicAPIStabilityTests(unittest.TestCase):
         self.assertIn("torch_like.nn.FullAttention", self.manifest["symbols"])
         self.assertEqual(render_manifest(self.manifest), render_manifest(build_manifest(self.policy)))
 
+    def test_enum_signatures_are_interpreter_stable(self):
+        signature = self.manifest["symbols"]["torch_like.automl.TaskType"]["signature"]
+        self.assertEqual([item["name"] for item in signature], ["value", "names", "module", "qualname", "type", "start"])
+
     def test_repository_public_api_baseline_is_current(self):
         self.assertEqual(validate_committed_baseline(self.manifest), [])
 

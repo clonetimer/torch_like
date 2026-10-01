@@ -15,11 +15,14 @@ import torch
 import torch.nn.functional as F
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, RobustScaler, StandardScaler
-from torch.utils.data import DataLoader, TensorDataset
 
-from torch_like.automl.events import training_events
+from torch_like.automl.events import training_events as training_events
 from torch_like.automl.sklearn_backend import AlgorithmCandidate, evaluate_predictions
 from torch_like.automl.specs import TaskType
+from torch_like.contracts import TaskKind, get_model_spec
+from torch_like.data import DataLoaderConfig, TensorDataAdapter
+from torch_like.models.registry import create_model
+from torch_like.training import Trainer, TrainerConfig
 
 
 def _sha256(path: Path) -> str:
@@ -83,90 +86,62 @@ def _fit_transform_tabular(x: np.ndarray, train_indices: np.ndarray, preprocessi
 
 
 def _build_model(candidate: AlgorithmCandidate, task_type: TaskType, sequence_length: int, feature_dim: int, y):
+    """Build a torch_like AutoML candidate through the shared registry/factory contract.
+
+    Task adapters still own task-derived constructor arguments (for example
+    ``num_classes`` or ``pred_len``), but class discovery no longer maintains a
+    second hard-coded import table.
+    """
+
     parameters = dict(candidate.parameters)
+    spec = get_model_spec(candidate.name, backend="torch_like")
+    compatible_task_kinds = {
+        TaskType.TABULAR_CLASSIFICATION: {TaskKind.TABULAR_PREDICTION},
+        TaskType.MULTILABEL_CLASSIFICATION: {TaskKind.TABULAR_PREDICTION},
+        TaskType.TIME_SERIES_FORECASTING: {TaskKind.TIME_SERIES_FORECASTING, TaskKind.PROBABILISTIC_FORECASTING},
+        TaskType.TIME_SERIES_CLASSIFICATION: {TaskKind.TIME_SERIES_CLASSIFICATION},
+        TaskType.RUL_REGRESSION: {TaskKind.RUL_REGRESSION},
+    }
+    expected = compatible_task_kinds.get(task_type)
+    if expected is None or spec.task.kind not in expected:
+        expected_values = [] if expected is None else sorted(kind.value for kind in expected)
+        raise ValueError(
+            f"AutoML task {task_type.value!r} is incompatible with {candidate.name!r} contract "
+            f"{spec.task.kind.value!r}; expected one of {expected_values}"
+        )
+
     if task_type in {TaskType.TABULAR_CLASSIFICATION, TaskType.MULTILABEL_CLASSIFICATION}:
-        from torch_like.models.tabular import (
-            NODE,
-            SAINT,
-            FTTransformer,
-            TabNet,
-        )
-
-        classes = {
-            "FTTransformer": FTTransformer,
-            "TabNet": TabNet,
-            "NODE": NODE,
-            "SAINT": SAINT,
+        kwargs = {
+            "input_dim": feature_dim,
+            "output_dim": int(y.shape[1])
+            if task_type == TaskType.MULTILABEL_CLASSIFICATION
+            else int(len(np.unique(y))),
+            **parameters,
         }
-        if candidate.name in classes:
-            kwargs = {
-                "input_dim": feature_dim,
-                "output_dim": int(y.shape[1])
-                if task_type == TaskType.MULTILABEL_CLASSIFICATION
-                else int(len(np.unique(y))),
-                **parameters,
-            }
-            return classes[candidate.name](**kwargs), kwargs
-    if task_type == TaskType.TIME_SERIES_FORECASTING:
-        from torch_like.models import DLinear, PatchTST, TSMixer
-
-        classes = {"DLinear": DLinear, "PatchTST": PatchTST, "TSMixer": TSMixer}
-        if candidate.name in classes:
-            target_dim = int(y.shape[-1])
-            kwargs = {
-                "enc_in": feature_dim,
-                "dec_in": target_dim,
-                "c_out": target_dim,
-                "seq_len": sequence_length,
-                "label_len": 0,
-                "pred_len": int(y.shape[1]),
-                **parameters,
-            }
-            return classes[candidate.name](**kwargs), kwargs
-    if task_type == TaskType.TIME_SERIES_CLASSIFICATION:
-        from torch_like.models.diagnosis import ROCKET, InceptionTime
-
-        num_classes = int(len(np.unique(y)))
-        if candidate.name == "InceptionTime":
-            kwargs = {
-                "input_dim": feature_dim,
-                "num_classes": num_classes,
-                "seq_len": sequence_length,
-                **parameters,
-            }
-            return InceptionTime(**kwargs), kwargs
-        if candidate.name == "ROCKET":
-            kwargs = {
-                "input_dim": feature_dim,
-                "num_classes": num_classes,
-                "seq_len": sequence_length,
-                **parameters,
-            }
-            return ROCKET(**kwargs), kwargs
-    if task_type == TaskType.RUL_REGRESSION:
-        from torch_like.models import (
-            TCNRUL,
-            THGNN,
-            AutoformerRUL,
-            InformerRUL,
-            LogTransRUL,
-            PatchTSTRUL,
-            TransformerRUL,
-        )
-
-        classes = {
-            "THGNN": THGNN,
-            "InformerRUL": InformerRUL,
-            "AutoformerRUL": AutoformerRUL,
-            "LogTransRUL": LogTransRUL,
-            "TCNRUL": TCNRUL,
-            "PatchTSTRUL": PatchTSTRUL,
-            "TransformerRUL": TransformerRUL,
+    elif task_type == TaskType.TIME_SERIES_FORECASTING:
+        target_dim = int(y.shape[-1])
+        kwargs = {
+            "enc_in": feature_dim,
+            "dec_in": target_dim,
+            "c_out": target_dim,
+            "seq_len": sequence_length,
+            "label_len": 0,
+            "pred_len": int(y.shape[1]),
+            **parameters,
         }
-        if candidate.name in classes:
-            kwargs = {"enc_in": feature_dim, "seq_len": sequence_length, **parameters}
-            return classes[candidate.name](**kwargs), kwargs
-    raise ValueError(f"Unsupported PyTorch candidate {candidate.name!r} for {task_type.value}")
+    elif task_type == TaskType.TIME_SERIES_CLASSIFICATION:
+        kwargs = {
+            "input_dim": feature_dim,
+            "num_classes": int(len(np.unique(y))),
+            "seq_len": sequence_length,
+            **parameters,
+        }
+    elif task_type == TaskType.RUL_REGRESSION:
+        kwargs = {"enc_in": feature_dim, "seq_len": sequence_length, **parameters}
+    else:  # guarded by compatible_task_kinds above
+        raise ValueError(f"Unsupported PyTorch task: {task_type.value}")
+
+    return create_model(candidate.name, domain=spec.domain, **kwargs), kwargs
 
 
 def run_torch_candidate(
@@ -237,36 +212,23 @@ def run_torch_candidate(
         labels[split.train],
     )
     model = model.to(torch_device)
-    training_events.emit(
-        "training_start",
-        candidate=candidate.name,
-        backend=candidate.backend,
-        task_type=task_type.value,
-        device=resolved_device,
-        epochs=epochs,
-    )
-
     def forward_model(batch_x: torch.Tensor) -> torch.Tensor:
         if task_type == TaskType.TIME_SERIES_FORECASTING:
             return model(batch_x, None, None, None)
         return model(batch_x)
 
-    optimizer_class = torch.optim.AdamW if optimizer_name == "adamw" else torch.optim.Adam
-    optimizer = optimizer_class(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-    scheduler = None
-    if lr_scheduler_name == "cosine":
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
-    elif lr_scheduler_name == "plateau":
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", patience=2, factor=0.5)
-    train_dataset = TensorDataset(input_tensor[split.train], target_tensor[split.train])
-    generator = torch.Generator().manual_seed(seed)
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=0,
-        pin_memory=torch_device.type == "cuda",
-        generator=generator,
+    data_adapter = TensorDataAdapter()
+    train_loader = data_adapter.loader(
+        input_tensor,
+        target_tensor,
+        indices=split.train,
+        config=DataLoaderConfig(
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=0,
+            pin_memory=torch_device.type == "cuda",
+            seed=seed,
+        ),
     )
 
     def constrain(output: torch.Tensor) -> torch.Tensor:
@@ -291,114 +253,53 @@ def run_torch_candidate(
             return model.loss_step(model.make_tabular_batch(batch_x, y=batch_y))
         return loss_step(forward_model(batch_x), batch_y)
 
-    def evaluate_loss(indices: np.ndarray) -> float:
-        loader = DataLoader(
-            TensorDataset(input_tensor[indices], target_tensor[indices]),
-            batch_size=batch_size,
-            shuffle=False,
-            num_workers=0,
-            pin_memory=torch_device.type == "cuda",
+    validation_loader = None
+    if not final_only:
+        validation_loader = data_adapter.loader(
+            input_tensor,
+            target_tensor,
+            indices=split.val,
+            config=DataLoaderConfig(
+                batch_size=batch_size,
+                shuffle=False,
+                num_workers=0,
+                pin_memory=torch_device.type == "cuda",
+            ),
         )
-        total_loss = 0.0
-        total_samples = 0
-        model.eval()
-        with torch.inference_mode():
-            for batch_x, batch_y in loader:
-                batch_x = batch_x.to(torch_device, non_blocking=True)
-                batch_y = batch_y.to(torch_device, non_blocking=True)
-                loss = forward_loss(batch_x, batch_y)
-                total_loss += float(loss) * len(batch_x)
-                total_samples += len(batch_x)
-        model.train()
-        return total_loss / total_samples
 
-    def checkpoint_payload(epoch: int) -> dict[str, Any]:
-        return {
-            "model_name": candidate.name,
-            "model_kwargs": model_kwargs,
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-            "scheduler_state_dict": scheduler.state_dict() if scheduler is not None else None,
-            "epoch": epoch,
-            "torch_rng_state": torch.get_rng_state(),
-            "numpy_rng_state": np.random.get_state(),
-            "seed": seed,
-        }
-
-    history = []
-    best_loss = float("inf")
-    best_epoch = 0
-    best_state = None
-    epochs_without_improvement = 0
-    stopped_early = False
-    model.train()
-    for epoch in range(epochs):
-        total_train_loss = 0.0
-        total_train_samples = 0
-        max_gradient_norm = 0.0
-        for batch_x, batch_y in train_loader:
-            batch_x = batch_x.to(torch_device, non_blocking=True)
-            batch_y = batch_y.to(torch_device, non_blocking=True)
-            optimizer.zero_grad(set_to_none=True)
-            loss = forward_loss(batch_x, batch_y)
-            if not torch.isfinite(loss):
-                raise FloatingPointError(f"NaN or infinite loss at epoch {epoch}")
-            loss.backward()
-            gradient_norm = torch.nn.utils.clip_grad_norm_(
-                model.parameters(),
-                grad_clip_norm if grad_clip_norm is not None else float("inf"),
-            )
-            if not torch.isfinite(gradient_norm):
-                raise FloatingPointError(f"NaN or infinite gradient norm at epoch {epoch}")
-            max_gradient_norm = max(max_gradient_norm, float(gradient_norm))
-            optimizer.step()
-            total_train_loss += float(loss.detach()) * len(batch_x)
-            total_train_samples += len(batch_x)
-        train_loss = total_train_loss / total_train_samples
-        val_loss = None if final_only else evaluate_loss(split.val)
-        monitored_loss = train_loss if val_loss is None else val_loss
-        improved = monitored_loss < best_loss - min_delta
-        if improved:
-            best_loss = monitored_loss
-            best_epoch = epoch + 1
-            epochs_without_improvement = 0
-            if restore_best:
-                best_state = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
-            if save_checkpoint:
-                torch.save(checkpoint_payload(epoch + 1), trial_dir / "best_checkpoint.pt")
-        else:
-            epochs_without_improvement += 1
-        if scheduler is not None:
-            if lr_scheduler_name == "plateau":
-                scheduler.step(monitored_loss)
-            else:
-                scheduler.step()
-        history.append(
-            {
-                "epoch": epoch + 1,
-                "train_loss": train_loss,
-                "validation_loss": val_loss,
-                "learning_rate": optimizer.param_groups[0]["lr"],
-                "max_gradient_norm": max_gradient_norm,
-                "improved": improved,
-            }
-        )
-        training_events.emit("epoch_end", **history[-1])
-        if save_checkpoint:
-            torch.save(checkpoint_payload(epoch + 1), trial_dir / "last_checkpoint.pt")
-        if early_stopping_patience is not None and epochs_without_improvement >= early_stopping_patience:
-            stopped_early = True
-            break
-
-    if restore_best and best_state is not None:
-        model.load_state_dict(best_state)
+    trainer = Trainer(
+        model,
+        TrainerConfig(
+            epochs=epochs,
+            device=resolved_device,
+            optimizer=optimizer_name,
+            learning_rate=learning_rate,
+            weight_decay=weight_decay,
+            lr_scheduler=lr_scheduler_name,
+            grad_clip_norm=grad_clip_norm,
+            early_stopping_patience=early_stopping_patience,
+            min_delta=min_delta,
+            restore_best=restore_best,
+            checkpoint_dir=trial_dir if save_checkpoint else None,
+            save_last=save_checkpoint,
+            save_best=save_checkpoint,
+        ),
+        loss_fn=lambda _model, batch: forward_loss(batch[0], batch[1]),
+        event_context={
+            "candidate": candidate.name,
+            "backend": candidate.backend,
+            "task_type": task_type.value,
+        },
+    )
+    training_result = trainer.fit(train_loader, validation_loader)
+    history = [item.to_dict() for item in training_result.history]
     training_summary = {
         "epochs_requested": epochs,
-        "epochs_ran": len(history),
-        "best_epoch": best_epoch,
-        "best_monitored_loss": best_loss,
-        "stopped_early": stopped_early,
-        "monitor": "train_loss" if final_only else "validation_loss",
+        "epochs_ran": training_result.epochs_ran,
+        "best_epoch": training_result.best_epoch,
+        "best_monitored_loss": training_result.best_monitored_loss,
+        "stopped_early": training_result.stopped_early,
+        "monitor": training_result.monitor,
         "optimizer": optimizer_name,
         "weight_decay": weight_decay,
         "loss": (
@@ -414,8 +315,8 @@ def run_torch_candidate(
         "min_delta": min_delta,
         "restore_best": restore_best,
         "target_constraint": target_constraint,
+        "training_runtime": "torch_like.training.Trainer",
     }
-    training_events.emit("training_end", summary=training_summary, candidate=candidate.name, backend=candidate.backend)
     (trial_dir / "training_history.json").write_text(
         json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8"
     )
@@ -424,12 +325,15 @@ def run_torch_candidate(
     )
 
     def predict_indices(indices: np.ndarray) -> torch.Tensor:
-        loader = DataLoader(
-            TensorDataset(input_tensor[indices]),
-            batch_size=batch_size,
-            shuffle=False,
-            num_workers=0,
-            pin_memory=torch_device.type == "cuda",
+        loader = data_adapter.loader(
+            input_tensor,
+            indices=indices,
+            config=DataLoaderConfig(
+                batch_size=batch_size,
+                shuffle=False,
+                num_workers=0,
+                pin_memory=torch_device.type == "cuda",
+            ),
         )
         outputs = []
         with torch.inference_mode():

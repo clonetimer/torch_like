@@ -21,10 +21,10 @@ from typing import Any
 
 from torch_like.core.events import EventEmitter
 from torch_like.core.scope import Scope
+from torch_like.training.events import training_events
 
 EVENT_LOG_NAME = "events.jsonl"
 
-training_events = EventEmitter(name="torch_training")
 
 _current_run: EventEmitter | None = None
 

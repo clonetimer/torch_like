@@ -183,11 +183,15 @@ def _run_pytorch(
     optimizer = optimizer_cls(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     train_tensor = torch.from_numpy(np.ascontiguousarray(x[split.train]))
     generator = torch.Generator().manual_seed(seed)
+    # Trials already execute in an isolated subprocess. Spawning nested
+    # DataLoader workers from a process that has initialized PyTorch/BLAS
+    # threads is fragile on Python 3.13+ and adds little for the small window
+    # tensors used here. CPU parallelism is controlled by torch.set_num_threads.
     loader = DataLoader(
         TensorDataset(train_tensor),
         batch_size=batch_size,
         shuffle=True,
-        num_workers=workers,
+        num_workers=0,
         pin_memory=resolved_device.type == "cuda",
         generator=generator,
     )
@@ -216,7 +220,7 @@ def _run_pytorch(
             TensorDataset(values),
             batch_size=batch_size,
             shuffle=False,
-            num_workers=workers,
+            num_workers=0,
             pin_memory=resolved_device.type == "cuda",
         )
         outputs = []

@@ -1,0 +1,18 @@
+{
+  "frozen_source_code_digest": "bf247fea7a581b982dbf7125ee44c79bc0179b15f080b0ffa88ffb7f14d72d7a",
+  "staged_digest_matches": true,
+  "wheel_payload_matches_staged_source": true,
+  "wheel_payload_files_compared": 276,
+  "new_project_files": 9,
+  "modified_project_files": 12,
+  "deleted_project_files": 0,
+  "excluded": "cache/build/dist/egg-info/bytecode and superseded development-only XML/PID files",
+  "runtime_process_cleanup": "no validator/pytest/torchrun worker process remained at final inspection",
+  "staged_smoke": {
+    "passed": 40,
+    "failed": 0,
+    "skipped": 0,
+    "added_to_unique_release_total": false
+  },
+  "code_unchanged_after_frozen_validation": true
+}

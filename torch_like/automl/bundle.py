@@ -209,6 +209,16 @@ def load_best(run_dir: str | Path, *, device: str = "cpu") -> ModelBundle:
                 **candidate["parameters"],
             )
             model.load_state_dict(checkpoint["model"])
+        elif checkpoint.get("kind") == "training_checkpoint":
+            # torch_like >= 0.6 delegates AutoML lifecycle state to the shared
+            # public Trainer. Constructor metadata lives in the artifact
+            # manifest; historical pre-0.6 checkpoints remain supported below.
+            model = create_model(
+                manifest["model_name"],
+                domain=_domain(task_type),
+                **manifest["model_kwargs"],
+            )
+            model.load_state_dict(checkpoint["model_state_dict"])
         else:
             model = create_model(
                 checkpoint["model_name"],

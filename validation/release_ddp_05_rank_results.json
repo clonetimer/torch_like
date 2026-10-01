@@ -1,0 +1,50 @@
+{
+  "test_real_two_rank_gloo_cosine0/rank1.json": {
+    "cosine_state_restored": true,
+    "bitwise_parameters": true,
+    "history_identical": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_cosine0/rank0.json": {
+    "cosine_state_restored": true,
+    "bitwise_parameters": true,
+    "history_identical": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_resume0/rank1.json": {
+    "changed_sampler_rejected": true,
+    "missing_rank_rejected": true,
+    "world_size_rejected": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_resume0/rank0.json": {
+    "changed_sampler_rejected": true,
+    "missing_rank_rejected": true,
+    "world_size_rejected": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_v0/rank1.json": {
+    "failure": "validation_empty",
+    "coordinated": true,
+    "message": "ValueError: validation loader produced no samples",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_v0/rank0.json": {
+    "failure": "validation_empty",
+    "coordinated": true,
+    "message": "ValueError: validation loader produced no samples",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  }
+}

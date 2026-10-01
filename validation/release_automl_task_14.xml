@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="13.785" timestamp="2026-09-30T15:29:50.432593+00:00" hostname="d5b33384aee5"><testcase classname="tests.test_automl.AutoMLTaskTests" name="test_validated_trust_writes_seed_coverage_audit" time="11.797" /></testsuite></testsuites>

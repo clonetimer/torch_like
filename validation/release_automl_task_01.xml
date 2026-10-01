@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="7.878" timestamp="2026-09-30T15:27:40.997663+00:00" hostname="d5b33384aee5"><testcase classname="tests.test_automl.AutoMLTaskTests" name="test_end_to_end_run_writes_all_core_artifacts" time="6.107" /></testsuite></testsuites>

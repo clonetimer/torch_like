@@ -8,7 +8,6 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -27,7 +26,10 @@ from runner.performance import (
     execution_config_from_args,
     move_to_device,
 )
+from torch_like.evaluation import ForecastingMetric, MetricEvaluator
 from torch_like.models.forecasting.common import ForecastingBatch
+from torch_like.training import ForecastingBatchAdapter
+from torch_like.training import move_to_device as move_training_batch_to_device
 
 
 @dataclass
@@ -182,18 +184,25 @@ def train_epoch(
     model.train()
     total_loss = 0.0
     total_count = 0
+    adapter = ForecastingBatchAdapter(label_len=label_len)
+    non_blocking = execution.non_blocking and torch.device(device).type == "cuda"
     for batch in loader:
-        batch_data = _unpack_batch(batch)
-        model_batch = _to_forecasting_batch(batch_data, device, label_len=label_len, execution=execution)
-        x_enc = model_batch.x_enc
-        x_dec_target = batch_data["x_dec_target"]
+        batch_data = move_training_batch_to_device(
+            _unpack_batch(batch),
+            torch.device(device),
+            non_blocking=non_blocking,
+        )
+        adapted = adapter.adapt(model, batch_data)
+        if adapted.targets is None:
+            raise ValueError("forecasting training batch does not expose future targets")
         with autocast_context(device, execution):
-            pred = model.predict(model_batch)
-            target = x_dec_target[:, -pred.shape[1] :, :]
+            pred = model.predict(adapted.model_batch)
+            target = adapted.targets[:, -pred.shape[1] :, :]
             loss = criterion(pred, target)
         backward_and_step(loss, optimizer, scaler, execution)
-        total_loss += loss.item() * x_enc.size(0)
-        total_count += x_enc.size(0)
+        batch_size = adapted.resolved_sample_count()
+        total_loss += loss.item() * batch_size
+        total_count += batch_size
     return average_total(total_loss, total_count)
 
 
@@ -203,25 +212,33 @@ def evaluate(model, loader, criterion, device, label_len: int, execution: Execut
     model.eval()
     total_loss = 0.0
     total_count = 0
-    all_preds, all_targets = [], []
+    evaluator = MetricEvaluator(
+        {
+            "rmse": ForecastingMetric("rmse"),
+            "mae": ForecastingMetric("mae"),
+        }
+    )
+    adapter = ForecastingBatchAdapter(label_len=label_len)
+    non_blocking = execution.non_blocking and torch.device(device).type == "cuda"
     for batch in loader:
-        batch_data = _unpack_batch(batch)
-        model_batch = _to_forecasting_batch(batch_data, device, label_len=label_len, execution=execution)
-        x_enc = model_batch.x_enc
-        x_dec_target = batch_data["x_dec_target"]
+        batch_data = move_training_batch_to_device(
+            _unpack_batch(batch),
+            torch.device(device),
+            non_blocking=non_blocking,
+        )
+        adapted = adapter.adapt(model, batch_data)
+        if adapted.targets is None:
+            raise ValueError("forecasting evaluation batch does not expose future targets")
         with autocast_context(device, execution):
-            pred = model.predict(model_batch)
-            target = x_dec_target[:, -pred.shape[1] :, :]
+            pred = model.predict(adapted.model_batch)
+            target = adapted.targets[:, -pred.shape[1] :, :]
             loss = criterion(pred, target)
-        total_loss += loss.item() * x_enc.size(0)
-        total_count += x_enc.size(0)
-        all_preds.append(pred.float().cpu().numpy())
-        all_targets.append(target.float().cpu().numpy())
-    preds = np.concatenate(all_preds)
-    targets = np.concatenate(all_targets)
-    rmse = float(np.sqrt(np.mean((preds - targets) ** 2)))
-    mae = float(np.mean(np.abs(preds - targets)))
-    return average_total(total_loss, total_count), rmse, mae
+        batch_size = adapted.resolved_sample_count()
+        total_loss += loss.item() * batch_size
+        total_count += batch_size
+        evaluator.update(pred, target)
+    metrics = evaluator.compute()
+    return average_total(total_loss, total_count), metrics["rmse"], metrics["mae"]
 
 
 def main(config: ForecastRunConfig):

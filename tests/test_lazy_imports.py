@@ -55,6 +55,34 @@ class LazyImportTests(unittest.TestCase):
         output = self.run_python(code).splitlines()
         self.assertEqual(output, ["False", "True", "True"])
 
+    def test_evaluation_namespace_remains_lazy_until_requested(self):
+        code = textwrap.dedent(
+            """
+            import sys
+            import torch_like as tl
+
+            print("torch_like.evaluation" in sys.modules)
+            _ = tl.evaluation.MetricEvaluator
+            print("torch_like.evaluation" in sys.modules)
+            """
+        )
+        output = self.run_python(code).splitlines()
+        self.assertEqual(output, ["False", "True"])
+
+
+    def test_training_and_evaluation_do_not_import_sklearn_until_metric_helpers_are_called(self):
+        code = textwrap.dedent(
+            """
+            import sys
+            import torch_like.training
+            import torch_like.evaluation
+
+            print(any(name == "sklearn" or name.startswith("sklearn.") for name in sys.modules))
+            """
+        )
+        output = self.run_python(code).splitlines()
+        self.assertEqual(output, ["False"])
+
 
 if __name__ == "__main__":
     unittest.main()

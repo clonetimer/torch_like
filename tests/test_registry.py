@@ -63,6 +63,7 @@ class RegistryTests(unittest.TestCase):
             "__version__",
             "model_zoo",
             "list_domains",
+            "list_model_names",
             "list_models",
             "list_models_by_support",
             "list_models_by_family",
@@ -70,8 +71,43 @@ class RegistryTests(unittest.TestCase):
             "list_models_by_maturity",
             "get_evidence_record",
             "list_evidence_records",
+            "get_model_class",
             "get_model_info",
+            "find_model_domain",
             "create_model",
+            "create",
+            "BackendKind",
+            "ContractStatus",
+            "TaskKind",
+            "FieldSpec",
+            "InputSpec",
+            "OutputSpec",
+            "TaskSpec",
+            "ModelSpec",
+            "get_model_spec",
+            "describe",
+            "as_runtime",
+            "save_model",
+            "load_model",
+            "Trainer",
+            "TrainerConfig",
+            "TrainingResult",
+            "EpochResult",
+            "train_model",
+            "load_training_checkpoint",
+            "save_training_checkpoint",
+            "create_estimator",
+            "get_estimator_class",
+            "get_estimator_info",
+            "list_estimators",
+            "models",
+            "classical",
+            "contracts",
+            "training",
+            "evaluation",
+            "nn",
+            "data",
+            "automl",
         }
         self.assertEqual(len(torch_like.__all__), len(set(torch_like.__all__)))
         self.assertEqual(set(torch_like.__all__) - registry_exports, set(model_package.MODEL_EXPORTS))
@@ -207,7 +243,7 @@ class RegistryTests(unittest.TestCase):
         )
         self.assertEqual(model.__class__.__name__, "Informer")
         self.assertGreater(model.param_count(), 0)
-        self.assertEqual(torch_like.__version__, "0.3.0")
+        self.assertRegex(torch_like.__version__, r"^\d+\.\d+\.\d+$")
 
     def test_config_roundtrip_preserves_model_specific_arguments(self):
         model = torch_like.GAT(

@@ -6,7 +6,7 @@ English: This file is generated deterministically from the live registry by `too
 
 ## Summary / 摘要
 
-- Registry version / 注册表版本: `0.3.0`
+- Registry version / 注册表版本: `0.9.0`
 - Domains / 领域数: 13
 - Models / 模型数: 165
 - Schema-v2 migration ready / 可迁移: 165

@@ -1,0 +1,60 @@
+{
+  "version": "0.9.0",
+  "commands": [
+    {
+      "command": [
+        "python",
+        "tools/audit_public_api.py",
+        "--check"
+      ],
+      "returncode": 0,
+      "output": "Public API baseline is current: 904 protected symbols\n"
+    },
+    {
+      "command": [
+        "python",
+        "tools/audit_model_catalog.py",
+        "--check"
+      ],
+      "returncode": 0,
+      "output": "Model catalog audit is current: 165 models\n"
+    },
+    {
+      "command": [
+        "python",
+        "tools/generate_lazy_exports.py",
+        "--check"
+      ],
+      "returncode": 0,
+      "output": "Lazy export indexes are current\n"
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "compileall",
+        "-q",
+        "torch_like",
+        "runner",
+        "tests",
+        "tools",
+        "examples"
+      ],
+      "returncode": 0,
+      "output": ""
+    }
+  ],
+  "environment": {
+    "python": "3.13.5",
+    "torch": "2.10.0+cpu",
+    "numpy": "2.3.5",
+    "sklearn": "1.8.0",
+    "setuptools": "82.0.1",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+    "cuda_available": false,
+    "gloo_available": true
+  },
+  "wheel_sha256": "ed40a0df083cfa6aa5fd7bbd9efb0161a5b149d5871a6485c56db1846e41e909",
+  "ruff": "not available; installation attempt failed",
+  "gpu_tested": false
+}

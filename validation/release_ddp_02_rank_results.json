@@ -1,0 +1,48 @@
+{
+  "test_real_two_rank_gloo_lifecy0/rank1.json": {
+    "borrowed_group_preserved": true,
+    "mismatch_rejected": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_lifecy0/rank0.json": {
+    "borrowed_group_preserved": true,
+    "mismatch_rejected": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_b0/rank1.json": {
+    "failure": "bad_adapter",
+    "coordinated": true,
+    "message": "RuntimeError: Distributed batch preparation failed: rank 1: ValueError: injected adaptation fault",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_b0/rank0.json": {
+    "failure": "bad_adapter",
+    "coordinated": true,
+    "message": "RuntimeError: Distributed batch preparation failed: rank 1: ValueError: injected adaptation fault",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_n0/rank1.json": {
+    "failure": "nan",
+    "coordinated": true,
+    "message": "RuntimeError: Distributed forward/loss failed: rank 1: FloatingPointError: NaN or infinite loss",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_n0/rank0.json": {
+    "failure": "nan",
+    "coordinated": true,
+    "message": "RuntimeError: Distributed forward/loss failed: rank 1: FloatingPointError: NaN or infinite loss",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  }
+}

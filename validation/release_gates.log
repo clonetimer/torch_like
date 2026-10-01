@@ -1,0 +1,11 @@
+$ python tools/audit_public_api.py --check
+Public API baseline is current: 904 protected symbols
+
+$ python tools/audit_model_catalog.py --check
+Model catalog audit is current: 165 models
+
+$ python tools/generate_lazy_exports.py --check
+Lazy export indexes are current
+
+$ python -m compileall -q torch_like runner tests tools examples
+

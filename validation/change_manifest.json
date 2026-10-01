@@ -1,0 +1,107 @@
+{
+  "baseline": "torch_like-0.8.0-streaming-distributed-contracts-source.zip",
+  "baseline_sha256": "dfd5a3cb4cf04bbaf39b54f77f27a6d7e4670869ebaef944bccc5bbb8d8cf927",
+  "source_code_digest": "bf247fea7a581b982dbf7125ee44c79bc0179b15f080b0ffa88ffb7f14d72d7a",
+  "scope": "project source/docs/config excluding generated validation artifacts and build/cache files",
+  "added": [
+    {
+      "path": ".github/workflows/ddp.yml",
+      "sha256": "e108dfdc472ad8d0d381aa8681874df283c0e2a663458b893a51ade43b6af899"
+    },
+    {
+      "path": "docs/DDP_RUNTIME.md",
+      "sha256": "eb7bd1ea9de17a4342a60129a5f25b2e216bb528adf2f6647e90c757ab153b59"
+    },
+    {
+      "path": "docs/ENGINEERING_0_9_REPORT.md",
+      "sha256": "1aeeead97bbfb8b5e29dc66770637cd099a56364e9acf74608f4a5b5140dac85"
+    },
+    {
+      "path": "examples/train_ddp_tabular.py",
+      "sha256": "093ad377bb5a1383a876b64b268655b1a5e1647e7cff12ac176912fd80541fb0"
+    },
+    {
+      "path": "tests/_workers/ddp_runtime_worker.py",
+      "sha256": "bdc730835dfdac0507a28463ae8bec7a2f1fbe33f373bb2dbe2417b6d74b3278"
+    },
+    {
+      "path": "tests/test_checkpoint_compatibility.py",
+      "sha256": "178ca0b0681253f2a7689bdc70c9d4215a14cc954d479658343ce440955e30e2"
+    },
+    {
+      "path": "tests/test_ddp_runtime.py",
+      "sha256": "0e5218b88b066b40a0dc74f784b51895b1e26996fc9473c60bf62ca8ba8ba2f4"
+    },
+    {
+      "path": "tools/validate_release.py",
+      "sha256": "b81c815d9369144b7229ad565ee74ecb9613bf3dee5d1bd43997319d6c34c065"
+    },
+    {
+      "path": "torch_like/training/_ddp.py",
+      "sha256": "f92d82ca81b1ec23d349bb2c7325954d7cf1b521761bff279745f6b0c9ff8a52"
+    }
+  ],
+  "modified": [
+    {
+      "path": "README.md",
+      "old_sha256": "2824121149357598810fe4b3cf506117eaa4abebac90b3ce3f993bd1692011ce",
+      "new_sha256": "a8c13cb3f0bd602951100cd1961b9020a0560ee8423cc5776fe4cfe5722cd816"
+    },
+    {
+      "path": "docs/MODEL_CATALOG_AUDIT.md",
+      "old_sha256": "53b5e3cd924782379b3055195a67b5661dde63a23b8ec85290a28bdac4f25c80",
+      "new_sha256": "b4e4f82603a0fdea9cc56bd934ede9f1fdf4c189e2bacda65b3a5217890c6b22"
+    },
+    {
+      "path": "docs/TRAINING_RUNTIME.md",
+      "old_sha256": "a8d7bc05948d8c6e57a9d4ffbedc2de6d903687fb3945c6a5b033874e88ba268",
+      "new_sha256": "f18991a3920c14a036029ccf35dbb5978d7971a4ab28d88f325d68c9541a2091"
+    },
+    {
+      "path": "governance/model_catalog_audit.json",
+      "old_sha256": "bf1fc8722c3dab1b5d090bee5e29359aa9a70873204622c52c9029b0a0ea4d8c",
+      "new_sha256": "1f4716f17be80329dd4713c1f8ae8183d7c5183696339776df89a345831d9352"
+    },
+    {
+      "path": "governance/public_api_baseline.json",
+      "old_sha256": "30f40d51549c060445818b35910f9bc73941b869e525e732e4ca1fb9f72bfb7d",
+      "new_sha256": "8b76cd7e30f4d18becb9f6f883175efcf12f2948e9297ca42bb961e871a2c27a"
+    },
+    {
+      "path": "tests/test_registry.py",
+      "old_sha256": "7f7f1a41b75d6a273623f885615bc847d78a506aab0a6da8c84eae6b56e88ae3",
+      "new_sha256": "47418c6a1613c25f71922bf03f124e6e6263df33b8eccef3479de63328dd20c0"
+    },
+    {
+      "path": "tests/test_training_runtime.py",
+      "old_sha256": "fc0392c81d9337ce5648c24c634c69e446a91b398edd1a0805720376ac14afdf",
+      "new_sha256": "7a19316741e8bd59a52e6aecb55b2e8e5cf7e759165857d8e0d83503ab14726c"
+    },
+    {
+      "path": "torch_like/__init__.py",
+      "old_sha256": "a348bf8ed39feb92eece4b3a656d1183bfb5740682b40854fed2cfdda8f4356b",
+      "new_sha256": "5a9fef37a0502bb07b6da77d4daf35a8cca7d02d7be060d3711a4a4cdd19d197"
+    },
+    {
+      "path": "torch_like/training/__init__.py",
+      "old_sha256": "142a3881a1557167e581c6190c864cd5014258bf643379e2f8a9a39168f137b1",
+      "new_sha256": "270d4fdbc064a0a752a9520bcb47a0c1b524d14ffd6f2561cdf62796162145b3"
+    },
+    {
+      "path": "torch_like/training/checkpoint.py",
+      "old_sha256": "0bc4d7db09663c9a0c843ed42d1f0c1e033a7df19a98014a7fcbed11be83859a",
+      "new_sha256": "43682bad5e96a7efe1ecfbd3e1671f77299c1e768bfc56a4074be9f0930b50dd"
+    },
+    {
+      "path": "torch_like/training/distributed.py",
+      "old_sha256": "f6fd6c189d3fcee1680f57b2391139b79821ba2f7bf4af2c6250ef712b415e8a",
+      "new_sha256": "9b451c6a72f4dc324c726edd26f0b8d5adce164e72b2d1059e8406c6dbcd1930"
+    },
+    {
+      "path": "torch_like/training/trainer.py",
+      "old_sha256": "5b4c7ee8597ed1752585647b73c432fa6e3359d3a3ad504b0172ae2c7adb5f37",
+      "new_sha256": "f94f2cca572dfd2b8f7686814ba20420d37050f6daa68abb45d2179bd8ea4abd"
+    }
+  ],
+  "deleted": []
+}

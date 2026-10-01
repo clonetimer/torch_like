@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import inspect
+from enum import Enum
 import json
 import sys
 from datetime import date
@@ -119,6 +120,19 @@ def _default_value(value: Any) -> Any:
 
 
 def _signature(value: Any) -> list[dict[str, Any]] | None:
+    # ``inspect.signature(EnumSubclass)`` reflects EnumMeta internals and changed
+    # across Python releases (for example 3.12 -> 3.13). Keep the historical
+    # manifest shape deterministic so interpreter upgrades are not reported as
+    # breaking torch_like API changes.
+    if inspect.isclass(value) and issubclass(value, Enum):
+        return [
+            {"name": "value", "kind": "POSITIONAL_OR_KEYWORD", "required": True, "default": None},
+            {"name": "names", "kind": "POSITIONAL_OR_KEYWORD", "required": False, "default": None},
+            {"name": "module", "kind": "KEYWORD_ONLY", "required": False, "default": None},
+            {"name": "qualname", "kind": "KEYWORD_ONLY", "required": False, "default": None},
+            {"name": "type", "kind": "KEYWORD_ONLY", "required": False, "default": None},
+            {"name": "start", "kind": "KEYWORD_ONLY", "required": False, "default": 1},
+        ]
     try:
         signature = inspect.signature(value)
     except (TypeError, ValueError):

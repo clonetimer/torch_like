@@ -23,7 +23,7 @@ English: Use the project interpreter to run the build script. It builds with set
 Output / 输出:
 
 ```text
-dist/torch_like-0.2.0-py3-none-any.whl
+dist/torch_like-0.8.0-py3-none-any.whl
 ```
 
 中文：需要同时生成 wheel 和 source distribution 时，先安装构建工具，再运行标准构建命令。
@@ -59,7 +59,7 @@ The check validates / 验收内容:
 English: In an online target environment, install the wheel directly and pip will resolve missing dependencies.
 
 ```powershell
-& 'D:\Path\To\Python\python.exe' -m pip install D:\Project\torch_like\dist\torch_like-0.2.0-py3-none-any.whl
+& 'D:\Path\To\Python\python.exe' -m pip install D:\Project\torch_like\dist\torch_like-0.8.0-py3-none-any.whl
 ```
 
 中文：也可以把 `dist/` 当作本地包源，从而使用按名称安装的形式。
@@ -75,7 +75,7 @@ English: The `dist/` directory can also act as a local package source, enabling 
 English: If the target environment already provides compatible PyTorch, NumPy, pandas, and scikit-learn versions, use `--no-deps` to avoid reinstalling them. The caller is responsible for dependency compatibility.
 
 ```powershell
-& 'D:\Path\To\Python\python.exe' -m pip install --no-deps D:\Project\torch_like\dist\torch_like-0.2.0-py3-none-any.whl
+& 'D:\Path\To\Python\python.exe' -m pip install --no-deps D:\Project\torch_like\dist\torch_like-0.8.0-py3-none-any.whl
 ```
 
 Verification / 安装后检查:
@@ -87,7 +87,7 @@ Verification / 安装后检查:
 Upgrade and uninstall / 升级与卸载:
 
 ```powershell
-& 'D:\Path\To\Python\python.exe' -m pip install --upgrade .\dist\torch_like-0.2.0-py3-none-any.whl
+& 'D:\Path\To\Python\python.exe' -m pip install --upgrade .\dist\torch_like-0.8.0-py3-none-any.whl
 & 'D:\Path\To\Python\python.exe' -m pip uninstall torch_like
 ```
 

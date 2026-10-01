@@ -79,22 +79,17 @@ Framework-specific behavior / 框架特有行为:
 ```text
 torch_like/
   models/
-    forecasting/
-    detection/
-    graph/
-    sequence/
-    vision/
-    multimodal/
-    generative/
-    tabular/
-    recommendation/
-    audio/
-    reinforcement/
-    diagnosis/
+    <domain>/
+      __init__.py      # lazy facade / 按需公共入口
+      _catalog.py      # private registry metadata / 私有注册元数据
+      common.py        # task contracts / 任务合同
+      <model>.py       # implementation / 模型实现
     rul.py
     registry.py
+  classical/           # native sklearn compatibility / sklearn 原生兼容层
   data/
   nn/
+  automl/
   utils/
 runner/
 tests/
@@ -108,19 +103,30 @@ English: `models/` is core; `runner/` is auxiliary; `tests/` validates contracts
 
 ## Model Registration / 模型注册
 
-中文：新增模型必须接入对应 domain 的 `model_zoo`，并通过 lazy export 暴露。
+中文：新增模型必须同时接入实现文件、私有 domain catalog 和 lazy export 映射。`__init__.py` 不再保存完整 catalog，也不得强导入 domain 内全部模型。
 
-English: New models must be added to the corresponding domain `model_zoo` and exposed through lazy exports.
+English: New models must be wired into the implementation file, private domain catalog, and lazy export map. `__init__.py` no longer owns the full catalog and must not eagerly import every model in the domain.
 
 Required locations / 必改位置:
 
-- `torch_like/models/<domain>/__init__.py`
-- `torch_like/models/__init__.py`
-- `tests/test_registry.py`
+- `torch_like/models/<domain>/<model>.py`
+- `torch_like/models/<domain>/_catalog.py`
+- corresponding contract and registry tests / 对应合同与 registry 测试
 
-中文：`torch_like/__init__.py` 的顶层短入口由 `torch_like.models.MODEL_EXPORTS` 自动派生，不再手工维护第二份模型清单。
+然后运行 / Then run:
 
-English: Top-level shortcuts in `torch_like/__init__.py` are derived from `torch_like.models.MODEL_EXPORTS`; do not maintain a second model list there.
+```bash
+python tools/generate_lazy_exports.py
+python tools/generate_lazy_exports.py --check
+```
+
+该工具会统一生成以下三个轻量索引，避免人工维护多份导入表：
+
+- `torch_like/models/_domain_exports.py`
+- `torch_like/models/_public_exports.py`
+- `torch_like/models/_builtin_index.py`
+
+The generator owns the three lightweight indexes above so contributors do not manually synchronize multiple import maps. These generated files contain only string paths and static metadata and must never import model implementations during normal package import. Legacy root-level model shortcuts are derived from `torch_like.models.MODEL_EXPORTS`.
 
 Example / 示例:
 
@@ -155,6 +161,18 @@ Metadata rules / 元数据规则:
 - English: `integration_level` currently uses `framework_oriented`.
 - 中文：`register_model_catalog(...)` 会先验证完整 catalog，再原子写入；不要直接修改内部 `MODEL_ZOO`。
 - English: `register_model_catalog(...)` validates the complete catalog before an atomic write; do not mutate internal `MODEL_ZOO` directly.
+
+## Classical sklearn Compatibility / sklearn 兼容层
+
+中文：`torch_like.classical` 是 sklearn 的发现/构造入口，不是 sklearn 的重新实现。新增兼容 estimator 时，只登记其真实 sklearn import path、任务类型与 family；不要复制 sklearn 源码，也不要创建 `nn.Module` 包装器。
+
+English: `torch_like.classical` is a discovery/construction surface for sklearn, not a reimplementation. Add compatibility entries by registering the real sklearn import path, task kind, and family; do not copy sklearn source or wrap estimators as `nn.Module`.
+
+```python
+from torch_like.classical import create_estimator
+
+model = create_estimator("RandomForestClassifier", n_estimators=200)
+```
 
 ## Task Interfaces / 任务接口
 

@@ -22,21 +22,20 @@ from sklearn.ensemble import (
 )
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression, Ridge
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    mean_absolute_error,
-    mean_squared_error,
-    precision_score,
-    r2_score,
-    recall_score,
-)
 from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 
 from torch_like.automl.candidate_registry import list_candidate_specs
 from torch_like.automl.specs import CandidatePolicy, SearchSpec, SearchStrategy, TaskType
+
+from torch_like.evaluation import (
+    classification_metrics,
+    forecasting_metrics,
+    metric_direction as _shared_metric_direction,
+    multi_target_regression_metrics,
+    regression_metrics,
+)
 
 CLASSIFICATION_TASKS = {
     TaskType.TABULAR_CLASSIFICATION,
@@ -499,12 +498,9 @@ def supported_metrics(task_type: TaskType) -> set[str]:
 
 
 def metric_direction(metric: str) -> str:
-    return (
-        "minimize"
-        if metric in {"mae", "rmse", "smape", "macro_nrmse", "weighted_nrmse", "false_alarm_rate"}
-        or metric.endswith(("_mae", "_rmse"))
-        else "maximize"
-    )
+    """Return the shared optimization direction for one metric name."""
+
+    return _shared_metric_direction(metric)
 
 
 def evaluate_predictions(
@@ -513,50 +509,19 @@ def evaluate_predictions(
     y_pred: np.ndarray,
     target_weights: np.ndarray | None = None,
 ) -> dict[str, float]:
+    """Evaluate AutoML predictions through the shared evaluation primitives."""
+
     if task_type in CLASSIFICATION_TASKS:
-        metrics = {
-            "accuracy": float(accuracy_score(y_true, y_pred)),
-            "precision_macro": float(precision_score(y_true, y_pred, average="macro", zero_division=0)),
-            "recall_macro": float(recall_score(y_true, y_pred, average="macro", zero_division=0)),
-            "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
-        }
-        if task_type == TaskType.MULTILABEL_CLASSIFICATION:
-            metrics["f1_micro"] = float(f1_score(y_true, y_pred, average="micro", zero_division=0))
-        return metrics
+        return classification_metrics(
+            y_true,
+            y_pred,
+            multilabel=task_type == TaskType.MULTILABEL_CLASSIFICATION,
+        )
     if task_type == TaskType.TIME_SERIES_FORECASTING:
-        if y_true.shape != y_pred.shape or y_true.ndim != 3:
-            raise ValueError("Forecasting targets and predictions must have shape (samples, horizon, targets)")
-        y_true_2d = y_true.reshape(len(y_true), -1)
-        y_pred_2d = y_pred.reshape(len(y_pred), -1)
-    else:
-        y_true_2d = y_true[:, None] if y_true.ndim == 1 else y_true
-        y_pred_2d = y_pred[:, None] if y_pred.ndim == 1 else y_pred
-    metrics = {
-        "mae": float(mean_absolute_error(y_true_2d, y_pred_2d)),
-        "rmse": float(mean_squared_error(y_true_2d, y_pred_2d) ** 0.5),
-        "r2": float(r2_score(y_true_2d, y_pred_2d, multioutput="uniform_average")),
-    }
-    if task_type == TaskType.TIME_SERIES_FORECASTING:
-        denominator = np.maximum(np.abs(y_true) + np.abs(y_pred), np.finfo(np.float64).eps)
-        metrics["smape"] = float(np.mean(2.0 * np.abs(y_pred - y_true) / denominator))
-        for horizon in range(y_true.shape[1]):
-            metrics[f"horizon_{horizon + 1}_mae"] = float(mean_absolute_error(y_true[:, horizon], y_pred[:, horizon]))
-            metrics[f"horizon_{horizon + 1}_rmse"] = float(
-                mean_squared_error(y_true[:, horizon], y_pred[:, horizon]) ** 0.5
-            )
+        return forecasting_metrics(y_true, y_pred)
     if task_type == TaskType.MULTI_TARGET_REGRESSION:
-        target_ranges = np.ptp(y_true_2d, axis=0)
-        target_scales = np.where(target_ranges > 0, target_ranges, np.maximum(np.std(y_true_2d, axis=0), 1.0))
-        target_rmse = np.sqrt(np.mean(np.square(y_true_2d - y_pred_2d), axis=0))
-        normalized_rmse = target_rmse / target_scales
-        metrics["macro_nrmse"] = float(np.mean(normalized_rmse))
-        if target_weights is not None:
-            normalized_weights = target_weights / target_weights.sum()
-            metrics["weighted_nrmse"] = float(normalized_rmse @ normalized_weights)
-        for index in range(y_true_2d.shape[1]):
-            metrics[f"target_{index}_mae"] = float(mean_absolute_error(y_true_2d[:, index], y_pred_2d[:, index]))
-            metrics[f"target_{index}_rmse"] = float(mean_squared_error(y_true_2d[:, index], y_pred_2d[:, index]) ** 0.5)
-    return metrics
+        return multi_target_regression_metrics(y_true, y_pred, target_weights=target_weights)
+    return regression_metrics(y_true, y_pred)
 
 
 def estimate_parameter_count(pipeline: Pipeline) -> int | None:

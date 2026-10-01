@@ -12,29 +12,49 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for long-term milestones and exit crite
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
 
+从 `0.5.0` 开始，模型和 sklearn estimator 可通过统一、机器可读的 `ModelSpec / TaskSpec / InputSpec / OutputSpec` 合同进行编排，并可使用可选 `ModelRuntime` 与统一持久化接口；详见 [`docs/API_CONTRACTS.md`](docs/API_CONTRACTS.md)。
+
+Starting with `0.5.0`, torch_like models and curated sklearn estimators expose machine-readable `ModelSpec / TaskSpec / InputSpec / OutputSpec` contracts plus an optional runtime adapter and unified persistence API; see [`docs/API_CONTRACTS.md`](docs/API_CONTRACTS.md).
+
+从 `0.6.0` 开始，原生 PyTorch 模型可使用共享 `Trainer / TrainerConfig` 训练运行时，统一设备、优化器、验证、早停、梯度裁剪和 checkpoint/resume；AutoML 的普通 torch backend 也复用同一 Trainer。详见 [`docs/TRAINING_RUNTIME.md`](docs/TRAINING_RUNTIME.md)。
+
+Starting with `0.6.0`, native PyTorch models can use the shared `Trainer / TrainerConfig` runtime for device placement, optimization, validation, early stopping, gradient clipping, and checkpoint/resume. The normal torch AutoML backend reuses the same Trainer; see [`docs/TRAINING_RUNTIME.md`](docs/TRAINING_RUNTIME.md).
+
+从 `0.7.0` 开始，`DataAdapter / BatchAdapter / AdaptedBatch / MetricEvaluator` 统一数据加载、domain batch 转换和数据集级指标；F1、R² 等非线性指标不再通过 batch metric 简单平均，AutoML 也复用同一 DataAdapter 与指标公式。详见 [`docs/DATA_EVALUATION_RUNTIME.md`](docs/DATA_EVALUATION_RUNTIME.md)。
+
+Starting with `0.7.0`, `DataAdapter / BatchAdapter / AdaptedBatch / MetricEvaluator` unify loader construction, domain-batch adaptation, and dataset-level metrics. Nonlinear metrics such as F1 and R² are no longer approximated by averaging batch metrics, and AutoML reuses the same data/metric primitives; see [`docs/DATA_EVALUATION_RUNTIME.md`](docs/DATA_EVALUATION_RUNTIME.md).
+
+从 `0.8.0` 开始，常用分类、回归和预测指标提供可合并的 streaming state，不再要求缓存完整验证集预测；checkpoint schema v2 明确记录 rank/world-size，并提供基于 PyTorch `DistributedSampler` 的分片合同。0.8.0 当时尚未提供 DDP 执行；0.9.0 的新增能力见下文。
+
+Starting with `0.8.0`, common classification, regression, and forecasting metrics expose mergeable streaming state instead of retaining complete validation predictions. Checkpoint schema v2 records rank/world-size metadata and the training namespace provides a PyTorch `DistributedSampler` contract. DDP execution was not yet implemented in 0.8.0; see the 0.9.0 update below.
+
+从 **0.9.0** 开始，共享 `Trainer` 提供最小 DDP 执行闭环：显式 `DistributedSession`、精确验证分片、流式指标合并、rank-0 写盘与包含每个 rank 状态的 schema-v3 checkpoint。实测范围为 Linux 双进程 CPU/Gloo；CUDA/NCCL、多机与 Windows 未实测。详见 [`docs/DDP_RUNTIME.md`](docs/DDP_RUNTIME.md)，可运行示例见 [`examples/train_ddp_tabular.py`](examples/train_ddp_tabular.py)。
+
+Starting with **0.9.0**, Trainer supports a bounded DDP execution contract with exact validation sharding and coordinated rank-local resume state. CPU/Gloo with two local ranks is tested; CUDA/NCCL is implemented but unverified in this release environment.
+
 模型成熟度只由可审计的本地证据登记驱动，详见 [`docs/MODEL_EVIDENCE.md`](docs/MODEL_EVIDENCE.md)。
 
 Model maturity is driven only by auditable local evidence records; see [`docs/MODEL_EVIDENCE.md`](docs/MODEL_EVIDENCE.md).
 
 ## 定位边界 / Scope Boundary
 
-中文：`torch_like` 是模型框架优先，不是完整训练平台，也不是 `torch.nn` 的逐层复刻。
+中文：`torch_like` 是模型框架优先，并提供轻量训练运行时；它不是端到端生产训练平台，也不是 `torch.nn` 的逐层复刻。
 
-English: `torch_like` is a model framework first. It is not a full training platform and does not try to clone every layer in `torch.nn`.
+English: `torch_like` is a model framework first with a lightweight training runtime. It is not an end-to-end production training platform and does not try to clone every layer in `torch.nn`.
 
 负责内容 / Responsibilities:
 
 - 中文：统一模型定义、任务接口、batch 协议、顶层导入和 registry 构造。
 - English: Unified model definitions, task interfaces, batch contracts, top-level imports, and registry-based construction.
-- 中文：提供面向训练和推理的稳定模型 API。
-- English: Stable training-facing and inference-facing model APIs.
+- 中文：提供面向训练和推理的稳定模型 API、单进程及受限 DDP 训练生命周期，以及可复用的数据/评估适配层。
+- English: Stable training-facing/inference-facing model APIs plus a single-process and bounded-DDP PyTorch training lifecycle and reusable data/evaluation adapters.
 - 中文：沉淀新增模型的接入规范。
 - English: Integration rules for adding new models.
 
 不负责内容 / Non-goals:
 
-- 中文：不负责数据集专属预处理、生产级训练流水线、超参搜索、复现每篇论文最优分数。
-- English: It does not own dataset-specific preprocessing, production training pipelines, hyperparameter search, or best-score reproduction for every paper.
+- 中文：不负责数据集专属预处理、分布式生产训练编排、通用超参搜索或复现每篇论文最优分数。
+- English: It does not own dataset-specific preprocessing, distributed production-training orchestration, generic hyperparameter search, or best-score reproduction for every paper.
 - 中文：`runner/` 只是辅助实验工具，不是核心框架 API。
 - English: `runner/` is an auxiliary experiment layer, not the core framework API.
 
@@ -62,6 +82,14 @@ English: The compatibility target is the `nn.Module` object model, not every spe
 - English: Detection models use `make_detection_batch(...)`, `fit_step(batch)`, and `score_batch(batch)`.
 - 中文：registry 支持 `create_model(name, domain=..., **kwargs)`。
 - English: The registry supports `create_model(name, domain=..., **kwargs)`.
+- 中文：`describe(name)` / `get_model_spec(name)` 返回机器可读的任务、输入、输出和 capability 合同。
+- English: `describe(name)` / `get_model_spec(name)` returns machine-readable task, input, output, and capability contracts.
+- 中文：`as_runtime(model)` 提供可选的跨 backend 编排层；原生 `nn.Module` / sklearn estimator API 保持不变。
+- English: `as_runtime(model)` provides an optional cross-backend orchestration layer while preserving native `nn.Module` / sklearn estimator APIs.
+- 中文：`save_model(...)` / `load_model(...)` 提供带 manifest 的统一模型持久化。
+- English: `save_model(...)` / `load_model(...)` provides manifest-backed model persistence.
+- 中文：`Trainer(...)` / `TrainerConfig(...)` 提供统一的单设备训练、验证、早停和断点恢复；`TensorDataAdapter` / `BatchAdapter` / `MetricEvaluator` 统一数据与评估胶水层。
+- English: `Trainer(...)` / `TrainerConfig(...)` provides shared single-device training, validation, early stopping, and resume semantics; `TensorDataAdapter` / `BatchAdapter` / `MetricEvaluator` unify data/evaluation glue.
 - 中文：registry 支持 `list_domains()`、`list_models(...)` 和 `get_model_info(...)`，返回的元数据副本可安全修改。
 - English: The registry exposes `list_domains()`, `list_models(...)`, and `get_model_info(...)`; returned metadata snapshots are safe to modify.
 - 中文：registry 以兼容方式同时返回旧 `integration_level` 和 schema v2 的一致性、范围、执行、成熟度与证据字段，并支持 `list_models_by_fidelity(...)`、`list_models_by_maturity(...)` 查询。
@@ -300,7 +328,7 @@ English: The command above is for development. To install an immutable build in 
 
 ```powershell
 & .\tools\build_package.ps1 -Python 'D:\Project\base\base\Scripts\python.exe'
-& 'D:\Path\To\OtherPython\python.exe' -m pip install .\dist\torch_like-0.2.0-py3-none-any.whl
+& 'D:\Path\To\OtherPython\python.exe' -m pip install .\dist\torch_like-0.8.0-py3-none-any.whl
 ```
 
 中文：完整构建、隔离验收、升级和卸载说明见 [Packaging Guide / 打包安装指南](docs/PACKAGING.md)。
@@ -324,7 +352,7 @@ New-Item -ItemType Directory -Force .\offline_bundle\wheelhouse
 # Download torch_like and all transitive dependencies into one directory.
 & 'D:\Project\base\base\Scripts\python.exe' -m pip download `
   --dest .\offline_bundle\wheelhouse `
-  .\dist\torch_like-0.2.0-py3-none-any.whl
+  .\dist\torch_like-0.8.0-py3-none-any.whl
 
 Compress-Archive -Path .\offline_bundle\wheelhouse -DestinationPath .\torch_like-offline.zip -Force
 ```
@@ -365,6 +393,49 @@ English: `torch_like` is an independent project and is not affiliated with, spon
 中文：项目贡献者有权授权的代码采用 [Apache License 2.0](LICENSE)。该许可证不授予 PyTorch 商标使用权，也不会覆盖第三方代码、模型权重或数据集各自的许可义务。
 
 English: Code that project contributors are entitled to license is provided under the [Apache License 2.0](LICENSE). This license grants no rights to PyTorch trademarks and does not replace the separate license obligations of third-party code, model weights, or datasets.
+
+## 0.4 工程化入口 / 0.4 Engineering Entry Points
+
+中文：`torch_like 0.4` 将用户入口分成 PyTorch-native 与 sklearn-native 两条清晰路径。模型 domain 的 `__init__.py` 已改为按需加载；直接访问一个模型不会再加载整个模型库。完整架构见 [`docs/ENGINEERING_ARCHITECTURE.md`](docs/ENGINEERING_ARCHITECTURE.md)。
+
+English: `torch_like 0.4` separates PyTorch-native and sklearn-native entry points. Model-domain `__init__.py` files now load lazily, so accessing one model no longer imports the whole model library. See [`docs/ENGINEERING_ARCHITECTURE.md`](docs/ENGINEERING_ARCHITECTURE.md).
+
+Recommended / 推荐：
+
+```python
+import torch_like as tl
+
+# PyTorch-native model; domain can be inferred by the new backend-aware factory.
+model = tl.create("DLinear", enc_in=4, dec_in=4, c_out=4, seq_len=24, label_len=12, pred_len=6)
+
+# Native sklearn estimator; returned object is the original sklearn type.
+baseline = tl.create("RandomForestRegressor", backend="sklearn", n_estimators=200)
+```
+
+轻量发现 / Lightweight discovery:
+
+```python
+print(tl.list_domains())
+print(tl.list_model_names("forecasting"))
+print(tl.list_estimators("classification"))
+```
+
+中文：`list_model_names()` 与 `list_estimators()` 只读取静态索引，不导入模型实现或 sklearn。需要完整治理元数据时再使用 `list_models()` / `get_model_info()`。
+
+English: `list_model_names()` and `list_estimators()` read static indexes only; they do not import model implementations or sklearn. Use `list_models()` / `get_model_info()` when full governance metadata is required.
+
+### sklearn 原生兼容 / Native sklearn Compatibility
+
+```python
+from torch_like.classical import RandomForestClassifier, Ridge, create_estimator
+
+clf = RandomForestClassifier(n_estimators=100, random_state=0)
+reg = create_estimator("Ridge", alpha=1.0)
+```
+
+中文：这些类与 `sklearn.*` 中的原类是同一对象；本项目不把 sklearn estimator 伪装成 `torch.nn.Module`。
+
+English: These classes are the same class objects exported by `sklearn.*`; the project does not disguise sklearn estimators as `torch.nn.Module` objects.
 
 ## 快速开始 / Quick Start
 

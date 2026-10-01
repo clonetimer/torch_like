@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "policy_id": "torch-like-public-api-stability",
-  "policy_version": "1.0",
-  "package_version": "0.3.0",
+  "policy_version": "1.1",
+  "package_version": "0.9.0",
   "namespaces": {
     "torch_like": {
       "exports": [
@@ -33,6 +33,7 @@
         "BLIPConfig",
         "BYOL",
         "BYOLConfig",
+        "BackendKind",
         "CBAMTCNDetector",
         "CBAMTCNDetectorConfig",
         "CLIP",
@@ -40,6 +41,7 @@
         "Caracal",
         "Conformer",
         "ConformerConfig",
+        "ContractStatus",
         "ControlNet",
         "ControlNetConfig",
         "ConvNeXt",
@@ -99,12 +101,14 @@
         "EfficientNetConfig",
         "EnCodec",
         "EnCodecConfig",
+        "EpochResult",
         "FCGAGA",
         "FCN",
         "FCNConfig",
         "FEDformer",
         "FTTransformer",
         "FTTransformerConfig",
+        "FieldSpec",
         "ForecastingBatch",
         "ForecastingConfig",
         "ForecastingModel",
@@ -156,6 +160,7 @@
         "InceptionV3Config",
         "Informer",
         "InformerRUL",
+        "InputSpec",
         "KimiDeltaAttention",
         "KimiLinear",
         "KimiLinearConfig",
@@ -195,6 +200,7 @@
         "MoCoConfig",
         "MobileNetV2",
         "MobileNetV2Config",
+        "ModelSpec",
         "ModernTCN",
         "ModernTCNConfig",
         "MultimodalBatch",
@@ -209,6 +215,7 @@
         "NODEConfig",
         "OmniAnomaly",
         "OmniAnomalyConfig",
+        "OutputSpec",
         "PNA",
         "PNAConfig",
         "PPM",
@@ -301,12 +308,17 @@
         "TabularBatch",
         "TabularConfig",
         "TabularModel",
+        "TaskKind",
+        "TaskSpec",
         "TiDE",
         "TiDEConfig",
         "TimeGrad",
         "TimeMixer",
         "TimeXer",
         "TimesNet",
+        "Trainer",
+        "TrainerConfig",
+        "TrainingResult",
         "TranAD",
         "TranADConfig",
         "TransformerDecoder",
@@ -335,18 +347,42 @@
         "YOLO",
         "YOLOConfig",
         "__version__",
+        "as_runtime",
+        "automl",
+        "classical",
+        "contracts",
+        "create",
+        "create_estimator",
         "create_model",
+        "data",
+        "describe",
+        "evaluation",
+        "find_model_domain",
+        "get_estimator_class",
+        "get_estimator_info",
         "get_evidence_record",
+        "get_model_class",
         "get_model_info",
+        "get_model_spec",
         "list_domains",
+        "list_estimators",
         "list_evidence_records",
+        "list_model_names",
         "list_models",
         "list_models_by_family",
         "list_models_by_fidelity",
         "list_models_by_maturity",
         "list_models_by_support",
+        "load_model",
+        "load_training_checkpoint",
         "mLSTMCell",
         "model_zoo",
+        "models",
+        "nn",
+        "save_model",
+        "save_training_checkpoint",
+        "train_model",
+        "training",
         "xLSTM",
         "xLSTMConfig"
       ]
@@ -684,10 +720,13 @@
         "YOLO",
         "YOLOConfig",
         "create_model",
+        "find_model_domain",
         "get_evidence_record",
+        "get_model_class",
         "get_model_info",
         "list_domains",
         "list_evidence_records",
+        "list_model_names",
         "list_models",
         "list_models_by_family",
         "list_models_by_fidelity",
@@ -728,6 +767,8 @@
     },
     "torch_like.data": {
       "exports": [
+        "DataAdapter",
+        "DataLoaderConfig",
         "Dataset_Custom",
         "Dataset_ETT_hour",
         "DetectionDataBundle",
@@ -739,6 +780,7 @@
         "RULDataBundle",
         "RULDataConfig",
         "SlidingWindowAnomalyDataset",
+        "TensorDataAdapter",
         "TimeFeature",
         "XJTUSYDataset",
         "XJTUSYFileWindowDataset",
@@ -803,6 +845,103 @@
         "split_dataset",
         "split_group_cv",
         "split_rolling_origin"
+      ]
+    },
+    "torch_like.classical": {
+      "exports": [
+        "DBSCAN",
+        "DecisionTreeClassifier",
+        "DecisionTreeRegressor",
+        "EstimatorInfo",
+        "ExtraTreesClassifier",
+        "ExtraTreesRegressor",
+        "GradientBoostingClassifier",
+        "GradientBoostingRegressor",
+        "HistGradientBoostingClassifier",
+        "HistGradientBoostingRegressor",
+        "IsolationForest",
+        "KMeans",
+        "KNeighborsClassifier",
+        "KNeighborsRegressor",
+        "LinearRegression",
+        "LogisticRegression",
+        "PCA",
+        "RandomForestClassifier",
+        "RandomForestRegressor",
+        "Ridge",
+        "SGDClassifier",
+        "SGDRegressor",
+        "SVC",
+        "SVR",
+        "create_estimator",
+        "get_estimator_class",
+        "get_estimator_info",
+        "has_estimator",
+        "list_estimators"
+      ]
+    },
+    "torch_like.contracts": {
+      "exports": [
+        "BackendKind",
+        "ContractStatus",
+        "FieldSpec",
+        "InputSpec",
+        "ModelSpec",
+        "OutputSpec",
+        "TaskKind",
+        "TaskSpec",
+        "describe",
+        "get_model_spec"
+      ]
+    },
+    "torch_like.evaluation": {
+      "exports": [
+        "ClassificationMetric",
+        "ForecastingMetric",
+        "FunctionalMetric",
+        "MeanMetric",
+        "MergeableMetric",
+        "Metric",
+        "MetricEvaluator",
+        "MetricFunction",
+        "MetricState",
+        "RegressionMetric",
+        "StandardDeviationMetric",
+        "classification_metric_set",
+        "classification_metrics",
+        "forecasting_metric_set",
+        "forecasting_metrics",
+        "metric_direction",
+        "multi_target_regression_metrics",
+        "regression_metric_set",
+        "regression_metrics"
+      ]
+    },
+    "torch_like.training": {
+      "exports": [
+        "AdaptedBatch",
+        "BatchAdapter",
+        "CallableBatchAdapter",
+        "DDPConfig",
+        "DefaultBatchAdapter",
+        "DistributedContext",
+        "DistributedEvalSampler",
+        "DistributedSamplerConfig",
+        "DistributedSession",
+        "EpochResult",
+        "ForecastingBatchAdapter",
+        "IdentityBatchAdapter",
+        "Trainer",
+        "TrainerConfig",
+        "TrainingResult",
+        "create_distributed_sampler",
+        "infer_batch_size",
+        "load_training_checkpoint",
+        "move_to_device",
+        "resolve_batch_adapter",
+        "save_training_checkpoint",
+        "train_model",
+        "training_events"
       ]
     }
   },
@@ -2854,6 +2993,48 @@
         }
       ]
     },
+    "torch_like.BackendKind": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.BackendKind",
+      "signature": [
+        {
+          "name": "value",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "names",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "module",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "qualname",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "type",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        }
+      ]
+    },
     "torch_like.CBAMTCNDetector": {
       "kind": "class",
       "target": "torch_like.models.detection.cbam_tcn.CBAMTCNDetector",
@@ -3337,6 +3518,48 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 15
+        }
+      ]
+    },
+    "torch_like.ContractStatus": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.ContractStatus",
+      "signature": [
+        {
+          "name": "value",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "names",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "module",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "qualname",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "type",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
         }
       ]
     },
@@ -7604,6 +7827,54 @@
         }
       ]
     },
+    "torch_like.EpochResult": {
+      "kind": "class",
+      "target": "torch_like.training.state.EpochResult",
+      "signature": [
+        {
+          "name": "epoch",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "train_loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "validation_loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "learning_rate",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "max_gradient_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "improved",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "validation_metrics",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "<factory>"
+        }
+      ]
+    },
     "torch_like.FCGAGA": {
       "kind": "class",
       "target": "torch_like.models.forecasting.fcgaga.FCGAGA",
@@ -8067,6 +8338,42 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 256
+        }
+      ]
+    },
+    "torch_like.FieldSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.FieldSpec",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "required",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "semantic",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "rank",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
         }
       ]
     },
@@ -11449,6 +11756,24 @@
         }
       ]
     },
+    "torch_like.InputSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.InputSpec",
+      "signature": [
+        {
+          "name": "batch_type",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "fields",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
     "torch_like.KimiDeltaAttention": {
       "kind": "class",
       "target": "torch_like.models.sequence.kimi_linear.KimiDeltaAttention",
@@ -14555,6 +14880,60 @@
         }
       ]
     },
+    "torch_like.ModelSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.ModelSpec",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "backend",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "domain",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "class_path",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "task",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "operations",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "contract_status",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "standardized"
+        },
+        {
+          "name": "contract_version",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "1.0"
+        }
+      ]
+    },
     "torch_like.ModernTCN": {
       "kind": "class",
       "target": "torch_like.models.forecasting.moderntcn.ModernTCN",
@@ -15631,6 +16010,30 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 0.1
+        }
+      ]
+    },
+    "torch_like.OutputSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.OutputSpec",
+      "signature": [
+        {
+          "name": "kind",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "semantic",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "shape",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
         }
       ]
     },
@@ -21515,6 +21918,84 @@
       "target": "torch_like.models.tabular.common.TabularModel",
       "signature": []
     },
+    "torch_like.TaskKind": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.TaskKind",
+      "signature": [
+        {
+          "name": "value",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "names",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "module",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "qualname",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "type",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        }
+      ]
+    },
+    "torch_like.TaskSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.TaskSpec",
+      "signature": [
+        {
+          "name": "kind",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "input",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "output",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "target_field",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "notes",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        }
+      ]
+    },
     "torch_like.TiDE": {
       "kind": "class",
       "target": "torch_like.models.forecasting.tide.TiDE",
@@ -22190,6 +22671,258 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 4
+        }
+      ]
+    },
+    "torch_like.Trainer": {
+      "kind": "class",
+      "target": "torch_like.training.trainer.Trainer",
+      "signature": [
+        {
+          "name": "model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "config",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "optimizer",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "scheduler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "loss_fn",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "step_fn",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "batch_adapter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "metric_fns",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "metrics",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "prediction_fn",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "event_context",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "distributed_context",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "ddp_config",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.TrainerConfig": {
+      "kind": "class",
+      "target": "torch_like.training.config.TrainerConfig",
+      "signature": [
+        {
+          "name": "epochs",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "device",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "optimizer",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "adam"
+        },
+        {
+          "name": "learning_rate",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.001
+        },
+        {
+          "name": "weight_decay",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "lr_scheduler",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "none"
+        },
+        {
+          "name": "grad_clip_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "amp",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "early_stopping_patience",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_delta",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "restore_best",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "checkpoint_dir",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "save_last",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "save_best",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    "torch_like.TrainingResult": {
+      "kind": "class",
+      "target": "torch_like.training.state.TrainingResult",
+      "signature": [
+        {
+          "name": "epochs_requested",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "epochs_ran",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "start_epoch",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "best_epoch",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "best_monitored_loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "stopped_early",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "monitor",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "device",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "history",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "last_checkpoint",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "best_checkpoint",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "resumed_from",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
         }
       ]
     },
@@ -23826,6 +24559,23 @@
     "torch_like.__version__": {
       "kind": "value",
       "target": "builtins.str",
+      "signature": null
+    },
+    "torch_like.as_runtime": {
+      "kind": "callable",
+      "target": "torch_like.as_runtime",
+      "signature": [
+        {
+          "name": "model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.automl": {
+      "kind": "module",
+      "target": "builtins.module",
       "signature": null
     },
     "torch_like.automl.ArtifactSpec": {
@@ -25569,6 +26319,2571 @@
         }
       ]
     },
+    "torch_like.classical": {
+      "kind": "module",
+      "target": "builtins.module",
+      "signature": null
+    },
+    "torch_like.classical.DBSCAN": {
+      "kind": "class",
+      "target": "sklearn.cluster._dbscan.DBSCAN",
+      "signature": [
+        {
+          "name": "eps",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "min_samples",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 5
+        },
+        {
+          "name": "metric",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "euclidean"
+        },
+        {
+          "name": "metric_params",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "algorithm",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "leaf_size",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "p",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.DecisionTreeClassifier": {
+      "kind": "class",
+      "target": "sklearn.tree._classes.DecisionTreeClassifier",
+      "signature": [
+        {
+          "name": "criterion",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "gini"
+        },
+        {
+          "name": "splitter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "best"
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_samples_split",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "min_weight_fraction_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_impurity_decrease",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "class_weight",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "ccp_alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "monotonic_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.DecisionTreeRegressor": {
+      "kind": "class",
+      "target": "sklearn.tree._classes.DecisionTreeRegressor",
+      "signature": [
+        {
+          "name": "criterion",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "squared_error"
+        },
+        {
+          "name": "splitter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "best"
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_samples_split",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "min_weight_fraction_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_impurity_decrease",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "ccp_alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "monotonic_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.EstimatorInfo": {
+      "kind": "class",
+      "target": "torch_like.classical.EstimatorInfo",
+      "signature": null
+    },
+    "torch_like.classical.ExtraTreesClassifier": {
+      "kind": "class",
+      "target": "sklearn.ensemble._forest.ExtraTreesClassifier",
+      "signature": [
+        {
+          "name": "n_estimators",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "criterion",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "gini"
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_samples_split",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "min_weight_fraction_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "sqrt"
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_impurity_decrease",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "bootstrap",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "oob_score",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "class_weight",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "ccp_alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_samples",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "monotonic_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.ExtraTreesRegressor": {
+      "kind": "class",
+      "target": "sklearn.ensemble._forest.ExtraTreesRegressor",
+      "signature": [
+        {
+          "name": "n_estimators",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "criterion",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "squared_error"
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_samples_split",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "min_weight_fraction_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_impurity_decrease",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "bootstrap",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "oob_score",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "ccp_alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_samples",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "monotonic_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.GradientBoostingClassifier": {
+      "kind": "class",
+      "target": "sklearn.ensemble._gb.GradientBoostingClassifier",
+      "signature": [
+        {
+          "name": "loss",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "log_loss"
+        },
+        {
+          "name": "learning_rate",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "n_estimators",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "subsample",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "criterion",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "friedman_mse"
+        },
+        {
+          "name": "min_samples_split",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "min_weight_fraction_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "min_impurity_decrease",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "init",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "validation_fraction",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "n_iter_no_change",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0001
+        },
+        {
+          "name": "ccp_alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        }
+      ]
+    },
+    "torch_like.classical.GradientBoostingRegressor": {
+      "kind": "class",
+      "target": "sklearn.ensemble._gb.GradientBoostingRegressor",
+      "signature": [
+        {
+          "name": "loss",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "squared_error"
+        },
+        {
+          "name": "learning_rate",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "n_estimators",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "subsample",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "criterion",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "friedman_mse"
+        },
+        {
+          "name": "min_samples_split",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "min_weight_fraction_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "min_impurity_decrease",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "init",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.9
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "validation_fraction",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "n_iter_no_change",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0001
+        },
+        {
+          "name": "ccp_alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        }
+      ]
+    },
+    "torch_like.classical.HistGradientBoostingClassifier": {
+      "kind": "class",
+      "target": "sklearn.ensemble._hist_gradient_boosting.gradient_boosting.HistGradientBoostingClassifier",
+      "signature": [
+        {
+          "name": "loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "log_loss"
+        },
+        {
+          "name": "learning_rate",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "max_iter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 31
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "l2_regularization",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "max_bins",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 255
+        },
+        {
+          "name": "categorical_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "from_dtype"
+        },
+        {
+          "name": "monotonic_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "interaction_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "early_stopping",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "scoring",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "loss"
+        },
+        {
+          "name": "validation_fraction",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "n_iter_no_change",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1e-07
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "class_weight",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.HistGradientBoostingRegressor": {
+      "kind": "class",
+      "target": "sklearn.ensemble._hist_gradient_boosting.gradient_boosting.HistGradientBoostingRegressor",
+      "signature": [
+        {
+          "name": "loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "squared_error"
+        },
+        {
+          "name": "quantile",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "learning_rate",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "max_iter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 31
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "l2_regularization",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "max_bins",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 255
+        },
+        {
+          "name": "categorical_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "from_dtype"
+        },
+        {
+          "name": "monotonic_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "interaction_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "early_stopping",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "scoring",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "loss"
+        },
+        {
+          "name": "validation_fraction",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "n_iter_no_change",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1e-07
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.IsolationForest": {
+      "kind": "class",
+      "target": "sklearn.ensemble._iforest.IsolationForest",
+      "signature": [
+        {
+          "name": "n_estimators",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "max_samples",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "contamination",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "bootstrap",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.classical.KMeans": {
+      "kind": "class",
+      "target": "sklearn.cluster._kmeans.KMeans",
+      "signature": [
+        {
+          "name": "n_clusters",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "init",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "k-means++"
+        },
+        {
+          "name": "n_init",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "max_iter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 300
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0001
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "copy_x",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "algorithm",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "lloyd"
+        }
+      ]
+    },
+    "torch_like.classical.KNeighborsClassifier": {
+      "kind": "class",
+      "target": "sklearn.neighbors._classification.KNeighborsClassifier",
+      "signature": [
+        {
+          "name": "n_neighbors",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 5
+        },
+        {
+          "name": "weights",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "uniform"
+        },
+        {
+          "name": "algorithm",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "leaf_size",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "p",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "metric",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "minkowski"
+        },
+        {
+          "name": "metric_params",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.KNeighborsRegressor": {
+      "kind": "class",
+      "target": "sklearn.neighbors._regression.KNeighborsRegressor",
+      "signature": [
+        {
+          "name": "n_neighbors",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 5
+        },
+        {
+          "name": "weights",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "uniform"
+        },
+        {
+          "name": "algorithm",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "leaf_size",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "p",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "metric",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "minkowski"
+        },
+        {
+          "name": "metric_params",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.LinearRegression": {
+      "kind": "class",
+      "target": "sklearn.linear_model._base.LinearRegression",
+      "signature": [
+        {
+          "name": "fit_intercept",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "copy_X",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1e-06
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "positive",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.classical.LogisticRegression": {
+      "kind": "class",
+      "target": "sklearn.linear_model._logistic.LogisticRegression",
+      "signature": [
+        {
+          "name": "penalty",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "deprecated"
+        },
+        {
+          "name": "C",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "l1_ratio",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "dual",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0001
+        },
+        {
+          "name": "fit_intercept",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "intercept_scaling",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "class_weight",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "solver",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "lbfgs"
+        },
+        {
+          "name": "max_iter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.PCA": {
+      "kind": "class",
+      "target": "sklearn.decomposition._pca.PCA",
+      "signature": [
+        {
+          "name": "n_components",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "copy",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "whiten",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "svd_solver",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "iterated_power",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "n_oversamples",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "power_iteration_normalizer",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.RandomForestClassifier": {
+      "kind": "class",
+      "target": "sklearn.ensemble._forest.RandomForestClassifier",
+      "signature": [
+        {
+          "name": "n_estimators",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "criterion",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "gini"
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_samples_split",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "min_weight_fraction_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "sqrt"
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_impurity_decrease",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "bootstrap",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "oob_score",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "class_weight",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "ccp_alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_samples",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "monotonic_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.RandomForestRegressor": {
+      "kind": "class",
+      "target": "sklearn.ensemble._forest.RandomForestRegressor",
+      "signature": [
+        {
+          "name": "n_estimators",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "criterion",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "squared_error"
+        },
+        {
+          "name": "max_depth",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_samples_split",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "min_samples_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "min_weight_fraction_leaf",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_features",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "max_leaf_nodes",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_impurity_decrease",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "bootstrap",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "oob_score",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "ccp_alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "max_samples",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "monotonic_cst",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.Ridge": {
+      "kind": "class",
+      "target": "sklearn.linear_model._ridge.Ridge",
+      "signature": [
+        {
+          "name": "alpha",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "fit_intercept",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "copy_X",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "max_iter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0001
+        },
+        {
+          "name": "solver",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "positive",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.SGDClassifier": {
+      "kind": "class",
+      "target": "sklearn.linear_model._stochastic_gradient.SGDClassifier",
+      "signature": [
+        {
+          "name": "loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "hinge"
+        },
+        {
+          "name": "penalty",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "l2"
+        },
+        {
+          "name": "alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0001
+        },
+        {
+          "name": "l1_ratio",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.15
+        },
+        {
+          "name": "fit_intercept",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "max_iter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.001
+        },
+        {
+          "name": "shuffle",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "epsilon",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "n_jobs",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "learning_rate",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "optimal"
+        },
+        {
+          "name": "eta0",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.01
+        },
+        {
+          "name": "power_t",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "early_stopping",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "validation_fraction",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "n_iter_no_change",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 5
+        },
+        {
+          "name": "class_weight",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "average",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.classical.SGDRegressor": {
+      "kind": "class",
+      "target": "sklearn.linear_model._stochastic_gradient.SGDRegressor",
+      "signature": [
+        {
+          "name": "loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "squared_error"
+        },
+        {
+          "name": "penalty",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "l2"
+        },
+        {
+          "name": "alpha",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0001
+        },
+        {
+          "name": "l1_ratio",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.15
+        },
+        {
+          "name": "fit_intercept",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "max_iter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.001
+        },
+        {
+          "name": "shuffle",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "epsilon",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "learning_rate",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "invscaling"
+        },
+        {
+          "name": "eta0",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.01
+        },
+        {
+          "name": "power_t",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.25
+        },
+        {
+          "name": "early_stopping",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "validation_fraction",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "n_iter_no_change",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 5
+        },
+        {
+          "name": "warm_start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "average",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.classical.SVC": {
+      "kind": "class",
+      "target": "sklearn.svm._classes.SVC",
+      "signature": [
+        {
+          "name": "C",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "kernel",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "rbf"
+        },
+        {
+          "name": "degree",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "gamma",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "scale"
+        },
+        {
+          "name": "coef0",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "shrinking",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "probability",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.001
+        },
+        {
+          "name": "cache_size",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 200
+        },
+        {
+          "name": "class_weight",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "max_iter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": -1
+        },
+        {
+          "name": "decision_function_shape",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "ovr"
+        },
+        {
+          "name": "break_ties",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "random_state",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.SVR": {
+      "kind": "class",
+      "target": "sklearn.svm._classes.SVR",
+      "signature": [
+        {
+          "name": "kernel",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "rbf"
+        },
+        {
+          "name": "degree",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "gamma",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "scale"
+        },
+        {
+          "name": "coef0",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "tol",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.001
+        },
+        {
+          "name": "C",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "epsilon",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "shrinking",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "cache_size",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 200
+        },
+        {
+          "name": "verbose",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "max_iter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": -1
+        }
+      ]
+    },
+    "torch_like.classical.create_estimator": {
+      "kind": "callable",
+      "target": "torch_like.classical.create_estimator",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.get_estimator_class": {
+      "kind": "callable",
+      "target": "torch_like.classical.get_estimator_class",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.get_estimator_info": {
+      "kind": "callable",
+      "target": "torch_like.classical.get_estimator_info",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.has_estimator": {
+      "kind": "callable",
+      "target": "torch_like.classical.has_estimator",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.classical.list_estimators": {
+      "kind": "callable",
+      "target": "torch_like.classical.list_estimators",
+      "signature": [
+        {
+          "name": "kind",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.contracts": {
+      "kind": "module",
+      "target": "builtins.module",
+      "signature": null
+    },
+    "torch_like.contracts.BackendKind": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.BackendKind",
+      "signature": [
+        {
+          "name": "value",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "names",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "module",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "qualname",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "type",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        }
+      ]
+    },
+    "torch_like.contracts.ContractStatus": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.ContractStatus",
+      "signature": [
+        {
+          "name": "value",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "names",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "module",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "qualname",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "type",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        }
+      ]
+    },
+    "torch_like.contracts.FieldSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.FieldSpec",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "required",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "semantic",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "rank",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.contracts.InputSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.InputSpec",
+      "signature": [
+        {
+          "name": "batch_type",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "fields",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.contracts.ModelSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.ModelSpec",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "backend",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "domain",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "class_path",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "task",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "operations",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "contract_status",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "standardized"
+        },
+        {
+          "name": "contract_version",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "1.0"
+        }
+      ]
+    },
+    "torch_like.contracts.OutputSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.OutputSpec",
+      "signature": [
+        {
+          "name": "kind",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "semantic",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "shape",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.contracts.TaskKind": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.TaskKind",
+      "signature": [
+        {
+          "name": "value",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "names",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "module",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "qualname",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "type",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "start",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 1
+        }
+      ]
+    },
+    "torch_like.contracts.TaskSpec": {
+      "kind": "class",
+      "target": "torch_like.contracts.types.TaskSpec",
+      "signature": [
+        {
+          "name": "kind",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "input",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "output",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "target_field",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "notes",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        }
+      ]
+    },
+    "torch_like.contracts.describe": {
+      "kind": "callable",
+      "target": "torch_like.contracts.inspect.get_model_spec",
+      "signature": [
+        {
+          "name": "target",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "backend",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "domain",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.contracts.get_model_spec": {
+      "kind": "callable",
+      "target": "torch_like.contracts.inspect.get_model_spec",
+      "signature": [
+        {
+          "name": "target",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "backend",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "domain",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.create": {
+      "kind": "callable",
+      "target": "torch_like.factory.create",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "backend",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "domain",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.create_estimator": {
+      "kind": "callable",
+      "target": "torch_like.classical.create_estimator",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
     "torch_like.create_model": {
       "kind": "callable",
       "target": "torch_like.models.registry.create_model",
@@ -25588,6 +28903,71 @@
         {
           "name": "kwargs",
           "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.data": {
+      "kind": "module",
+      "target": "builtins.module",
+      "signature": null
+    },
+    "torch_like.data.DataAdapter": {
+      "kind": "class",
+      "target": "torch_like.data.adapters.DataAdapter",
+      "signature": [
+        {
+          "name": "args",
+          "kind": "VAR_POSITIONAL",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.data.DataLoaderConfig": {
+      "kind": "class",
+      "target": "torch_like.data.adapters.DataLoaderConfig",
+      "signature": [
+        {
+          "name": "batch_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 32
+        },
+        {
+          "name": "shuffle",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "num_workers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "pin_memory",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "drop_last",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "seed",
+          "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": null
         }
@@ -26091,6 +29471,11 @@
         }
       ]
     },
+    "torch_like.data.TensorDataAdapter": {
+      "kind": "class",
+      "target": "torch_like.data.adapters.TensorDataAdapter",
+      "signature": []
+    },
     "torch_like.data.TimeFeature": {
       "kind": "class",
       "target": "torch_like.data.timefeatures.TimeFeature",
@@ -26450,6 +29835,350 @@
         }
       ]
     },
+    "torch_like.describe": {
+      "kind": "callable",
+      "target": "torch_like.contracts.inspect.get_model_spec",
+      "signature": [
+        {
+          "name": "target",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "backend",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "domain",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation": {
+      "kind": "module",
+      "target": "builtins.module",
+      "signature": null
+    },
+    "torch_like.evaluation.ClassificationMetric": {
+      "kind": "class",
+      "target": "torch_like.evaluation.metrics.ClassificationMetric",
+      "signature": [
+        {
+          "name": "metric",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "multilabel",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.evaluation.ForecastingMetric": {
+      "kind": "class",
+      "target": "torch_like.evaluation.metrics.ForecastingMetric",
+      "signature": [
+        {
+          "name": "metric",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "horizon",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.FunctionalMetric": {
+      "kind": "class",
+      "target": "torch_like.evaluation.metrics.FunctionalMetric",
+      "signature": [
+        {
+          "name": "function",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.MeanMetric": {
+      "kind": "class",
+      "target": "torch_like.evaluation.metrics.MeanMetric",
+      "signature": []
+    },
+    "torch_like.evaluation.MergeableMetric": {
+      "kind": "class",
+      "target": "torch_like.evaluation.metrics.MergeableMetric",
+      "signature": [
+        {
+          "name": "args",
+          "kind": "VAR_POSITIONAL",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.Metric": {
+      "kind": "class",
+      "target": "torch_like.evaluation.metrics.Metric",
+      "signature": [
+        {
+          "name": "args",
+          "kind": "VAR_POSITIONAL",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.MetricEvaluator": {
+      "kind": "class",
+      "target": "torch_like.evaluation.metrics.MetricEvaluator",
+      "signature": [
+        {
+          "name": "metrics",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.MetricFunction": {
+      "kind": "callable",
+      "target": "collections.abc.Callable",
+      "signature": [
+        {
+          "name": "args",
+          "kind": "VAR_POSITIONAL",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.MetricState": {
+      "kind": "callable",
+      "target": "collections.abc.Mapping",
+      "signature": [
+        {
+          "name": "args",
+          "kind": "VAR_POSITIONAL",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.RegressionMetric": {
+      "kind": "class",
+      "target": "torch_like.evaluation.metrics.RegressionMetric",
+      "signature": [
+        {
+          "name": "metric",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.StandardDeviationMetric": {
+      "kind": "class",
+      "target": "torch_like.evaluation.metrics.StandardDeviationMetric",
+      "signature": []
+    },
+    "torch_like.evaluation.classification_metric_set": {
+      "kind": "callable",
+      "target": "torch_like.evaluation.metrics.classification_metric_set",
+      "signature": [
+        {
+          "name": "multilabel",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.evaluation.classification_metrics": {
+      "kind": "callable",
+      "target": "torch_like.evaluation.metrics.classification_metrics",
+      "signature": [
+        {
+          "name": "y_true",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "y_pred",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "multilabel",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.evaluation.forecasting_metric_set": {
+      "kind": "callable",
+      "target": "torch_like.evaluation.metrics.forecasting_metric_set",
+      "signature": [
+        {
+          "name": "horizon",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.forecasting_metrics": {
+      "kind": "callable",
+      "target": "torch_like.evaluation.metrics.forecasting_metrics",
+      "signature": [
+        {
+          "name": "y_true",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "y_pred",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.metric_direction": {
+      "kind": "callable",
+      "target": "torch_like.evaluation.metrics.metric_direction",
+      "signature": [
+        {
+          "name": "metric",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.multi_target_regression_metrics": {
+      "kind": "callable",
+      "target": "torch_like.evaluation.metrics.multi_target_regression_metrics",
+      "signature": [
+        {
+          "name": "y_true",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "y_pred",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "target_weights",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.evaluation.regression_metric_set": {
+      "kind": "callable",
+      "target": "torch_like.evaluation.metrics.regression_metric_set",
+      "signature": []
+    },
+    "torch_like.evaluation.regression_metrics": {
+      "kind": "callable",
+      "target": "torch_like.evaluation.metrics.regression_metrics",
+      "signature": [
+        {
+          "name": "y_true",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "y_pred",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.find_model_domain": {
+      "kind": "callable",
+      "target": "torch_like.models.registry.find_model_domain",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.get_estimator_class": {
+      "kind": "callable",
+      "target": "torch_like.classical.get_estimator_class",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.get_estimator_info": {
+      "kind": "callable",
+      "target": "torch_like.classical.get_estimator_info",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
     "torch_like.get_evidence_record": {
       "kind": "callable",
       "target": "torch_like.models.catalog_evidence.get_evidence_record",
@@ -26458,6 +30187,24 @@
           "name": "record_id",
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.get_model_class": {
+      "kind": "callable",
+      "target": "torch_like.models.registry.get_model_class",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "domain",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
           "default": null
         }
       ]
@@ -26480,14 +30227,62 @@
         }
       ]
     },
+    "torch_like.get_model_spec": {
+      "kind": "callable",
+      "target": "torch_like.contracts.inspect.get_model_spec",
+      "signature": [
+        {
+          "name": "target",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "backend",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "domain",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
     "torch_like.list_domains": {
       "kind": "callable",
       "target": "torch_like.models.registry.list_domains",
       "signature": []
     },
+    "torch_like.list_estimators": {
+      "kind": "callable",
+      "target": "torch_like.classical.list_estimators",
+      "signature": [
+        {
+          "name": "kind",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
     "torch_like.list_evidence_records": {
       "kind": "callable",
       "target": "torch_like.models.catalog_evidence.list_evidence_records",
+      "signature": [
+        {
+          "name": "domain",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.list_model_names": {
+      "kind": "callable",
+      "target": "torch_like.models.registry.list_model_names",
       "signature": [
         {
           "name": "domain",
@@ -26581,6 +30376,102 @@
         }
       ]
     },
+    "torch_like.load_model": {
+      "kind": "callable",
+      "target": "torch_like.load_model",
+      "signature": [
+        {
+          "name": "path",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "map_location",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "cpu"
+        },
+        {
+          "name": "strict",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    "torch_like.load_training_checkpoint": {
+      "kind": "callable",
+      "target": "torch_like.training.checkpoint.load_training_checkpoint",
+      "signature": [
+        {
+          "name": "path",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "model",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "optimizer",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "scheduler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "scaler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "train_loader",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "map_location",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "cpu"
+        },
+        {
+          "name": "strict",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "restore_rng",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "distributed_context",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "val_loader",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
     "torch_like.mLSTMCell": {
       "kind": "class",
       "target": "torch_like.models.sequence.xlstm.mLSTMCell",
@@ -26608,6 +30499,11 @@
     "torch_like.model_zoo": {
       "kind": "value",
       "target": "torch_like.models.registry.ModelZooView",
+      "signature": null
+    },
+    "torch_like.models": {
+      "kind": "module",
+      "target": "builtins.module",
       "signature": null
     },
     "torch_like.models.AGCRN": {
@@ -49660,6 +53556,18 @@
         }
       ]
     },
+    "torch_like.models.find_model_domain": {
+      "kind": "callable",
+      "target": "torch_like.models.registry.find_model_domain",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
     "torch_like.models.get_evidence_record": {
       "kind": "callable",
       "target": "torch_like.models.catalog_evidence.get_evidence_record",
@@ -49668,6 +53576,24 @@
           "name": "record_id",
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.models.get_model_class": {
+      "kind": "callable",
+      "target": "torch_like.models.registry.get_model_class",
+      "signature": [
+        {
+          "name": "name",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "domain",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
           "default": null
         }
       ]
@@ -49698,6 +53624,18 @@
     "torch_like.models.list_evidence_records": {
       "kind": "callable",
       "target": "torch_like.models.catalog_evidence.list_evidence_records",
+      "signature": [
+        {
+          "name": "domain",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.models.list_model_names": {
+      "kind": "callable",
+      "target": "torch_like.models.registry.list_model_names",
       "signature": [
         {
           "name": "domain",
@@ -49981,6 +53919,11 @@
           "default": true
         }
       ]
+    },
+    "torch_like.nn": {
+      "kind": "module",
+      "target": "builtins.module",
+      "signature": null
     },
     "torch_like.nn.AutoCorrelation": {
       "kind": "class",
@@ -50569,6 +54512,968 @@
           "default": 0.0
         }
       ]
+    },
+    "torch_like.save_model": {
+      "kind": "callable",
+      "target": "torch_like.save_model",
+      "signature": [
+        {
+          "name": "model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "path",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "overwrite",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.save_training_checkpoint": {
+      "kind": "callable",
+      "target": "torch_like.training.checkpoint.save_training_checkpoint",
+      "signature": [
+        {
+          "name": "path",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "model",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "optimizer",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "scheduler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "scaler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "epoch",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "history",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "best_monitored_loss",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "best_epoch",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "epochs_without_improvement",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "trainer_config",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "train_loader",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "distributed_context",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "val_loader",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.train_model": {
+      "kind": "callable",
+      "target": "torch_like.training.trainer.train_model",
+      "signature": [
+        {
+          "name": "model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "train_loader",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "val_loader",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "config",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "resume_from",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "trainer_kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training": {
+      "kind": "module",
+      "target": "builtins.module",
+      "signature": null
+    },
+    "torch_like.training.AdaptedBatch": {
+      "kind": "class",
+      "target": "torch_like.training.adapters.AdaptedBatch",
+      "signature": [
+        {
+          "name": "model_batch",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "targets",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "sample_count",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "raw_batch",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.BatchAdapter": {
+      "kind": "class",
+      "target": "torch_like.training.adapters.BatchAdapter",
+      "signature": [
+        {
+          "name": "args",
+          "kind": "VAR_POSITIONAL",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.CallableBatchAdapter": {
+      "kind": "class",
+      "target": "torch_like.training.adapters.CallableBatchAdapter",
+      "signature": [
+        {
+          "name": "function",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.DDPConfig": {
+      "kind": "class",
+      "target": "torch_like.training.distributed.DDPConfig",
+      "signature": [
+        {
+          "name": "find_unused_parameters",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "broadcast_buffers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    "torch_like.training.DefaultBatchAdapter": {
+      "kind": "class",
+      "target": "torch_like.training.adapters.DefaultBatchAdapter",
+      "signature": []
+    },
+    "torch_like.training.DistributedContext": {
+      "kind": "class",
+      "target": "torch_like.training.distributed.DistributedContext",
+      "signature": [
+        {
+          "name": "rank",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "world_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "local_rank",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    "torch_like.training.DistributedEvalSampler": {
+      "kind": "class",
+      "target": "torch_like.training.distributed.DistributedEvalSampler",
+      "signature": [
+        {
+          "name": "dataset",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "context",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.DistributedSamplerConfig": {
+      "kind": "class",
+      "target": "torch_like.training.distributed.DistributedSamplerConfig",
+      "signature": [
+        {
+          "name": "shuffle",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "seed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "drop_last",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.training.DistributedSession": {
+      "kind": "class",
+      "target": "torch_like.training.distributed.DistributedSession",
+      "signature": [
+        {
+          "name": "context",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "device",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "backend",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "init_method",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "env://"
+        },
+        {
+          "name": "timeout_seconds",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": 120.0
+        }
+      ]
+    },
+    "torch_like.training.EpochResult": {
+      "kind": "class",
+      "target": "torch_like.training.state.EpochResult",
+      "signature": [
+        {
+          "name": "epoch",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "train_loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "validation_loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "learning_rate",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "max_gradient_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "improved",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "validation_metrics",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "<factory>"
+        }
+      ]
+    },
+    "torch_like.training.ForecastingBatchAdapter": {
+      "kind": "class",
+      "target": "torch_like.training.adapters.ForecastingBatchAdapter",
+      "signature": [
+        {
+          "name": "label_len",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.IdentityBatchAdapter": {
+      "kind": "class",
+      "target": "torch_like.training.adapters.IdentityBatchAdapter",
+      "signature": []
+    },
+    "torch_like.training.Trainer": {
+      "kind": "class",
+      "target": "torch_like.training.trainer.Trainer",
+      "signature": [
+        {
+          "name": "model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "config",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "optimizer",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "scheduler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "loss_fn",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "step_fn",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "batch_adapter",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "metric_fns",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "metrics",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "prediction_fn",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "event_context",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "distributed_context",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "ddp_config",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.TrainerConfig": {
+      "kind": "class",
+      "target": "torch_like.training.config.TrainerConfig",
+      "signature": [
+        {
+          "name": "epochs",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "device",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "optimizer",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "adam"
+        },
+        {
+          "name": "learning_rate",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.001
+        },
+        {
+          "name": "weight_decay",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "lr_scheduler",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "none"
+        },
+        {
+          "name": "grad_clip_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "amp",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "early_stopping_patience",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "min_delta",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "restore_best",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "checkpoint_dir",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "save_last",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "save_best",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    "torch_like.training.TrainingResult": {
+      "kind": "class",
+      "target": "torch_like.training.state.TrainingResult",
+      "signature": [
+        {
+          "name": "epochs_requested",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "epochs_ran",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "start_epoch",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "best_epoch",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "best_monitored_loss",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "stopped_early",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "monitor",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "device",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "history",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "last_checkpoint",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "best_checkpoint",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "resumed_from",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.create_distributed_sampler": {
+      "kind": "callable",
+      "target": "torch_like.training.distributed.create_distributed_sampler",
+      "signature": [
+        {
+          "name": "dataset",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "context",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "config",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.infer_batch_size": {
+      "kind": "callable",
+      "target": "torch_like.training.data.infer_batch_size",
+      "signature": [
+        {
+          "name": "value",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.load_training_checkpoint": {
+      "kind": "callable",
+      "target": "torch_like.training.checkpoint.load_training_checkpoint",
+      "signature": [
+        {
+          "name": "path",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "model",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "optimizer",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "scheduler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "scaler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "train_loader",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "map_location",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": "cpu"
+        },
+        {
+          "name": "strict",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "restore_rng",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "distributed_context",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "val_loader",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.move_to_device": {
+      "kind": "callable",
+      "target": "torch_like.training.data.move_to_device",
+      "signature": [
+        {
+          "name": "value",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "device",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "non_blocking",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    "torch_like.training.resolve_batch_adapter": {
+      "kind": "callable",
+      "target": "torch_like.training.adapters.resolve_batch_adapter",
+      "signature": [
+        {
+          "name": "model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "adapter",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "auto",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.save_training_checkpoint": {
+      "kind": "callable",
+      "target": "torch_like.training.checkpoint.save_training_checkpoint",
+      "signature": [
+        {
+          "name": "path",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "model",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "optimizer",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "scheduler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "scaler",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "epoch",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "history",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "best_monitored_loss",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "best_epoch",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "epochs_without_improvement",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "trainer_config",
+          "kind": "KEYWORD_ONLY",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "train_loader",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "distributed_context",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "val_loader",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.train_model": {
+      "kind": "callable",
+      "target": "torch_like.training.trainer.train_model",
+      "signature": [
+        {
+          "name": "model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "train_loader",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "val_loader",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "config",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "resume_from",
+          "kind": "KEYWORD_ONLY",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "trainer_kwargs",
+          "kind": "VAR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.training.training_events": {
+      "kind": "value",
+      "target": "torch_like.core.events.EventEmitter",
+      "signature": null
     },
     "torch_like.xLSTM": {
       "kind": "class",

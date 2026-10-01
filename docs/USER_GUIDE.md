@@ -10,9 +10,15 @@ English: This guide is for users. It explains how to import, construct, call, an
 
 English: `torch_like` is a local PyTorch-native model library that provides unified access to high-value models.
 
-中文：它不是完整训练平台，也不是论文复现仓库。训练脚本和 runner 只是辅助验证工具。
+中文：它不是端到端生产训练平台，也不是论文复现仓库。0.6.0 起核心包提供轻量 `Trainer` 训练生命周期；0.7.0 进一步加入可复用 `DataAdapter / BatchAdapter / MetricEvaluator`；0.8.0 为常用指标增加可合并 streaming state，并固定 checkpoint rank/world-size 语义，把数据加载、领域 Batch 转换和数据集级指标从训练器中拆开。数据集专属 runner 仍只是辅助实验工具。
 
-English: It is not a full training platform or a paper-reproduction repository. Training scripts and runners are auxiliary validation tools.
+English: It is not an end-to-end production training platform or a paper-reproduction repository. Starting in 0.6.0 the core package provides a lightweight `Trainer` lifecycle; 0.7.0 adds reusable `DataAdapter / BatchAdapter / MetricEvaluator` contracts; 0.8.0 adds mergeable streaming state for common metrics and explicit checkpoint rank/world-size semantics so data loading, domain-batch conversion, and dataset-level metrics are separated from the trainer. Dataset-specific runners remain auxiliary experiment tools.
+
+## Training / 训练
+
+标准化了 `loss_step` 的 PyTorch 模型可以直接交给 `tl.Trainer`。0.7.0 起，常见监督学习 `(X, y)` batch 可自动适配；领域特有 batch 可通过 `tl.training.BatchAdapter` 转换，并用 `AdaptedBatch` 将模型输入与 target 显式分离。没有统一损失语义的任务应使用显式 `loss_fn`，或使用接收完整 `AdaptedBatch` 的 `step_fn`。验证指标优先使用 `metrics=` / `tl.evaluation.MetricEvaluator`；大验证集优先使用 `RegressionMetric / ClassificationMetric / ForecastingMetric` 等 streaming 指标，任意函数仍可使用精确 buffered fallback。详见 [`TRAINING_RUNTIME.md`](TRAINING_RUNTIME.md) 和 [`DATA_EVALUATION_RUNTIME.md`](DATA_EVALUATION_RUNTIME.md)。
+
+PyTorch models with a standardized `loss_step` can be trained through `tl.Trainer`. From 0.7.0, common supervised `(X, y)` batches can be adapted automatically; domain-specific batches can be converted through `tl.training.BatchAdapter`, while `AdaptedBatch` keeps model inputs and targets separate. Tasks without one universal loss should provide an explicit `loss_fn`, or a `step_fn` that consumes the full `AdaptedBatch`. Prefer `metrics=` / `tl.evaluation.MetricEvaluator`; for large validation sets use the builtin streaming regression/classification/forecasting metrics when applicable, while arbitrary functions remain an exact buffered fallback. See [`TRAINING_RUNTIME.md`](TRAINING_RUNTIME.md) and [`DATA_EVALUATION_RUNTIME.md`](DATA_EVALUATION_RUNTIME.md).
 
 ## Available Model Families / 可用模型家族
 

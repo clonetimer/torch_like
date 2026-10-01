@@ -1,0 +1,17 @@
+[Gloo] Rank 1 is connected to 1 peer ranks. Expected number of connected peer ranks is : 1
+[Gloo] Rank 0 is connected to 1 peer ranks. Expected number of connected peer ranks is : 1
+{
+  "version": "0.9.0",
+  "world_size": 2,
+  "device": "cpu",
+  "validation_samples": 7,
+  "epochs_ran": 4,
+  "start_epoch": 2,
+  "metrics": {
+    "accuracy": 0.7142857142857143,
+    "precision_macro": 0.35714285714285715,
+    "recall_macro": 0.5,
+    "f1_macro": 0.4166666666666667
+  },
+  "last_checkpoint": "/mnt/data/tl090/wheel_example/last_checkpoint.pt"
+}

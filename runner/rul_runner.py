@@ -8,7 +8,6 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -27,6 +26,7 @@ from runner.performance import (
     move_to_device,
 )
 from runner.rul_data import RULDataConfig, create_rul_loaders
+from torch_like.evaluation import MetricEvaluator, RegressionMetric
 
 
 @dataclass
@@ -71,21 +71,25 @@ def evaluate(model, loader, criterion, device, execution: ExecutionConfig | None
     execution = execution or ExecutionConfig()
     model.eval()
     total_loss = 0.0
-    all_preds, all_labels = [], []
+    total_count = 0
+    evaluator = MetricEvaluator(
+        {
+            "rmse": RegressionMetric("rmse"),
+            "mae": RegressionMetric("mae"),
+        }
+    )
     for x, y in loader:
         x = move_to_device(x, device, execution)
         y = move_to_device(y, device, execution)
         with autocast_context(device, execution):
             pred = model(x)
             loss = criterion(pred, y)
-        total_loss += loss.item() * x.size(0)
-        all_preds.append(pred.float().cpu().numpy())
-        all_labels.append(y.float().cpu().numpy())
-    preds = np.concatenate(all_preds)
-    labels = np.concatenate(all_labels)
-    rmse = float(np.sqrt(np.mean((preds - labels) ** 2)))
-    mae = float(np.mean(np.abs(preds - labels)))
-    return average_total(total_loss, len(loader.dataset)), rmse, mae
+        batch_size = int(x.size(0))
+        total_loss += loss.item() * batch_size
+        total_count += batch_size
+        evaluator.update(pred, y)
+    metrics = evaluator.compute()
+    return average_total(total_loss, total_count), metrics["rmse"], metrics["mae"]
 
 
 def run_experiment(model_cls, model_name, bundle, train_loader, test_loader, config: RULRunConfig):

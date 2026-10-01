@@ -1,0 +1,50 @@
+{
+  "test_real_two_rank_gloo_fail_b0/rank1.json": {
+    "failure": "bad_validation",
+    "coordinated": true,
+    "message": "RuntimeError: Distributed validation failed: rank 1: ValueError: bad prediction",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_b0/rank0.json": {
+    "failure": "bad_validation",
+    "coordinated": true,
+    "message": "RuntimeError: Distributed validation failed: rank 1: ValueError: bad prediction",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_w0/rank1.json": {
+    "failure": "wrong_train_sampler",
+    "coordinated": true,
+    "message": "RuntimeError: Distributed preflight failed: rank 0: TypeError: DDP training requires the standard DistributedSampler; rank 1: TypeError: DDP training requires the standard DistributedSampler",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_w0/rank0.json": {
+    "failure": "wrong_train_sampler",
+    "coordinated": true,
+    "message": "RuntimeError: Distributed preflight failed: rank 0: TypeError: DDP training requires the standard DistributedSampler; rank 1: TypeError: DDP training requires the standard DistributedSampler",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_c0/rank1.json": {
+    "failure": "config_mismatch",
+    "coordinated": true,
+    "message": "ValueError: DDP ranks disagree on configuration, data layout, metrics or resume checkpoint",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_fail_c0/rank0.json": {
+    "failure": "config_mismatch",
+    "coordinated": true,
+    "message": "ValueError: DDP ranks disagree on configuration, data layout, metrics or resume checkpoint",
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  }
+}

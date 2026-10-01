@@ -7,6 +7,7 @@ from importlib import import_module
 from threading import RLock
 from typing import Any, TypedDict
 
+from torch_like.models._builtin_index import BUILTIN_MODEL_INDEX
 from torch_like.models.catalog_evidence import evidence_metadata_for_model
 from torch_like.models.catalog_schema import DERIVED_METADATA_FIELDS, derive_catalog_v2_metadata
 
@@ -34,19 +35,19 @@ class ModelMetadata(TypedDict):
 ModelCatalog = dict[str, ModelMetadata]
 
 _DOMAIN_MODULES = {
-    "forecasting": "torch_like.models.forecasting",
-    "diagnosis": "torch_like.models.diagnosis",
-    "detection": "torch_like.models.detection",
-    "graph": "torch_like.models.graph",
+    "forecasting": "torch_like.models.forecasting._catalog",
+    "diagnosis": "torch_like.models.diagnosis._catalog",
+    "detection": "torch_like.models.detection._catalog",
+    "graph": "torch_like.models.graph._catalog",
     "rul": "torch_like.models.rul_catalog",
-    "sequence": "torch_like.models.sequence",
-    "vision": "torch_like.models.vision",
-    "multimodal": "torch_like.models.multimodal",
-    "generative": "torch_like.models.generative",
-    "tabular": "torch_like.models.tabular",
-    "recommendation": "torch_like.models.recommendation",
-    "audio": "torch_like.models.audio",
-    "reinforcement": "torch_like.models.reinforcement",
+    "sequence": "torch_like.models.sequence._catalog",
+    "vision": "torch_like.models.vision._catalog",
+    "multimodal": "torch_like.models.multimodal._catalog",
+    "generative": "torch_like.models.generative._catalog",
+    "tabular": "torch_like.models.tabular._catalog",
+    "recommendation": "torch_like.models.recommendation._catalog",
+    "audio": "torch_like.models.audio._catalog",
+    "reinforcement": "torch_like.models.reinforcement._catalog",
 }
 MODEL_DOMAINS = tuple(_DOMAIN_MODULES)
 MODEL_ZOO: dict[str, ModelCatalog] = {domain: {} for domain in MODEL_DOMAINS}
@@ -64,7 +65,7 @@ _METADATA_FIELDS = frozenset(_METADATA_DEFAULTS)
 _METADATA_OPTIONAL_FIELDS = frozenset({"automl_default", *DERIVED_METADATA_FIELDS})
 _METADATA_ALLOWED_FIELDS = _METADATA_FIELDS | _METADATA_OPTIONAL_FIELDS
 _REGISTRY_LOCK = RLock()
-_BOOTSTRAPPED = False
+_BOOTSTRAPPED_DOMAINS: set[str] = set()
 
 
 def _validate_identifier(value: str, field: str) -> None:
@@ -132,7 +133,13 @@ def _copy_metadata(metadata: ModelMetadata) -> ModelMetadata:
 
 
 def _find_conflicting_domains(domain: str, name: str) -> list[str]:
-    return [other for other, models in MODEL_ZOO.items() if other != domain and name in models]
+    conflicts = [other for other, models in MODEL_ZOO.items() if other != domain and name in models]
+    builtin = BUILTIN_MODEL_INDEX.get(name)
+    if builtin is not None:
+        builtin_domain = builtin[0]
+        if builtin_domain != domain and builtin_domain not in conflicts:
+            conflicts.append(builtin_domain)
+    return conflicts
 
 
 def register_model(domain: str, name: str, cls: type[Any], **meta: Any) -> type[Any]:
@@ -140,6 +147,9 @@ def register_model(domain: str, name: str, cls: type[Any], **meta: Any) -> type[
 
     _validate_identifier(domain, "domain")
     _validate_identifier(name, "name")
+    builtin = BUILTIN_MODEL_INDEX.get(name)
+    if builtin is not None and builtin[0] == domain:
+        ensure_domain_registration(domain)
     candidate = _normalize_metadata(cls, meta, require_complete=False)
 
     with _REGISTRY_LOCK:
@@ -197,18 +207,28 @@ def register_model_catalog(domain: str, catalog: Mapping[str, Mapping[str, Any]]
     return catalog
 
 
-def ensure_model_registrations() -> None:
-    """Import built-in domain catalogs once, preserving lazy package imports."""
+def ensure_domain_registration(domain: str) -> None:
+    """Load one built-in domain catalog without importing unrelated domains."""
 
-    global _BOOTSTRAPPED
-    if _BOOTSTRAPPED:
+    module_name = _DOMAIN_MODULES.get(domain)
+    if module_name is None or domain in _BOOTSTRAPPED_DOMAINS:
         return
     with _REGISTRY_LOCK:
-        if _BOOTSTRAPPED:
+        if domain in _BOOTSTRAPPED_DOMAINS:
             return
-        for module_name in _DOMAIN_MODULES.values():
-            import_module(module_name)
-        _BOOTSTRAPPED = True
+        import_module(module_name)
+        _BOOTSTRAPPED_DOMAINS.add(domain)
+
+
+def ensure_model_registrations() -> None:
+    """Load every built-in catalog.
+
+    Most callers should prefer :func:`ensure_domain_registration`; this function
+    remains for full-catalog operations and backwards compatibility.
+    """
+
+    for domain in MODEL_DOMAINS:
+        ensure_domain_registration(domain)
 
 
 class ModelZooView(Mapping[str, ModelCatalog]):
@@ -219,20 +239,18 @@ class ModelZooView(Mapping[str, ModelCatalog]):
     """
 
     def __getitem__(self, domain: str) -> ModelCatalog:
-        ensure_model_registrations()
+        ensure_domain_registration(domain)
         return MODEL_ZOO[domain]
 
     def __iter__(self) -> Iterator[str]:
-        ensure_model_registrations()
         return iter(MODEL_ZOO)
 
     def __len__(self) -> int:
-        ensure_model_registrations()
         return len(MODEL_ZOO)
 
     def __repr__(self) -> str:
-        ensure_model_registrations()
-        return repr(MODEL_ZOO)
+        loaded = sorted(_BOOTSTRAPPED_DOMAINS)
+        return f"ModelZooView(domains={list(MODEL_ZOO)!r}, loaded={loaded!r})"
 
 
 model_zoo = ModelZooView()
@@ -240,7 +258,7 @@ model_zoo = ModelZooView()
 
 def _require_domain(domain: str) -> ModelCatalog:
     _validate_identifier(domain, "domain")
-    ensure_model_registrations()
+    ensure_domain_registration(domain)
     try:
         return MODEL_ZOO[domain]
     except KeyError as exc:
@@ -249,19 +267,39 @@ def _require_domain(domain: str) -> ModelCatalog:
 
 
 def list_domains() -> tuple[str, ...]:
-    """Return all registered model domains in stable registration order."""
+    """Return known model domains without importing their implementations."""
 
-    ensure_model_registrations()
     return tuple(MODEL_ZOO)
 
+
+
+def list_model_names(domain: str | None = None) -> tuple[str, ...]:
+    """Return model names without importing built-in model implementations."""
+
+    if domain is not None:
+        _validate_identifier(domain, "domain")
+        if domain not in MODEL_ZOO:
+            available = ", ".join(MODEL_ZOO)
+            raise KeyError(f"Unknown model domain '{domain}'. Available: {available}")
+        builtins = [name for name, spec in BUILTIN_MODEL_INDEX.items() if spec[0] == domain]
+        runtime = [name for name in MODEL_ZOO[domain] if name not in BUILTIN_MODEL_INDEX]
+        return tuple((*builtins, *runtime))
+    builtins = list(BUILTIN_MODEL_INDEX)
+    runtime = [
+        name
+        for models in MODEL_ZOO.values()
+        for name in models
+        if name not in BUILTIN_MODEL_INDEX
+    ]
+    return tuple((*builtins, *runtime))
 
 def list_models(domain: str | None = None) -> ModelCatalog:
     """Return a defensive metadata snapshot for one domain or the full registry."""
 
-    ensure_model_registrations()
     if domain is not None:
         return {name: _copy_metadata(metadata) for name, metadata in _require_domain(domain).items()}
 
+    ensure_model_registrations()
     flat: ModelCatalog = {}
     for registered_domain, domain_models in MODEL_ZOO.items():
         duplicate_names = flat.keys() & domain_models.keys()
@@ -311,7 +349,50 @@ def list_models_by_fidelity(fidelity: str, domain: str = "forecasting") -> Model
     return {name: meta for name, meta in list_models(domain).items() if meta["implementation_fidelity"] == fidelity}
 
 
-def create_model(name: str, domain: str = "forecasting", **kwargs: Any) -> Any:
-    """Instantiate a registered model by name."""
+def find_model_domain(name: str) -> str:
+    """Return the unique domain for a built-in or runtime-registered model name."""
 
-    return get_model_info(name, domain)["cls"](**kwargs)
+    _validate_identifier(name, "name")
+    builtin = BUILTIN_MODEL_INDEX.get(name)
+    if builtin is not None:
+        return builtin[0]
+    matches = [domain for domain, models in MODEL_ZOO.items() if name in models]
+    if len(matches) == 1:
+        return matches[0]
+    if not matches:
+        raise KeyError(f"Unknown model '{name}'")
+    raise RuntimeError(f"Model '{name}' is registered in multiple domains: {matches}")
+
+
+def get_model_class(name: str, domain: str | None = None) -> type[Any]:
+    """Resolve one model class while importing only its implementation.
+
+    For built-ins this uses the static index and therefore avoids loading the
+    full domain catalog. Runtime-registered models are resolved through the
+    mutable registry.
+    """
+
+    _validate_identifier(name, "name")
+    resolved_domain = domain or find_model_domain(name)
+    _validate_identifier(resolved_domain, "domain")
+    builtin = BUILTIN_MODEL_INDEX.get(name)
+    if builtin is not None:
+        builtin_domain, module_name, attr_name = builtin
+        if builtin_domain != resolved_domain:
+            raise KeyError(f"Model '{name}' belongs to domain '{builtin_domain}', not '{resolved_domain}'")
+        value = getattr(import_module(module_name), attr_name)
+        if not isinstance(value, type):
+            raise TypeError(f"Indexed model '{name}' did not resolve to a class")
+        return value
+    return get_model_info(name, resolved_domain)["cls"]
+
+
+def create_model(name: str, domain: str = "forecasting", **kwargs: Any) -> Any:
+    """Instantiate a registered PyTorch-native model by name.
+
+    Built-ins resolve directly from the static index, so construction imports
+    only the requested implementation. Runtime-registered models continue to
+    use the mutable registry.
+    """
+
+    return get_model_class(name, domain=domain)(**kwargs)

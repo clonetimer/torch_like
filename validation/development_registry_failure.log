@@ -1,0 +1,35 @@
+........................................................................ [ 73%]
+............F.............                                               [100%]
+=================================== FAILURES ===================================
+________________ RegistryTests.test_create_model_from_registry _________________
+
+self = <test_registry.RegistryTests testMethod=test_create_model_from_registry>
+
+    def test_create_model_from_registry(self):
+        model = create_model(
+            "Informer",
+            domain="forecasting",
+            enc_in=1,
+            dec_in=1,
+            c_out=1,
+            seq_len=16,
+            label_len=8,
+            pred_len=4,
+        )
+        self.assertEqual(model.__class__.__name__, "Informer")
+        self.assertGreater(model.param_count(), 0)
+>       self.assertEqual(torch_like.__version__, "0.8.0")
+E       AssertionError: '0.9.0' != '0.8.0'
+E       - 0.9.0
+E       ?   ^
+E       + 0.8.0
+E       ?   ^
+
+tests/test_registry.py:246: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_registry.py::RegistryTests::test_create_model_from_registry - AssertionError: '0.9.0' != '0.8.0'
+- 0.9.0
+?   ^
++ 0.8.0
+?   ^
+1 failed, 97 passed in 22.97s

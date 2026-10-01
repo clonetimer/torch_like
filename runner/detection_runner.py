@@ -8,7 +8,6 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import numpy as np
 import torch
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -17,6 +16,8 @@ import torch_like as tl
 from runner.common import average_total, build_run_payload, print_epoch_metrics, resolve_results_dir, save_json
 from runner.compile_utils import CompileConfig, maybe_compile_model
 from runner.detection_data import DetectionDataConfig, create_detection_loaders
+from torch_like.evaluation import MeanMetric, MetricEvaluator, StandardDeviationMetric
+
 from runner.performance import (
     ExecutionConfig,
     add_execution_args,
@@ -58,15 +59,32 @@ def train_epoch(model, loader, optimizer, device, execution: ExecutionConfig | N
 
 
 @torch.inference_mode()
-def evaluate(model, loader, device, execution: ExecutionConfig | None = None):
+def evaluate(
+    model,
+    loader,
+    device,
+    execution: ExecutionConfig | None = None,
+    *,
+    collect_scores: bool = True,
+):
     execution = execution or ExecutionConfig()
     model.eval()
-    losses = []
-    labels = []
+    evaluator = MetricEvaluator(
+        {
+            "score_mean": MeanMetric(),
+            "score_std": StandardDeviationMetric(),
+        }
+    )
+    score_batches = []
+    label_batches = []
+    num_scores = 0
+    has_labels = False
     for batch in loader:
         if isinstance(batch, (tuple, list)):
             windows, batch_labels = batch
-            labels.append(batch_labels.cpu())
+            has_labels = True
+            if collect_scores:
+                label_batches.append(batch_labels.cpu())
         else:
             windows = batch
         windows = move_to_device(windows, device, execution)
@@ -74,10 +92,18 @@ def evaluate(model, loader, device, execution: ExecutionConfig | None = None):
         with autocast_context(device, execution):
             scores = model.score_batch(det_batch, reduction="mean")
         scores = scores.float().cpu()
-        losses.append(scores)
-    result = {"scores": torch.cat(losses).numpy()}
-    if labels:
-        result["labels"] = torch.cat(labels).numpy()
+        evaluator.update(scores, None)
+        num_scores += int(scores.numel())
+        if collect_scores:
+            score_batches.append(scores)
+    summary = evaluator.compute()
+    result = {**summary, "num_scores": num_scores, "has_labels": has_labels}
+    if collect_scores:
+        if not score_batches:
+            raise ValueError("detection evaluation loader produced no samples")
+        result["scores"] = torch.cat(score_batches).numpy()
+        if label_batches:
+            result["labels"] = torch.cat(label_batches).numpy()
     return result
 
 
@@ -136,21 +162,21 @@ def run_experiment(
         history.append({"epoch": epoch, "train_loss": train_loss})
         print_epoch_metrics(epoch, config.epochs, train_loss=train_loss)
 
-    eval_result = evaluate(model, test_loader, config.device, config.execution)
+    eval_result = evaluate(model, test_loader, config.device, config.execution, collect_scores=False)
     elapsed = time.time() - t0
-    score_mean = float(np.mean(eval_result["scores"]))
-    score_std = float(np.std(eval_result["scores"]))
+    score_mean = float(eval_result["score_mean"])
+    score_std = float(eval_result["score_std"])
     print(f"  Done in {elapsed:.1f}s | score_mean={score_mean:.6f} | score_std={score_std:.6f}")
 
     return {
         "model": model_name,
         "params": n_params,
         "train_time_s": round(elapsed, 1),
-        "num_scores": int(len(eval_result["scores"])),
+        "num_scores": int(eval_result["num_scores"]),
         "score_mean": score_mean,
         "score_std": score_std,
         "history": history,
-        "has_labels": "labels" in eval_result,
+        "has_labels": bool(eval_result["has_labels"]),
     }
 
 

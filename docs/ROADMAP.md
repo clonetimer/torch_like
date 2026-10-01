@@ -6,7 +6,7 @@ English: `torch_like` aims to become a local-first, interface-consistent, eviden
 
 ## Non-goals / 非目标
 
-- 不重新实现 Tensor、autograd、优化器、分布式运行时或 CUDA 内核。 / Do not reimplement tensors, autograd, optimizers, distributed runtimes, or CUDA kernels.
+- 不重新实现 Tensor、autograd、优化器算法、分布式运行时或 CUDA 内核。 / Do not reimplement tensors, autograd, optimizer algorithms, distributed runtimes, or CUDA kernels.
 - 不把 sklearn 模型伪装成 `nn.Module`。 / Do not disguise sklearn estimators as `nn.Module` models.
 - 不把 runner 提升为核心框架 API。 / Keep runners outside the core framework API.
 - 不以模型数量或 smoke 分数作为质量目标。 / Do not use model count or smoke scores as quality targets.
@@ -20,6 +20,7 @@ English: `torch_like` aims to become a local-first, interface-consistent, eviden
 | PyTorch foundation / PyTorch 基础 | Tensor, autograd, devices, compilation, distributed and kernel execution / 张量、自动微分、设备、编译、分布式和内核执行 |
 | Model framework / 模型框架 | Model classes, task batches, direct imports and registry construction / 模型类、任务 Batch、直接导入和 registry 构造 |
 | Task protocols / 任务协议 | Classification, regression, forecasting, RUL and anomaly semantics / 分类、回归、预测、寿命和异常检测语义 |
+| Training runtime / 训练运行时 | Single-process optimization, validation, events, checkpoint and resume / 单进程优化、验证、事件、断点与恢复 |
 | AutoML orchestration / AutoML 编排 | Data profiling, leakage-aware splits, candidates, ranking and bundles / 数据画像、防泄漏划分、候选、排名和模型包 |
 | Governance and delivery / 治理与交付 | Admission evidence, audits, benchmarks, compatibility, packaging and documentation / 准入证据、审计、基准、兼容性、打包和文档 |
 
@@ -112,6 +113,6 @@ M1 evidence status / M1 证据状态：结构化证据登记和自动校验已�
 
 Structured evidence registration and automated validation are complete. Nineteen single-dataset benchmarked models across forecasting, detection, and RUL are covered; all others explicitly remain `unassessed`. The M1 governance foundation is in place, while future maturity expansion remains domain-by-domain rather than bulk promotion.
 
-M2 current status / M2 当前状态：排行榜任务现在会在训练前生成并强制通过 `protocol_audit.json`，对普通划分、group-CV 和 rolling-origin 执行实际索引、组和时间边界审计；同时生成 `evaluation_trust_audit.json`，把 `development`/`validated` 信任等级、多种子覆盖和统一预算检查纳入可审计协议。下一项是把真实任务基准按信任等级分层整理，并补齐 `validated` 示例配置。
+M2 current status / M2 当前状态：排行榜任务现在会在训练前生成并强制通过 `protocol_audit.json`，对普通划分、group-CV 和 rolling-origin 执行实际索引、组和时间边界审计；同时生成 `evaluation_trust_audit.json`，把 `development`/`validated` 信任等级、多种子覆盖和统一预算检查纳入可审计协议。0.6.0 将普通 PyTorch AutoML epoch loop 下沉为公共 `torch_like.training.Trainer`；0.7.0 继续把 Tensor DataLoader 构造与通用预测指标下沉到 `torch_like.data` / `torch_like.evaluation`，并引入 `AdaptedBatch` 保持 domain batch 与 target 分离；0.8.0 将常用指标升级为可合并 streaming state，并以 `DistributedContext`、PyTorch `DistributedSampler` helper 和 checkpoint schema v2 固定未来多 rank 的状态边界，但 `Trainer` 仍明确保持单进程。下一项仍是把真实任务基准按信任等级登记为可复核证据。
 
 Leaderboard tasks now generate and enforce `protocol_audit.json` before training, auditing materialized indices, groups, and time boundaries for standard splits, group-CV, and rolling-origin. They also generate `evaluation_trust_audit.json`, making `development`/`validated` trust levels, multi-seed coverage, and uniform-budget checks auditable. Real-task benchmark tiers are documented in `docs/AUTOML_BENCHMARK_TRUST.md`, validated templates exist for forecasting and XJTU-SY RUL, `tools/validate_automl_examples.py` keeps example configs checkable in CI, and `tools/validate_automl_runs.py` checks completed run artifacts. The next M2 step is to register selected completed validated runs as model/task evidence rather than manually curating claims.

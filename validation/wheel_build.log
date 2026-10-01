@@ -1,0 +1,10 @@
+WARNING: The directory '/home/oai/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Processing /mnt/data/tl090/torch_like-0.9.0
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: torch_like
+  Building wheel for torch_like (pyproject.toml): started
+  Building wheel for torch_like (pyproject.toml): finished with status 'done'
+  Created wheel for torch_like: filename=torch_like-0.9.0-py3-none-any.whl size=558937 sha256=ed40a0df083cfa6aa5fd7bbd9efb0161a5b149d5871a6485c56db1846e41e909
+  Stored in directory: /tmp/pip-ephem-wheel-cache-9g6pymi4/wheels/bc/04/10/6a3a2e3cb67387f46e9e4715c2b3a5fb5679641557697dec59
+Successfully built torch_like

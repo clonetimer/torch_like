@@ -1,0 +1,14 @@
+{
+  "test_real_two_rank_gloo_unused0/rank1.json": {
+    "unused_parameters_supported_when_explicit": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  },
+  "test_real_two_rank_gloo_unused0/rank0.json": {
+    "unused_parameters_supported_when_explicit": true,
+    "clean_exit": true,
+    "version": "0.9.0",
+    "import_path": "/mnt/data/tl090/torch_like-0.9.0/torch_like/__init__.py"
+  }
+}
