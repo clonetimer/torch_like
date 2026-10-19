@@ -16,6 +16,8 @@ R2 多变量与信号特征增强：新增 PCA T²/SPE 监测器（健康基线�
 
 R2 窗口特征与传统机器学习整合：新增 `WindowFeatureTransformer` 和 `SklearnWindowAnomalyDetector`，复用原生 `IsolationForest`，将训练集窗口特征拟合与测试集无标签评分严格分离；详见 [`docs/DIAGNOSTICS_R2C.md`](docs/DIAGNOSTICS_R2C.md)。
 
+R3a 诊断任务执行流程：新增按原始记录分组隔离的 `AnomalySplit`、训练/独立验证阈值选择/一次性封存测试的 `AnomalyDiagnosticWorkflow`，并输出带样本溯源及混淆矩阵指标的 `AnomalyEvaluation`。暂限窗口级异常检测，不能当作故障定位或根因推断。详见 [`docs/DIAGNOSTICS_R3A.md`](docs/DIAGNOSTICS_R3A.md)。
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
