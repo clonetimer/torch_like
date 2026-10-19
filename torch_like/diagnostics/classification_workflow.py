@@ -85,8 +85,16 @@ class FaultClassificationEvaluation:
         probs = np.asarray(self.probabilities, dtype=np.float64).copy()
         counts = np.asarray(self.confusion, dtype=np.int64).copy()
         n = len(self.sample_ids)
+        if len(labels) < 2 or len(set(labels)) != len(labels) or any(
+            not isinstance(label, str) or not label.strip() for label in labels
+        ):
+            raise ValueError("class_labels must form a nonempty, unique multi-class vocabulary")
         if probs.shape != (n, len(labels)) or not np.isfinite(probs).all():
             raise ValueError("probabilities must match samples and class count")
+        if np.any(probs < 0) or np.any(probs > 1) or not np.allclose(
+            probs.sum(axis=1), 1.0, rtol=1e-5, atol=1e-5
+        ):
+            raise ValueError("probabilities must be normalized to one for each test window")
         if counts.shape != (len(labels), len(labels)) or np.any(counts < 0) or counts.sum() != n:
             raise ValueError("confusion must contain one nonnegative count per test sample")
         if (
@@ -95,6 +103,16 @@ class FaultClassificationEvaluation:
             or any(label not in labels for label in self.predictions)
         ):
             raise ValueError("prediction labels and recording IDs must align with samples")
+        if len(set(self.sample_ids)) != n or any(not isinstance(item, str) or not item.strip() for item in self.sample_ids):
+            raise ValueError("sample_ids must be nonempty and unique")
+        if any(not isinstance(item, str) or not item.strip() for item in self.recording_ids):
+            raise ValueError("recording_ids must be nonempty source identifiers")
+        predicted_columns = np.argmax(probs, axis=1)
+        expected_names = tuple(labels[index] for index in predicted_columns)
+        if tuple(self.predictions) != expected_names:
+            raise ValueError("predictions must match the corresponding class-probability argmax")
+        if not np.array_equal(counts.sum(axis=0), np.bincount(predicted_columns, minlength=len(labels))):
+            raise ValueError("confusion predicted-class totals must match the reported predictions")
         probs.setflags(write=False)
         counts.setflags(write=False)
         object.__setattr__(self, "probabilities", probs)

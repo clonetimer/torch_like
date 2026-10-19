@@ -185,6 +185,27 @@ class FaultClassificationWorkflowTests(unittest.TestCase):
                 np.zeros((2, 2)),
             )
 
+    def test_evaluation_report_rejects_inconsistent_probabilities_and_predictions(self):
+        options = {
+            "algorithm_name": "dummy",
+            "class_labels": ("normal", "fault"),
+            "sample_ids": ("one", "two"),
+            "recording_ids": ("run", "run"),
+            "predictions": ("normal", "fault"),
+            "probabilities": np.array([[0.8, 0.2], [0.1, 0.9]]),
+            "confusion": np.diag([1, 1]),
+        }
+        with self.assertRaisesRegex(ValueError, "normalized"):
+            FaultClassificationEvaluation(**{**options, "probabilities": np.array([[0.8, 0.3], [0.1, 0.9]])})
+        with self.assertRaisesRegex(ValueError, "argmax"):
+            FaultClassificationEvaluation(**{**options, "predictions": ("fault", "fault")})
+        with self.assertRaisesRegex(ValueError, "predicted-class totals"):
+            FaultClassificationEvaluation(**{**options, "confusion": np.array([[2, 0], [0, 0]])})
+        with self.assertRaisesRegex(ValueError, "sample_ids"):
+            FaultClassificationEvaluation(**{**options, "sample_ids": ("one", "one")})
+        with self.assertRaisesRegex(ValueError, "class_labels"):
+            FaultClassificationEvaluation(**{**options, "class_labels": ("normal", "normal")})
+
     def test_workflow_requires_fit_and_predict_proba(self):
         with self.assertRaisesRegex(TypeError, "fit and predict_proba"):
             FaultClassificationWorkflow(object())
