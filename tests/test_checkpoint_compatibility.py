@@ -39,7 +39,7 @@ def test_original_v1_v2_checkpoint_still_loads(version, tmp_path):
     torch.save(payload, legacy)
     clone, _ = model_loader()
     load_training_checkpoint(legacy, model=clone, train_loader=loader)
-    for a, b in zip(model.parameters(), clone.parameters()):
+    for a, b in zip(model.parameters(), clone.parameters(), strict=True):
         torch.testing.assert_close(a, b, rtol=0, atol=0)
 
 
@@ -71,5 +71,5 @@ def test_restore_best_without_persisting_best_uses_memory_not_last(tmp_path):
     ).fit(loader)
     assert result.best_epoch == 1
     assert result.best_checkpoint is None
-    for a, b in zip(model.parameters(), expected.parameters()):
+    for a, b in zip(model.parameters(), expected.parameters(), strict=True):
         torch.testing.assert_close(a, b, rtol=0, atol=0)

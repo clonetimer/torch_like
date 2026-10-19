@@ -399,7 +399,7 @@ class Trainer:
                 epochs_without_improvement += 1
 
             if self.scheduler is not None:
-                def scheduler_step():
+                def scheduler_step(monitored_loss=monitored_loss):
                     if self.config.lr_scheduler == "plateau":
                         self.scheduler.step(monitored_loss)
                     else:

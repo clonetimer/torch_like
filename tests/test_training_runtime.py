@@ -136,7 +136,7 @@ class TrainingRuntimeTests(unittest.TestCase):
 
             self.assertEqual(second.start_epoch, 2)
             self.assertEqual(second.epochs_ran, 4)
-            for expected, actual in zip(continuous.parameters(), resumed.parameters()):
+            for expected, actual in zip(continuous.parameters(), resumed.parameters(), strict=True):
                 torch.testing.assert_close(expected, actual, rtol=0, atol=0)
 
     def test_checkpoint_loader_can_restore_model_only(self):
@@ -169,7 +169,7 @@ class TrainingRuntimeTests(unittest.TestCase):
             )
             payload = load_training_checkpoint(result.last_checkpoint, model=clone, restore_rng=False)
             self.assertEqual(payload["epoch"], 1)
-            for expected, actual in zip(model.parameters(), clone.parameters()):
+            for expected, actual in zip(model.parameters(), clone.parameters(), strict=True):
                 torch.testing.assert_close(expected, actual)
 
     def test_checkpoint_loader_accepts_legacy_schema_v1_as_single_process(self):

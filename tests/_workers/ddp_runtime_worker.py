@@ -136,7 +136,7 @@ def single_equivalence(ctx, root):
                         distributed_context=DistributedContext(), batch_adapter=IdentityBatchAdapter())
     loader = DataLoader(train.dataset, batch_size=6)
     reference.fit(loader)
-    for a, b in zip(model.parameters(), expected.parameters()):
+    for a, b in zip(model.parameters(), expected.parameters(), strict=True):
         torch.testing.assert_close(a, b, rtol=1e-6, atol=1e-7)
     equal_parameters(model)
     return {"matches_single_global_batch": True, "epochs": result.epochs_ran}
@@ -219,7 +219,6 @@ def failure(ctx, root, kind):
     model = Tiny()
     train, val = loaders(ctx)
     directory = None
-    options = {}
     current = trainer(model, ctx, epochs=1)
     if kind == "nan":
         current.loss_fn = lambda m, b: m.loss_step(b) * (float("nan") if ctx.rank == 1 else 1)
@@ -281,7 +280,7 @@ def early_stop(ctx, root):
     assert result.best_epoch == 1
     expected = Tiny()
     load_training_checkpoint(result.best_checkpoint, model=expected, distributed_context=ctx, restore_rng=False)
-    for a, b in zip(model.parameters(), expected.parameters()):
+    for a, b in zip(model.parameters(), expected.parameters(), strict=True):
         torch.testing.assert_close(a, b, rtol=0, atol=0)
     equal_parameters(model)
     return {"epochs_ran": 2, "best_epoch": 1, "restored_best": True}

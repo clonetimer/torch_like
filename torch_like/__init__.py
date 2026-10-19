@@ -14,26 +14,26 @@ from __future__ import annotations
 
 from importlib import import_module
 
-import torch_like.classical as classical
-import torch_like.contracts as contracts
+import torch_like.classical as classical  # noqa: F401 - intentional public namespace
+import torch_like.contracts as contracts  # noqa: F401 - intentional public namespace
 import torch_like.models as models
 from torch_like.classical import (
-    create_estimator,
-    get_estimator_class,
-    get_estimator_info,
-    list_estimators,
+    create_estimator as create_estimator,
+    get_estimator_class as get_estimator_class,
+    get_estimator_info as get_estimator_info,
+    list_estimators as list_estimators,
 )
 from torch_like.contracts import (
-    BackendKind,
-    ContractStatus,
-    FieldSpec,
-    InputSpec,
-    ModelSpec,
-    OutputSpec,
-    TaskKind,
-    TaskSpec,
-    describe,
-    get_model_spec,
+    BackendKind as BackendKind,
+    ContractStatus as ContractStatus,
+    FieldSpec as FieldSpec,
+    InputSpec as InputSpec,
+    ModelSpec as ModelSpec,
+    OutputSpec as OutputSpec,
+    TaskKind as TaskKind,
+    TaskSpec as TaskSpec,
+    describe as describe,
+    get_model_spec as get_model_spec,
 )
 from torch_like.factory import create
 

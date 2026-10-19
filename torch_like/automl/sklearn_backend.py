@@ -7,7 +7,7 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from torch_like.automl.backends import backends_by_kind, get_backend, has_backend
+from torch_like.automl.backends import get_backend, has_backend
 
 import numpy as np
 import pandas as pd
