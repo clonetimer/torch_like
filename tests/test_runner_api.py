@@ -31,7 +31,7 @@ from runner.forecast_runner import (
 from runner.performance import ExecutionConfig, autocast_context, create_grad_scaler, move_to_device
 from runner.report import load_result_jsons, summarize_results
 from runner.rul_data import RULDataConfig, create_rul_loaders
-from runner.rul_runner import RULRunConfig
+from runner.rul_runner import RULRunConfig, _development_loaders
 from runner.rul_runner import run_experiment as run_rul_experiment
 from torch_like.utils.tools import EarlyStopping, dotdict
 
@@ -512,6 +512,28 @@ class RunnerApiTests(unittest.TestCase):
         self.assertEqual(len(loaded), 1)
         self.assertEqual(len(summary), 1)
         self.assertTrue(summary[0]["has_metrics"])
+
+    def test_rul_development_holdout_is_bearing_disjoint(self):
+        class BearingDataset(torch.utils.data.Dataset):
+            bearing_names = ["B1", "B2", "B3"]
+            index_map = [(bearing, index) for bearing in range(3) for index in range(4)]
+
+            def __len__(self):
+                return len(self.index_map)
+
+            def __getitem__(self, index):
+                return torch.zeros(32, 2), torch.tensor(0.5)
+
+        dataset = BearingDataset()
+        bundle = type("Bundle", (), {"train_set": dataset})()
+        cfg = RULRunConfig(data=RULDataConfig(root_dir="dummy", batch_size=2), device="cpu")
+        train_loader, validation_loader, name = _development_loaders(bundle, cfg)
+        training_groups = {dataset.index_map[index][0] for index in train_loader.dataset.indices}
+        validation_groups = {dataset.index_map[index][0] for index in validation_loader.dataset.indices}
+        self.assertEqual(len(training_groups), 2)
+        self.assertEqual(len(validation_groups), 1)
+        self.assertFalse(training_groups & validation_groups)
+        self.assertIn(name, dataset.bearing_names)
 
     def test_thgnn_rul_experiment_smoke(self):
         class DummyDataset(torch.utils.data.Dataset):
