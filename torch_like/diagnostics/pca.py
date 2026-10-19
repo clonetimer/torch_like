@@ -17,9 +17,7 @@ class _PCABaseline:
 
     statistic: str = ""
 
-    def __init__(
-        self, *, n_components: int = 1, min_std: float = 1e-8, min_eigenvalue: float = 1e-10
-    ) -> None:
+    def __init__(self, *, n_components: int = 1, min_std: float = 1e-8, min_eigenvalue: float = 1e-10) -> None:
         if isinstance(n_components, bool) or not isinstance(n_components, int) or n_components < 1:
             raise ValueError("n_components must be a positive integer")
         if not np.isfinite(min_std) or min_std <= 0:

@@ -91,9 +91,7 @@ class SignalFeaturesTests(unittest.TestCase):
                 welch_psd(data, segment_length=128, overlap=overlap)
         with self.assertRaisesRegex(ValueError, "window"):
             welch_psd(data, window="unknown")
-        missing = SignalBatch.from_sequence(
-            np.array([[np.nan], [1.0]]), sample_rate_hz=100, allow_missing=True
-        )
+        missing = SignalBatch.from_sequence(np.array([[np.nan], [1.0]]), sample_rate_hz=100, allow_missing=True)
         with self.assertRaisesRegex(ValueError, "finite"):
             fft_amplitude(missing)
 
