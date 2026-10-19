@@ -7,6 +7,12 @@ from torch_like.diagnostics.registry import (
     list_diagnostic_algorithms,
     register_diagnostic_algorithm,
 )
+from torch_like.diagnostics.statistical import (
+    CUSUMDetector,
+    EWMADetector,
+    ZScoreDetector,
+    register_statistical_detectors,
+)
 from torch_like.diagnostics.types import (
     DiagnosticAlgorithmSpec,
     DiagnosticOutputKind,
@@ -16,6 +22,10 @@ from torch_like.diagnostics.types import (
 )
 
 __all__ = [
+    "CUSUMDetector",
+    "EWMADetector",
+    "ZScoreDetector",
+    "register_statistical_detectors",
     "DiagnosticAlgorithmSpec",
     "DiagnosticOutputKind",
     "DiagnosticRegistry",

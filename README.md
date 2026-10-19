@@ -10,6 +10,8 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for long-term milestones and exit crite
 
 R1 诊断库基础：新增 `torch_like.diagnostics` 命名空间，提供明确采样率的信号数据协议、诊断结果语义与独立算法注册接口。当前仅完成接口基础，具体统计诊断算法和流程属于后续阶段。详见 [`docs/DIAGNOSTICS_R1.md`](docs/DIAGNOSTICS_R1.md)。
 
+R2 首批统计诊断基线：ZScoreDetector、CUSUMDetector、EWMADetector 使用健康训练基线拟合后进行无标签推理评分，支持逐窗口时间序列评分与固定阈值告警；详见 [R2 说明](docs/DIAGNOSTICS_R2.md)。
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
