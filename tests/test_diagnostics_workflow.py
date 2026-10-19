@@ -60,7 +60,9 @@ class BadDetector(CountingDetector):
 class AnomalyWorkflowTests(unittest.TestCase):
     def get_split(self):
         reference = partition([[-1, 1, -1, 1], [1, -1, 1, -1], [-1, -1, 1, 1]], group="healthy_run", prefix="ref")
-        validation = partition([[0, 0, 0, 0], [1, 1, 1, 1], [3, 3, 3, 3], [4, 4, 4, 4]], group="val_run", prefix="val", labels=[0, 0, 1, 1])
+        validation = partition(
+            [[0, 0, 0, 0], [1, 1, 1, 1], [3, 3, 3, 3], [4, 4, 4, 4]], group="val_run", prefix="val", labels=[0, 0, 1, 1]
+        )
         test = partition([[0, 0, 0, 0], [5, 5, 5, 5]], group="sealed_run", prefix="test", labels=[0, 1])
         return AnomalySplit(reference=reference, validation=validation, test=test)
 
@@ -178,9 +180,9 @@ class AnomalyWorkflowTests(unittest.TestCase):
         class ThreeDimDetector(CountingDetector):
             def score(self, batch):
                 return DiagnosticResult(
-                    "anomaly_detection", "anomaly_score", np.abs(batch.values),
-                    "ThreeDimDetector", 2.0
+                    "anomaly_detection", "anomaly_score", np.abs(batch.values), "ThreeDimDetector", 2.0
                 )
+
         result = AnomalyDiagnosticWorkflow(ThreeDimDetector()).run(self.get_split())
         np.testing.assert_array_equal(result.scores, [0, 5])
         self.assertEqual((result.tp, result.tn), (1, 1))

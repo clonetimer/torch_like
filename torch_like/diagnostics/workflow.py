@@ -69,9 +69,7 @@ class AnomalySplit:
             for other_name, right in partitions[index + 1 :]:
                 recordings = set(left.recording_ids) & set(right.recording_ids)
                 if recordings:
-                    raise ValueError(
-                        f"{name} and {other_name} share original recording_ids: {sorted(recordings)!r}"
-                    )
+                    raise ValueError(f"{name} and {other_name} share original recording_ids: {sorted(recordings)!r}")
                 samples = set(left.signals.sample_ids) & set(right.signals.sample_ids)
                 if samples:
                     raise ValueError(f"{name} and {other_name} share sample_ids: {sorted(samples)!r}")

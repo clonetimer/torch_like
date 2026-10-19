@@ -21,18 +21,18 @@ from torch_like.diagnostics.statistical import (
     ZScoreDetector,
     register_statistical_detectors,
 )
-from torch_like.diagnostics.workflow import (
-    AnomalyDiagnosticWorkflow,
-    AnomalyEvaluation,
-    AnomalyPartition,
-    AnomalySplit,
-)
 from torch_like.diagnostics.types import (
     DiagnosticAlgorithmSpec,
     DiagnosticOutputKind,
     DiagnosticResult,
     DiagnosticTask,
     SignalBatch,
+)
+from torch_like.diagnostics.workflow import (
+    AnomalyDiagnosticWorkflow,
+    AnomalyEvaluation,
+    AnomalyPartition,
+    AnomalySplit,
 )
 
 __all__ = [
