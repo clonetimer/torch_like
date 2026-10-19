@@ -39,9 +39,10 @@ class WindowAdapterTests(unittest.TestCase):
         matrix = transformer.transform(signals)
         self.assertEqual(matrix.shape, (1, 6))
         np.testing.assert_allclose(matrix[0], [0, 1, 1, 2, 2, 0])
-        self.assertEqual(transformer.column_names(signals.channel_names), (
-            "a__mean", "a__rms", "a__kurtosis", "b__mean", "b__rms", "b__kurtosis"
-        ))
+        self.assertEqual(
+            transformer.column_names(signals.channel_names),
+            ("a__mean", "a__rms", "a__kurtosis", "b__mean", "b__rms", "b__kurtosis"),
+        )
 
     def test_injected_native_estimator_no_refit_on_evaluation(self):
         estimator = RecordingEstimator()
@@ -71,7 +72,9 @@ class WindowAdapterTests(unittest.TestCase):
         self.assertTrue(np.isfinite(result.values).all())
         native = detector.estimator.decision_function(detector.transform(test))
         np.testing.assert_allclose(result.values, -native)
-        np.testing.assert_array_equal(detector.alarm_mask(test), detector.estimator.predict(detector.transform(test)) == -1)
+        np.testing.assert_array_equal(
+            detector.alarm_mask(test), detector.estimator.predict(detector.transform(test)) == -1
+        )
         self.assertEqual(len(detector.feature_names_), 7)
 
     def test_reject_channel_units_rate_and_window_length_drift(self):

@@ -21,8 +21,10 @@ class WindowFeatureTransformer:
 
     def __init__(self, *, features: tuple[str, ...] = DEFAULT_WINDOW_FEATURES) -> None:
         selected = tuple(features)
-        if not selected or len(selected) != len(set(selected)) or any(
-            name not in DEFAULT_WINDOW_FEATURES for name in selected
+        if (
+            not selected
+            or len(selected) != len(set(selected))
+            or any(name not in DEFAULT_WINDOW_FEATURES for name in selected)
         ):
             raise ValueError("features must be nonempty, unique recognized names")
         self.features = selected
@@ -63,9 +65,7 @@ class SklearnWindowAnomalyDetector:
             options = {"n_estimators": 100, "contamination": "auto", "random_state": 0}
             options.update(isolation_forest_kwargs)
             estimator = create_estimator("IsolationForest", **options)
-        if not callable(getattr(estimator, "fit", None)) or not callable(
-            getattr(estimator, "decision_function", None)
-        ):
+        if not callable(getattr(estimator, "fit", None)) or not callable(getattr(estimator, "decision_function", None)):
             raise TypeError("estimator must expose native fit and decision_function")
         self.estimator = estimator
         self.transformer = WindowFeatureTransformer(features=features)
