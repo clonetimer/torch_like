@@ -85,15 +85,15 @@ class FaultClassificationEvaluation:
         probs = np.asarray(self.probabilities, dtype=np.float64).copy()
         counts = np.asarray(self.confusion, dtype=np.int64).copy()
         n = len(self.sample_ids)
-        if len(labels) < 2 or len(set(labels)) != len(labels) or any(
-            not isinstance(label, str) or not label.strip() for label in labels
+        if (
+            len(labels) < 2
+            or len(set(labels)) != len(labels)
+            or any(not isinstance(label, str) or not label.strip() for label in labels)
         ):
             raise ValueError("class_labels must form a nonempty, unique multi-class vocabulary")
         if probs.shape != (n, len(labels)) or not np.isfinite(probs).all():
             raise ValueError("probabilities must match samples and class count")
-        if np.any(probs < 0) or np.any(probs > 1) or not np.allclose(
-            probs.sum(axis=1), 1.0, rtol=1e-5, atol=1e-5
-        ):
+        if np.any(probs < 0) or np.any(probs > 1) or not np.allclose(probs.sum(axis=1), 1.0, rtol=1e-5, atol=1e-5):
             raise ValueError("probabilities must be normalized to one for each test window")
         if counts.shape != (len(labels), len(labels)) or np.any(counts < 0) or counts.sum() != n:
             raise ValueError("confusion must contain one nonnegative count per test sample")
