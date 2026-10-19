@@ -155,9 +155,7 @@ class EWMADetector(_GaussianBaseline):
         output = np.empty_like(z)
         for index in range(length):
             state = self.alpha * z[:, index, :] + (1.0 - self.alpha) * state
-            variance = self.alpha / (2.0 - self.alpha) * (
-                1.0 - (1.0 - self.alpha) ** (2 * (index + 1))
-            )
+            variance = self.alpha / (2.0 - self.alpha) * (1.0 - (1.0 - self.alpha) ** (2 * (index + 1)))
             output[:, index, :] = np.abs(state) / np.sqrt(variance)
         return self._result("EWMADetector", output, self.control_limit)
 
