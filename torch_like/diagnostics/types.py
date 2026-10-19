@@ -39,6 +39,8 @@ class SignalBatch:
     allow_missing: bool = False
 
     def __post_init__(self) -> None:
+        if np.iscomplexobj(self.values):
+            raise ValueError("complex-valued signals need an explicit real-valued representation")
         x = np.asarray(self.values, dtype=np.float64)
         if x.ndim != 3 or min(x.shape) <= 0:
             raise ValueError("values must have nonempty shape (samples, time, channels)")
@@ -128,6 +130,8 @@ class DiagnosticResult:
             if values.ndim != 1:
                 raise ValueError("fault_label must be one-dimensional")
         else:
+            if np.iscomplexobj(values):
+                raise ValueError("complex-valued estimates require explicit conversion")
             if not np.issubdtype(values.dtype, np.number):
                 raise ValueError("scores and estimates must be numeric")
             values = np.asarray(values, dtype=np.float64)

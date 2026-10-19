@@ -54,6 +54,12 @@ class DiagnosticContractsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             SignalBatch(np.array([[[float("inf")]]]), 1, allow_missing=True)
 
+    def test_complex_input_must_not_silently_discard_imaginary_part(self):
+        with self.assertRaisesRegex(ValueError, "complex-valued"):
+            SignalBatch(np.array([[[1.0 + 2.0j]]]), sample_rate_hz=100)
+        with self.assertRaisesRegex(ValueError, "complex-valued"):
+            DiagnosticResult("anomaly_detection", "anomaly_score", np.array([1.0 + 2.0j]), "score")
+
     def test_timestamps_are_strictly_increasing_per_sample(self):
         batch = SignalBatch(np.ones((2, 4, 1)), 100, timestamps_s=np.arange(4))
         self.assertEqual(batch.timestamps_s.shape, (2, 4))
