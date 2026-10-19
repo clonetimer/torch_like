@@ -1,5 +1,6 @@
 """Industrial diagnostics task contracts and backend-preserving algorithm registry."""
 
+from torch_like.diagnostics.events import DiagnosticEvent, extract_anomaly_events
 from torch_like.diagnostics.features import Spectrum, fft_amplitude, time_domain_features, welch_psd
 from torch_like.diagnostics.pca import PCASPEDetector, PCAT2Detector, register_pca_detectors
 from torch_like.diagnostics.registry import (
@@ -36,6 +37,8 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "DiagnosticEvent",
+    "extract_anomaly_events",
     "AnomalyDiagnosticWorkflow",
     "AnomalyEvaluation",
     "AnomalyPartition",
