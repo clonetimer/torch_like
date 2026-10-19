@@ -118,7 +118,10 @@ class FaultSourceTests(unittest.TestCase):
         self.assertEqual(sources.label_names, ("fan", "sensor", "power_bus"))
         self.assertEqual(sources.values.shape, (2, 3))
         np.testing.assert_allclose(sources.values[:, 0], probabilities.values[:, 1])
-        np.testing.assert_allclose(sources.values[:, 1], np.maximum(probabilities.values[:, 1], probabilities.values[:, 2]))
+        np.testing.assert_allclose(
+            sources.values[:, 1],
+            np.maximum(probabilities.values[:, 1], probabilities.values[:, 2]),
+        )
         np.testing.assert_allclose(sources.values[:, 2], probabilities.values[:, 2])
         self.assertEqual(sources.output_kind, "fault_source_score")
 
