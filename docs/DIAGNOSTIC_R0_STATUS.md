@@ -28,3 +28,7 @@ The October 19 CI uncovered ten October 15 stale review records. A narrow source
 ## Public-API snapshot reference environment
 
 The 904-symbol manifest is environment-sensitive for deliberately re-exported native sklearn estimator classes and generic alias reflection. Inspecting the old and current manifest showed the same 904 exports, but sklearn 1.7.2 versus 1.8.0 changes `LogisticRegression` and `SGDClassifier` constructor defaults, and Python 3.10 versus 3.13 changes `MetricFunction` / `MetricState` alias introspection. These are not changes to torch_like implementations. R0 keeps the strict full public API manifest check and aligns the **baseline CI reference job** with Python 3.13, PyTorch 2.10.0 CPU and scikit-learn 1.8.0. Other supported environments require separate behavioral compatibility checks, not a baseline overwrite. No API replacement or deprecation exception is introduced.
+
+## Full-suite coverage of spawned DDP worker processes
+
+The first Python-3.13 comprehensive run passed 573 tests with two skips but yielded 81.55% coverage, below the unchanged 83% gate, because the actual `torchrun` workers were not represented in the main process's coverage report (`torch_like/training/_ddp.py` reported 0%). The CI now enables coverage.process_startup in workers via `COVERAGE_PROCESS_START` pointing to pyproject.toml, saves parallel coverage data and combines subprocess results before enforcing the same 83% minimum. The dual-rank numerical/integration test still runs separately in `ddp-cpu-gloo`.

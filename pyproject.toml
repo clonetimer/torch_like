@@ -56,6 +56,7 @@ filterwarnings = [
 
 [tool.coverage.run]
 branch = true
+parallel = true
 source = ["torch_like"]
 patch = ["subprocess"]
 

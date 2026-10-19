@@ -9,6 +9,13 @@ import random
 import sys
 from pathlib import Path
 
+# Collect coverage in actual torchrun children when the parent CI explicitly opts in.
+# Workers remain dependency-free outside the coverage-enabled development environment.
+if os.environ.get("COVERAGE_PROCESS_START"):
+    import coverage
+
+    coverage.process_startup()
+
 import numpy as np
 import torch
 import torch.distributed as dist
