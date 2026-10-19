@@ -22,6 +22,8 @@ R3b 事件级输出：新增 `extract_anomaly_events`，按预测分数的真实
 
 R4a 故障类型分类：基于原生 sklearn RandomForest/SVC 和现有时域特征，新增有监督单标签故障分类、固定故障标签字典、按原始记录隔离的训练/验证/封存测试协议，以及宏平均 F1、混淆矩阵与样本溯源。此阶段不宣称实现故障源定位或根因推断。详见 [`docs/DIAGNOSTICS_R4A.md`](docs/DIAGNOSTICS_R4A.md)。
 
+R4b 故障源候选证据映射：新增版本化专家故障类型/部件关联规则 `FaultSourceRulebook` 和无需训练的 `FaultSourceEvidenceMapper`；只输出候选部件支持分数，不将它们解释为真实故障根因的概率。详见 [`docs/DIAGNOSTICS_R4B.md`](docs/DIAGNOSTICS_R4B.md)。
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
