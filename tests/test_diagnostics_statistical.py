@@ -80,6 +80,15 @@ class StatisticalDetectorsTests(unittest.TestCase):
             detector.score(signal([1, 2], rate=50))
         with self.assertRaisesRegex(ValueError, "channel_names"):
             detector.score(signal([1, 2], names=("other",)))
+        with self.assertRaisesRegex(ValueError, "units"):
+            detector.score(
+                SignalBatch.from_sequence(
+                    np.array([[1.0], [2.0]]),
+                    sample_rate_hz=100,
+                    channel_names=("x",),
+                    units=("g",),
+                )
+            )
 
     def test_fitted_state_and_development_only_guardrails(self):
         detector = ZScoreDetector()

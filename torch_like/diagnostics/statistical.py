@@ -23,6 +23,7 @@ class _GaussianBaseline:
         self._mean: np.ndarray | None = None
         self._scale: np.ndarray | None = None
         self._names: tuple[str, ...] | None = None
+        self._units: tuple[str, ...] | None = None
         self._rate: float | None = None
 
     def fit(self, reference: SignalBatch) -> "_GaussianBaseline":
@@ -43,6 +44,7 @@ class _GaussianBaseline:
         self._mean = mean
         self._scale = scale
         self._names = reference.channel_names
+        self._units = reference.units
         self._rate = reference.sample_rate_hz
         return self
 
@@ -67,6 +69,8 @@ class _GaussianBaseline:
             raise ValueError("scoring requires finite inputs; impute or reject missing data upstream")
         if batch.channel_names != self._names:
             raise ValueError("channel_names must match the fitted reference, including ordering")
+        if batch.units != self._units:
+            raise ValueError("units must match the fitted reference")
         if batch.sample_rate_hz != self._rate:
             raise ValueError("sample_rate_hz differs from the fitted reference")
         return (batch.values - self._mean) / self._scale
