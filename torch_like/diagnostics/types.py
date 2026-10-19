@@ -200,6 +200,16 @@ class DiagnosticAlgorithmSpec:
             or not set(operations).issubset({"fit", "predict", "score", "partial_fit"})
         ):
             raise ValueError("operations must be unique supported operations")
-        object.__setattr__(self, "task", DiagnosticTask(self.task))
-        object.__setattr__(self, "output_kind", DiagnosticOutputKind(self.output_kind))
+        task = DiagnosticTask(self.task)
+        output = DiagnosticOutputKind(self.output_kind)
+        if task == DiagnosticTask.ANOMALY_DETECTION and output != DiagnosticOutputKind.ANOMALY_SCORE:
+            raise ValueError("anomaly detection spec requires anomaly_score")
+        if task == DiagnosticTask.RUL_REGRESSION and output != DiagnosticOutputKind.RUL_VALUE:
+            raise ValueError("RUL spec requires rul_value")
+        if task == DiagnosticTask.FAULT_CLASSIFICATION and output not in {
+            DiagnosticOutputKind.CLASS_PROBABILITY, DiagnosticOutputKind.FAULT_LABEL
+        }:
+            raise ValueError("fault classification spec requires probabilities or fault labels")
+        object.__setattr__(self, "task", task)
+        object.__setattr__(self, "output_kind", output)
         object.__setattr__(self, "operations", operations)
