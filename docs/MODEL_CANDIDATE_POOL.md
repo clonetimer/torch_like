@@ -31,19 +31,38 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | RT-DETR (CVPR 2024) | 2026-07-14 | 2027-01-14 | maintainers | benchmark, API, license, or implementation-level change |
 | DreamerV3 (Nature 2025 code) | 2026-07-14 | 2027-01-14 | maintainers | independent replication or reference-code change |
 | EnCodec 24/48 kHz | 2026-07-14 | 2027-01-14 | maintainers | codec benchmark, API, or license change |
-| Mamba-2 / SSD | 2026-07-14 | 2026-10-15 | maintainers | independent comparison or fused-kernel evidence |
+| Mamba-2 / SSD | 2026-10-19 | 2026-11-19 | maintainers | independent comparison or fused-kernel evidence |
 | EGNN (ICML 2021) | 2026-07-14 | 2027-01-14 | maintainers | sparse backend, benchmark, or API change |
-| SAM 2.1 | 2026-07-14 | 2026-10-15 | maintainers | video protocol or independent latency evidence |
-| Uni-Mol v1 | 2026-07-14 | 2026-10-15 | maintainers | molecular protocol or checkpoint-policy change |
-| TabPFN v2 | 2026-07-14 | 2026-10-15 | maintainers | license, checkpoint, or independent benchmark change |
-| Fourier Neural Operator | 2026-07-14 | 2026-10-15 | maintainers | operator-learning protocol or benchmark change |
-| V-JEPA 2 | 2026-07-14 | 2026-10-15 | maintainers | permissive assets or broad independent validation |
-| RWKV-7 Goose | 2026-07-14 | 2026-10-15 | maintainers | equal-budget independent replication |
-| Gated DeltaNet-2 (2026-05) | 2026-07-14 | 2026-10-15 | maintainers | license or independent replication |
-| Griffin/RecurrentGemma 1.1 | 2026-07-14 | 2026-10-15 | maintainers | terms, weights, or independent comparison change |
+| SAM 2.1 | 2026-10-19 | 2026-11-19 | maintainers | video protocol or independent latency evidence |
+| Uni-Mol v1 | 2026-10-19 | 2026-11-19 | maintainers | molecular protocol or checkpoint-policy change |
+| TabPFN v2 | 2026-10-19 | 2026-11-19 | maintainers | license, checkpoint, or independent benchmark change |
+| Fourier Neural Operator | 2026-10-19 | 2026-11-19 | maintainers | operator-learning protocol or benchmark change |
+| V-JEPA 2 | 2026-10-19 | 2026-11-19 | maintainers | permissive assets or broad independent validation |
+| RWKV-7 Goose | 2026-10-19 | 2026-11-19 | maintainers | equal-budget independent replication |
+| Gated DeltaNet-2 (2026-05) | 2026-10-19 | 2026-11-19 | maintainers | license or independent replication |
+| Griffin/RecurrentGemma 1.1 | 2026-10-19 | 2026-11-19 | maintainers | terms, weights, or independent comparison change |
 | SegFormer B0-B5 | 2026-07-14 | 2027-01-14 | maintainers | license or material capability-gap change |
-| Titans (NeurIPS 2025) | 2026-07-14 | 2026-10-15 | maintainers | official code and explicit license become available |
+| Titans (NeurIPS 2025) | 2026-10-19 | 2026-11-19 | maintainers | official code and explicit license become available |
 | DINOv2 with registers | 2026-07-14 | 2027-01-14 | maintainers | non-duplicative random-init API identified |
+
+## 2026-10-19 Source-and-scope Desk Review / 来源及边界复核
+
+**Scope:** This is a limited maintenance review of **identity, current official code/terms pointers, and admission scope**, not a new hardware benchmark, independent model replication, model promotion, or production certification. Ten 2026-10-15 review deadlines had expired and blocked CI. On 2026-10-19, their source pointers and documented adoption boundaries were revisited; the original admission decisions, scores, implementation labels, and evidence grades remain unchanged. The next follow-up is due **2026-11-19** for a deeper evidence review. The 31-day interval is deliberately short because independent benchmarks and license/asset analysis remain open.
+
+| Candidate | Checked public primary/official pointer | Desk-review decision and unresolved issue |
+|---|---|---|
+| Mamba-2 / SSD | https://github.com/state-spaces/mamba | Official project still supplies Mamba implementations; maintain observation/implemented; framework-side fused kernel and parity evidence remains unverified |
+| SAM 2.1 | https://github.com/facebookresearch/sam2 | Official code/checkpoint disclosure visible; maintain observation; no framework video-state task/latency evidence |
+| Uni-Mol v1 | https://github.com/deepmodeling/Uni-Mol | Official molecular code carries MIT license; maintain observation; no qualified molecule/geometry task adapter |
+| TabPFN v2 | https://github.com/PriorLabs/TabPFN | V2 weights remain subject to version-specific Prior Labs licensing/attribution; maintain observation/no-code; no unrestricted checkpoint integration |
+| Fourier Neural Operator | https://github.com/neuraloperator/neuraloperator | Maintained FNO code exists; maintain observation; operator-task contract and resolution-transfer verification remain absent |
+| V-JEPA 2 | https://github.com/facebookresearch/vjepa2 | Official implementation and pretrained assets visible, but terms vary by component/asset and the project also discusses V-JEPA 2.1; maintain rejected; no approved pretrained-asset integration |
+| RWKV-7 Goose | https://github.com/BlinkDL/RWKV-LM | Official RWKV-7 reference code exists; maintain rejected without a model-specific equal-budget local baseline |
+| Gated DeltaNet-2 | https://github.com/NVlabs/GatedDeltaNet-2 | The official project explicitly uses NVIDIA Source Code License-NC; maintain rejected, no general-purpose distribution clearance |
+| Griffin/RecurrentGemma 1.1 | https://github.com/google-deepmind/recurrentgemma | Apache-2.0 code and separately gated model weights/Gemma terms are documented; maintain rejected, no pretrained-asset dependency |
+| Titans (NeurIPS 2025) | https://arxiv.org/abs/2501.00663 | Paper identified; independent third-party implementations are not evidence of an official, explicitly licensed reference implementation; hard-gate fail/rejected remains |
+
+**Guardrails:** No newly dated source review grants a `core` promotion, new model admission, checkpoint license approval, benchmark evidence, or production readiness. Original detailed records remain authoritative until an independent technical review. The next review MUST confirm reproducibility/license status with direct evidence before any admission or promotion.
 
 ## Hard-Gate Summary / 硬门槛汇总
 

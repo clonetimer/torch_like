@@ -20,3 +20,7 @@ This change does not claim paper-level RUL reproduction or multi-condition gener
 - `ddp-cpu-gloo` must pass independently.
 - Every model report distinguishes interface/smoke evidence from dataset-specific benchmark evidence.
 - New algorithm intake is deferred until R0 gates pass.
+
+## Candidate-pool freshness gate
+
+The October 19 CI uncovered ten October 15 stale review records. A narrow source/terms desk review is recorded in `docs/MODEL_CANDIDATE_POOL.md`, without changing admissions or scores. Follow-up technical reviews remain due November 19, 2026.
