@@ -121,6 +121,20 @@ class AnomalyEvaluation:
         """Undefined when the sealed test subset has no healthy windows."""
         return self.fp / (self.fp + self.tn) if self.fp + self.tn else None
 
+    def as_diagnostic_result(self) -> DiagnosticResult:
+        """Expose sealed window scores and selected threshold for event reporting.
+
+        No model execution, threshold selection, or label access occurs here.
+        The score resolution is window-only, so no onset times are implied.
+        """
+        return DiagnosticResult(
+            task="anomaly_detection",
+            output_kind="anomaly_score",
+            values=self.scores,
+            algorithm_name=self.algorithm_name,
+            threshold=self.threshold,
+        )
+
     def to_dict(self) -> dict[str, Any]:
         """JSON-friendly report (never includes ground-truth label arrays)."""
         return {
