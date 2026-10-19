@@ -9,6 +9,12 @@ from torch_like.diagnostics.registry import (
     list_diagnostic_algorithms,
     register_diagnostic_algorithm,
 )
+from torch_like.diagnostics.sklearn_adapter import (
+    DEFAULT_WINDOW_FEATURES,
+    SklearnWindowAnomalyDetector,
+    WindowFeatureTransformer,
+    register_sklearn_window_detectors,
+)
 from torch_like.diagnostics.statistical import (
     CUSUMDetector,
     EWMADetector,
@@ -24,6 +30,10 @@ from torch_like.diagnostics.types import (
 )
 
 __all__ = [
+    "DEFAULT_WINDOW_FEATURES",
+    "SklearnWindowAnomalyDetector",
+    "WindowFeatureTransformer",
+    "register_sklearn_window_detectors",
     "CUSUMDetector",
     "PCASPEDetector",
     "PCAT2Detector",
