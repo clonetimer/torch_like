@@ -93,6 +93,35 @@ class FaultSourceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "associated"):
             FaultSourceRulebook(("normal", "fault"), ("a", "b"), {"normal": (), "fault": ("a",)})
 
+    def test_native_fault_classifier_to_source_evidence(self):
+        """The R4a probability output feeds R4b without causal semantics."""
+        from torch_like.diagnostics.classification import FaultLabelSchema, SklearnWindowFaultClassifier
+        from torch_like.diagnostics.types import SignalBatch
+
+        schema = FaultLabelSchema(rulebook().class_labels)
+        reference = SignalBatch(
+            np.array([[0.0] * 8, [0.1] * 8, [2.0] * 8, [2.1] * 8, [4.0] * 8, [4.1] * 8])[:, :, None],
+            sample_rate_hz=80.0,
+            channel_names=("temperature",),
+            units=("C",),
+        )
+        labels = ("normal", "normal", "overheat", "overheat", "supply_fault", "supply_fault")
+        classifier = SklearnWindowFaultClassifier(n_estimators=12, random_state=11).fit(reference, labels, schema)
+        queries = SignalBatch(
+            np.array([[0.05] * 8, [3.9] * 8])[:, :, None],
+            sample_rate_hz=80.0,
+            channel_names=("temperature",),
+            units=("C",),
+        )
+        probabilities = classifier.predict_proba(queries)
+        sources = FaultSourceEvidenceMapper(rulebook()).predict(probabilities)
+        self.assertEqual(sources.label_names, ("fan", "sensor", "power_bus"))
+        self.assertEqual(sources.values.shape, (2, 3))
+        np.testing.assert_allclose(sources.values[:, 0], probabilities.values[:, 1])
+        np.testing.assert_allclose(sources.values[:, 1], np.maximum(probabilities.values[:, 1], probabilities.values[:, 2]))
+        np.testing.assert_allclose(sources.values[:, 2], probabilities.values[:, 2])
+        self.assertEqual(sources.output_kind, "fault_source_score")
+
     def test_registry_creates_mapping_with_explicit_rulebook(self):
         registry = DiagnosticRegistry()
         register_fault_source_mapper(registry)

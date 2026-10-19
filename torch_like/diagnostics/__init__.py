@@ -1,5 +1,16 @@
 """Industrial diagnostics task contracts and backend-preserving algorithm registry."""
 
+from torch_like.diagnostics.classification import (
+    FaultLabelSchema,
+    SklearnWindowFaultClassifier,
+    register_sklearn_fault_classifiers,
+)
+from torch_like.diagnostics.classification_workflow import (
+    FaultClassificationEvaluation,
+    FaultClassificationPartition,
+    FaultClassificationSplit,
+    FaultClassificationWorkflow,
+)
 from torch_like.diagnostics.events import DiagnosticEvent, extract_anomaly_events
 from torch_like.diagnostics.fault_sources import (
     FaultSourceEvidenceMapper,
@@ -45,6 +56,13 @@ __all__ = [
     "FaultSourceEvidenceMapper",
     "FaultSourceRulebook",
     "register_fault_source_mapper",
+    "FaultLabelSchema",
+    "SklearnWindowFaultClassifier",
+    "register_sklearn_fault_classifiers",
+    "FaultClassificationEvaluation",
+    "FaultClassificationPartition",
+    "FaultClassificationSplit",
+    "FaultClassificationWorkflow",
     "DiagnosticEvent",
     "extract_anomaly_events",
     "AnomalyDiagnosticWorkflow",
