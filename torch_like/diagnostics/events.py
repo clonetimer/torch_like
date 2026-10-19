@@ -111,8 +111,18 @@ def extract_anomaly_events(
         if score > threshold:
             events.append(
                 DiagnosticEvent(
-                    result.algorithm_name, sample, identify(sample), "window", channel,
-                    None, None, None, None, None, float(score), threshold,
+                    result.algorithm_name,
+                    sample,
+                    identify(sample),
+                    "window",
+                    channel,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    float(score),
+                    threshold,
                 )
             )
 

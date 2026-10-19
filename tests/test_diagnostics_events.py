@@ -30,13 +30,12 @@ class DiagnosticEventTests(unittest.TestCase):
 
     def test_time_only_scores_require_explicit_two_axis_layout(self):
         batch = SignalBatch(np.zeros((1, 5, 2)), sample_rate_hz=10)
-        result = DiagnosticResult("anomaly_detection", "anomaly_score", np.array([[0, 2, 2, 0, 3]]),
-                                  "PCAT2Detector", threshold=1.0)
+        result = DiagnosticResult(
+            "anomaly_detection", "anomaly_score", np.array([[0, 2, 2, 0, 3]]), "PCAT2Detector", threshold=1.0
+        )
         with self.assertRaisesRegex(ValueError, "explicit"):
             extract_anomaly_events(result, batch)
-        events = extract_anomaly_events(
-            result, batch, score_layout="time", min_active_points=3, gap_tolerance=1
-        )
+        events = extract_anomaly_events(result, batch, score_layout="time", min_active_points=3, gap_tolerance=1)
         self.assertEqual(len(events), 1)
         self.assertEqual((events[0].start_index, events[0].end_index_exclusive), (1, 5))
         self.assertEqual(events[0].active_points, 3)
@@ -44,8 +43,9 @@ class DiagnosticEventTests(unittest.TestCase):
 
     def test_window_score_has_no_invented_onset_or_duration(self):
         batch = SignalBatch(np.zeros((2, 8, 1)), sample_rate_hz=100, sample_ids=("a", "b"))
-        result = DiagnosticResult("anomaly_detection", "anomaly_score", np.array([1.5, 0.5]),
-                                  "SklearnWindowAnomalyDetector", threshold=1.0)
+        result = DiagnosticResult(
+            "anomaly_detection", "anomaly_score", np.array([1.5, 0.5]), "SklearnWindowAnomalyDetector", threshold=1.0
+        )
         events = extract_anomaly_events(result, batch)
         self.assertEqual(len(events), 1)
         event = events[0]
@@ -61,26 +61,26 @@ class DiagnosticEventTests(unittest.TestCase):
 
     def test_window_channel_layout_preserves_source_channel(self):
         batch = SignalBatch(np.zeros((1, 2, 2)), sample_rate_hz=10, channel_names=("a", "b"))
-        scores = DiagnosticResult("anomaly_detection", "anomaly_score", np.array([[2.0, 1.0]]),
-                                  "window_model", threshold=1.0)
+        scores = DiagnosticResult(
+            "anomaly_detection", "anomaly_score", np.array([[2.0, 1.0]]), "window_model", threshold=1.0
+        )
         events = extract_anomaly_events(scores, batch, score_layout="window_channel")
         self.assertEqual(len(events), 1)
         self.assertEqual(events[0].channel_name, "a")
         self.assertIsNone(events[0].first_time_s)
 
     def test_event_times_use_explicit_timestamps_without_assuming_alignment(self):
-        batch = SignalBatch.from_sequence(np.zeros((4, 1)), sample_rate_hz=10,
-                                          timestamps_s=np.array([100, 100.2, 100.5, 100.7]))
-        score = DiagnosticResult("anomaly_detection", "anomaly_score", np.array([[0, 2, 2, 0]]),
-                                 "model", threshold=1)
+        batch = SignalBatch.from_sequence(
+            np.zeros((4, 1)), sample_rate_hz=10, timestamps_s=np.array([100, 100.2, 100.5, 100.7])
+        )
+        score = DiagnosticResult("anomaly_detection", "anomaly_score", np.array([[0, 2, 2, 0]]), "model", threshold=1)
         events = extract_anomaly_events(score, batch, score_layout="time", min_active_points=2)
         self.assertEqual((events[0].first_time_s, events[0].last_time_s), (100.2, 100.5))
 
     def test_no_merge_across_independent_windows(self):
         batch = SignalBatch(np.zeros((2, 3, 1)), sample_rate_hz=10)
         scores = np.array([[[0], [0], [3]], [[3], [0], [0]]])
-        result = DiagnosticResult("anomaly_detection", "anomaly_score", scores,
-                                  "model", threshold=1)
+        result = DiagnosticResult("anomaly_detection", "anomaly_score", scores, "model", threshold=1)
         events = extract_anomaly_events(result, batch, gap_tolerance=2)
         self.assertEqual(len(events), 2)
         self.assertEqual([e.sample_index for e in events], [0, 1])
@@ -102,9 +102,7 @@ class DiagnosticEventTests(unittest.TestCase):
         wrong_time = DiagnosticResult("anomaly_detection", "anomaly_score", np.array([[0, 1]]), "algo", threshold=0)
         with self.assertRaisesRegex(ValueError, "time axis"):
             extract_anomaly_events(wrong_time, batch, score_layout="time")
-        bad_channels = DiagnosticResult(
-            "anomaly_detection", "anomaly_score", np.zeros((1, 3, 1)), "algo", threshold=0
-        )
+        bad_channels = DiagnosticResult("anomaly_detection", "anomaly_score", np.zeros((1, 3, 1)), "algo", threshold=0)
         with self.assertRaisesRegex(ValueError, "channel axis"):
             extract_anomaly_events(bad_channels, batch)
         valid = DiagnosticResult("anomaly_detection", "anomaly_score", np.array([1.5]), "algo", threshold=1)
