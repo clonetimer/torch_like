@@ -3,6 +3,7 @@
 This classifier identifies predeclared fault types. It is NOT a fault-source
 isolation or root-cause inference system. No labels enter inference.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -23,8 +24,10 @@ class FaultLabelSchema:
 
     def __post_init__(self) -> None:
         names = tuple(self.labels)
-        if len(names) < 2 or len(set(names)) != len(names) or any(
-            not isinstance(x, str) or not x.strip() for x in names
+        if (
+            len(names) < 2
+            or len(set(names)) != len(names)
+            or any(not isinstance(x, str) or not x.strip() for x in names)
         ):
             raise ValueError("labels must contain at least two unique nonempty class names")
         if self.normal_label not in names:
@@ -66,9 +69,7 @@ class SklearnWindowFaultClassifier:
             if estimator_name == "SVC" and not options["probability"]:
                 raise ValueError("SVC requires probability=True for class-probability output")
             estimator = create_estimator(estimator_name, **options)
-        if not callable(getattr(estimator, "fit", None)) or not callable(
-            getattr(estimator, "predict_proba", None)
-        ):
+        if not callable(getattr(estimator, "fit", None)) or not callable(getattr(estimator, "predict_proba", None)):
             raise TypeError("estimator must provide native fit and predict_proba")
         self.estimator = estimator
         self.transformer = WindowFeatureTransformer(features=features)
@@ -147,8 +148,10 @@ class SklearnWindowFaultClassifier:
         if self._class_order is None:
             raise RuntimeError("native estimator class ordering has not been fitted")
         ordered = values[:, self._class_order]
-        if np.any(ordered < 0) or np.any(ordered > 1) or not np.allclose(
-            ordered.sum(axis=1), 1.0, rtol=1e-5, atol=1e-5
+        if (
+            np.any(ordered < 0)
+            or np.any(ordered > 1)
+            or not np.allclose(ordered.sum(axis=1), 1.0, rtol=1e-5, atol=1e-5)
         ):
             raise ValueError("native estimator produced invalid normalized class probabilities")
         return DiagnosticResult(

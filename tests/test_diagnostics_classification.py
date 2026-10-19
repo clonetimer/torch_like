@@ -1,4 +1,5 @@
 """R4a: class vocabulary, native sklearn parity and closed-world fault outputs."""
+
 import unittest
 
 import numpy as np
@@ -10,7 +11,6 @@ from torch_like.diagnostics.classification import (
 )
 from torch_like.diagnostics.registry import DiagnosticRegistry
 from torch_like.diagnostics.types import SignalBatch
-
 
 SCHEMA = FaultLabelSchema(("normal", "bearing", "imbalance"))
 
@@ -132,20 +132,24 @@ class ClassifierTests(unittest.TestCase):
             SklearnWindowFaultClassifier(estimator_name="not_allowed")
         with self.assertRaisesRegex(ValueError, "probability=True"):
             SklearnWindowFaultClassifier(estimator_name="SVC", probability=False)
+
         class BrokenNative(ReversedNativeEstimator):
             def fit(self, x, y):
                 self.classes_ = np.array([0, 1])
                 return self
+
         with self.assertRaisesRegex(ValueError, "classes_"):
             SklearnWindowFaultClassifier(BrokenNative()).fit(reference, labels, SCHEMA)
 
     def test_malformed_probabilities_fail_closed(self):
         reference, labels = training()
+
         class BrokenOutput(ReversedNativeEstimator):
             output = [[0.2, 0.2, 0.2]]
 
             def predict_proba(self, x):
                 return np.tile(self.output, (len(x), 1))
+
         estimator = BrokenOutput()
         clf = SklearnWindowFaultClassifier(estimator).fit(reference, labels, SCHEMA)
         with self.assertRaisesRegex(ValueError, "normalized"):
@@ -162,10 +166,12 @@ class ClassifierTests(unittest.TestCase):
         self.assertFalse(registry.list_specs())
         register_sklearn_fault_classifiers(registry)
         spec = registry.get_spec("SklearnWindowFaultClassifier")
-        self.assertEqual((spec.backend, spec.task, spec.output_kind), (
-            "sklearn", "fault_classification", "class_probability"
-        ))
-        self.assertIsInstance(registry.create("SklearnWindowFaultClassifier", n_estimators=4), SklearnWindowFaultClassifier)
+        self.assertEqual(
+            (spec.backend, spec.task, spec.output_kind), ("sklearn", "fault_classification", "class_probability")
+        )
+        self.assertIsInstance(
+            registry.create("SklearnWindowFaultClassifier", n_estimators=4), SklearnWindowFaultClassifier
+        )
         with self.assertRaisesRegex(ValueError, "already registered"):
             register_sklearn_fault_classifiers(registry)
 

@@ -1,4 +1,5 @@
 """R4a: recording-disjoint fault-type classification and sealed test evaluation."""
+
 import unittest
 
 import numpy as np
@@ -11,7 +12,6 @@ from torch_like.diagnostics.classification_workflow import (
     FaultClassificationWorkflow,
 )
 from torch_like.diagnostics.types import DiagnosticResult, SignalBatch
-
 
 SCHEMA = FaultLabelSchema(("normal", "bearing", "imbalance"))
 
@@ -154,8 +154,7 @@ class FaultClassificationWorkflowTests(unittest.TestCase):
         class WrongKind(SpyClassifier):
             def predict_proba(self, signals):
                 return DiagnosticResult(
-                    "anomaly_detection", "anomaly_score",
-                    np.zeros(signals.shape[0]), "bad", threshold=0.5
+                    "anomaly_detection", "anomaly_score", np.zeros(signals.shape[0]), "bad", threshold=0.5
                 )
 
         with self.assertRaisesRegex(ValueError, "fault_classification"):
@@ -164,9 +163,11 @@ class FaultClassificationWorkflowTests(unittest.TestCase):
         class SwappedNames(SpyClassifier):
             def predict_proba(self, signals):
                 return DiagnosticResult(
-                    "fault_classification", "class_probability",
+                    "fault_classification",
+                    "class_probability",
                     np.tile([0.4, 0.3, 0.3], (signals.shape[0], 1)),
-                    "bad", label_names=("bearing", "normal", "imbalance")
+                    "bad",
+                    label_names=("bearing", "normal", "imbalance"),
                 )
 
         with self.assertRaisesRegex(ValueError, "class ordering"):
@@ -175,8 +176,13 @@ class FaultClassificationWorkflowTests(unittest.TestCase):
     def test_evaluation_rejects_incorrect_confusion_and_prediction_counts(self):
         with self.assertRaisesRegex(ValueError, "confusion"):
             FaultClassificationEvaluation(
-                "model", ("normal", "fault"), ("id",), ("recording",),
-                ("normal",), np.array([[0.5, 0.5]]), np.zeros((2, 2)),
+                "model",
+                ("normal", "fault"),
+                ("id",),
+                ("recording",),
+                ("normal",),
+                np.array([[0.5, 0.5]]),
+                np.zeros((2, 2)),
             )
 
     def test_workflow_requires_fit_and_predict_proba(self):

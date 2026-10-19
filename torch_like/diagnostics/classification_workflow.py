@@ -3,6 +3,7 @@
 Training labels may only be passed to model.fit; sealed test labels are read
 after the classifier has produced probabilities and are used only for metrics.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -88,8 +89,10 @@ class FaultClassificationEvaluation:
             raise ValueError("probabilities must match samples and class count")
         if counts.shape != (len(labels), len(labels)) or np.any(counts < 0) or counts.sum() != n:
             raise ValueError("confusion must contain one nonnegative count per test sample")
-        if len(self.recording_ids) != n or len(self.predictions) != n or any(
-            label not in labels for label in self.predictions
+        if (
+            len(self.recording_ids) != n
+            or len(self.predictions) != n
+            or any(label not in labels for label in self.predictions)
         ):
             raise ValueError("prediction labels and recording IDs must align with samples")
         probs.setflags(write=False)
@@ -134,9 +137,7 @@ class FaultClassificationWorkflow:
     """Single-use sealed test: one supervised fit, one prediction batch."""
 
     def __init__(self, classifier: Any) -> None:
-        if not callable(getattr(classifier, "fit", None)) or not callable(
-            getattr(classifier, "predict_proba", None)
-        ):
+        if not callable(getattr(classifier, "fit", None)) or not callable(getattr(classifier, "predict_proba", None)):
             raise TypeError("classifier must implement fit and predict_proba")
         self.classifier = classifier
         self._consumed = False
@@ -151,7 +152,10 @@ class FaultClassificationWorkflow:
         result = self.classifier.predict_proba(split.test.signals)
         if not isinstance(result, DiagnosticResult):
             raise TypeError("classifier must return DiagnosticResult")
-        if result.task != DiagnosticTask.FAULT_CLASSIFICATION or result.output_kind != DiagnosticOutputKind.CLASS_PROBABILITY:
+        if (
+            result.task != DiagnosticTask.FAULT_CLASSIFICATION
+            or result.output_kind != DiagnosticOutputKind.CLASS_PROBABILITY
+        ):
             raise ValueError("classifier must return fault_classification/class_probability")
         if result.label_names != split.schema.labels:
             raise ValueError("prediction class ordering must match fixed schema")
