@@ -462,6 +462,9 @@ def main():
             result = failure(ctx, args.root, args.scenario.removeprefix("fail_"))
         else:
             result = functions[args.scenario](ctx, args.root)
+        # Synchronize successful test workers before one process tears down Gloo.
+        # Negative-path tests can otherwise exit with a late background abort.
+        dist.barrier()
     assert not dist.is_initialized()
     report = {**result, "clean_exit": True, "version": tl.__version__, "import_path": tl.__file__}
     (args.root / f"rank{ctx.rank}.json").write_text(json.dumps(report, indent=2))
