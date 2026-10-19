@@ -48,9 +48,13 @@ class SignalBatch:
         if not np.isfinite(rate) or rate <= 0:
             raise ValueError("sample_rate_hz must be finite and positive")
         n, length, channels = x.shape
-        names = tuple(f"channel_{i}" for i in range(channels)) if self.channel_names is None else tuple(self.channel_names)
-        if len(names) != channels or len(set(names)) != len(names) or any(
-            not isinstance(name, str) or not name.strip() for name in names
+        names = (
+            tuple(f"channel_{i}" for i in range(channels)) if self.channel_names is None else tuple(self.channel_names)
+        )
+        if (
+            len(names) != channels
+            or len(set(names)) != len(names)
+            or any(not isinstance(name, str) or not name.strip() for name in names)
         ):
             raise ValueError("channel_names must be unique nonempty strings, one per channel")
         if self.units is not None and (
@@ -58,9 +62,9 @@ class SignalBatch:
         ):
             raise ValueError("units must have one nonempty unit per channel")
         if self.sample_ids is not None and (
-            len(self.sample_ids) != n or len(set(self.sample_ids)) != n or any(
-                not isinstance(item, str) or not item.strip() for item in self.sample_ids
-            )
+            len(self.sample_ids) != n
+            or len(set(self.sample_ids)) != n
+            or any(not isinstance(item, str) or not item.strip() for item in self.sample_ids)
         ):
             raise ValueError("sample_ids must be unique nonempty strings, one per sample")
         if self.timestamps_s is not None:
@@ -135,9 +139,9 @@ class DiagnosticResult:
         ):
             raise ValueError("threshold must be finite and only set for score/index outputs")
         if self.label_names is not None and (
-            not self.label_names or len(set(self.label_names)) != len(self.label_names) or any(
-                not isinstance(label, str) or not label.strip() for label in self.label_names
-            )
+            not self.label_names
+            or len(set(self.label_names)) != len(self.label_names)
+            or any(not isinstance(label, str) or not label.strip() for label in self.label_names)
         ):
             raise ValueError("label_names must be nonempty and unique")
         if kind == DiagnosticOutputKind.CLASS_PROBABILITY:
@@ -152,7 +156,8 @@ class DiagnosticResult:
         if task == DiagnosticTask.ANOMALY_DETECTION and kind != DiagnosticOutputKind.ANOMALY_SCORE:
             raise ValueError("anomaly detection requires anomaly_score")
         if task == DiagnosticTask.FAULT_CLASSIFICATION and kind not in {
-            DiagnosticOutputKind.CLASS_PROBABILITY, DiagnosticOutputKind.FAULT_LABEL
+            DiagnosticOutputKind.CLASS_PROBABILITY,
+            DiagnosticOutputKind.FAULT_LABEL,
         }:
             raise ValueError("fault classification requires probabilities or fault labels")
         values = np.array(values, copy=True)
@@ -189,8 +194,10 @@ class DiagnosticAlgorithmSpec:
         if self.input_kind not in {"signal_batch", "feature_matrix"}:
             raise ValueError("unknown input_kind")
         operations = tuple(self.operations)
-        if not operations or len(set(operations)) != len(operations) or not set(operations).issubset(
-            {"fit", "predict", "score", "partial_fit"}
+        if (
+            not operations
+            or len(set(operations)) != len(operations)
+            or not set(operations).issubset({"fit", "predict", "score", "partial_fit"})
         ):
             raise ValueError("operations must be unique supported operations")
         object.__setattr__(self, "task", DiagnosticTask(self.task))

@@ -39,7 +39,8 @@ class DiagnosticRegistry:
         task_filter = DiagnosticTask(task) if task is not None else None
         with self._lock:
             return {
-                name: spec for name, spec in self._specs.items()
+                name: spec
+                for name, spec in self._specs.items()
                 if (task_filter is None or spec.task == task_filter) and (backend is None or spec.backend == backend)
             }
 
