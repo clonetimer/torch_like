@@ -16,7 +16,10 @@ from torch_like.training.checkpoint import load_training_checkpoint, save_traini
 from torch_like.training.config import TrainerConfig
 from torch_like.training.data import move_to_device
 from torch_like.training.distributed import (
-    DDPConfig, DistributedContext, _distributed_device, _require_process_group,
+    DDPConfig,
+    DistributedContext,
+    _distributed_device,
+    _require_process_group,
 )
 from torch_like.training.events import training_events
 from torch_like.training.state import EpochResult, TrainingResult
@@ -188,7 +191,8 @@ class Trainer:
         total_samples = 0
         max_gradient_norm = 0.0
         batches = (
-            self._execution.batches(train_loader) if self._execution is not None
+            self._execution.batches(train_loader)
+            if self._execution is not None
             else (self._prepare_batch(raw) for raw in train_loader)
         )
         for batch in batches:
@@ -399,6 +403,7 @@ class Trainer:
                 epochs_without_improvement += 1
 
             if self.scheduler is not None:
+
                 def scheduler_step(monitored_loss=monitored_loss):
                     if self.config.lr_scheduler == "plateau":
                         self.scheduler.step(monitored_loss)

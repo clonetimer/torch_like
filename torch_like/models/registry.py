@@ -272,7 +272,6 @@ def list_domains() -> tuple[str, ...]:
     return tuple(MODEL_ZOO)
 
 
-
 def list_model_names(domain: str | None = None) -> tuple[str, ...]:
     """Return model names without importing built-in model implementations."""
 
@@ -285,13 +284,9 @@ def list_model_names(domain: str | None = None) -> tuple[str, ...]:
         runtime = [name for name in MODEL_ZOO[domain] if name not in BUILTIN_MODEL_INDEX]
         return tuple((*builtins, *runtime))
     builtins = list(BUILTIN_MODEL_INDEX)
-    runtime = [
-        name
-        for models in MODEL_ZOO.values()
-        for name in models
-        if name not in BUILTIN_MODEL_INDEX
-    ]
+    runtime = [name for models in MODEL_ZOO.values() for name in models if name not in BUILTIN_MODEL_INDEX]
     return tuple((*builtins, *runtime))
+
 
 def list_models(domain: str | None = None) -> ModelCatalog:
     """Return a defensive metadata snapshot for one domain or the full registry."""

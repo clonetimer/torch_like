@@ -51,11 +51,7 @@ def _load_domain_exports() -> tuple[dict[str, dict[str, tuple[str, str]]], dict[
         module = importlib.import_module(module_name)
         names = list(module.__all__)
         all_names[domain] = names
-        exports[domain] = {
-            name: _target(getattr(module, name), name)
-            for name in names
-            if name != "model_zoo"
-        }
+        exports[domain] = {name: _target(getattr(module, name), name) for name in names if name != "model_zoo"}
     return exports, all_names
 
 
@@ -97,8 +93,7 @@ def _render(domain_exports, domain_all, public_exports, builtin_index) -> dict[P
             f"DOMAIN_ALL = {pf(domain_all)}\n"
         ),
         ROOT / "torch_like/models/_public_exports.py": (
-            '"""Generated lazy export map for :mod:`torch_like.models`."""\n\n'
-            f"PUBLIC_EXPORTS = {pf(public_exports)}\n"
+            f'"""Generated lazy export map for :mod:`torch_like.models`."""\n\nPUBLIC_EXPORTS = {pf(public_exports)}\n'
         ),
         ROOT / "torch_like/models/_builtin_index.py": (
             '"""Static built-in model index used for discovery without importing model implementations."""\n\n'

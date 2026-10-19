@@ -19,20 +19,44 @@ import torch_like.contracts as contracts  # noqa: F401 - intentional public name
 import torch_like.models as models
 from torch_like.classical import (
     create_estimator as create_estimator,
+)
+from torch_like.classical import (
     get_estimator_class as get_estimator_class,
+)
+from torch_like.classical import (
     get_estimator_info as get_estimator_info,
+)
+from torch_like.classical import (
     list_estimators as list_estimators,
 )
 from torch_like.contracts import (
     BackendKind as BackendKind,
+)
+from torch_like.contracts import (
     ContractStatus as ContractStatus,
+)
+from torch_like.contracts import (
     FieldSpec as FieldSpec,
+)
+from torch_like.contracts import (
     InputSpec as InputSpec,
+)
+from torch_like.contracts import (
     ModelSpec as ModelSpec,
+)
+from torch_like.contracts import (
     OutputSpec as OutputSpec,
+)
+from torch_like.contracts import (
     TaskKind as TaskKind,
+)
+from torch_like.contracts import (
     TaskSpec as TaskSpec,
+)
+from torch_like.contracts import (
     describe as describe,
+)
+from torch_like.contracts import (
     get_model_spec as get_model_spec,
 )
 from torch_like.factory import create

@@ -212,6 +212,7 @@ def run_torch_candidate(
         labels[split.train],
     )
     model = model.to(torch_device)
+
     def forward_model(batch_x: torch.Tensor) -> torch.Tensor:
         if task_type == TaskType.TIME_SERIES_FORECASTING:
             return model(batch_x, None, None, None)

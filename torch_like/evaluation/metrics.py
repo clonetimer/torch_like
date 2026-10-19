@@ -60,14 +60,11 @@ def _validate_pair(predictions: Any, targets: Any) -> tuple[np.ndarray, np.ndarr
 class Metric(Protocol):
     """Stateful dataset metric interface kept compatible with 0.7 custom metrics."""
 
-    def reset(self) -> None:
-        ...
+    def reset(self) -> None: ...
 
-    def update(self, predictions: Any, targets: Any) -> None:
-        ...
+    def update(self, predictions: Any, targets: Any) -> None: ...
 
-    def compute(self) -> float:
-        ...
+    def compute(self) -> float: ...
 
 
 @runtime_checkable
@@ -75,17 +72,13 @@ class MergeableMetric(Metric, Protocol):
     """Metric whose sufficient state can be serialized and merged exactly."""
 
     @property
-    def is_streaming(self) -> bool:
-        ...
+    def is_streaming(self) -> bool: ...
 
-    def state_dict(self) -> dict[str, Any]:
-        ...
+    def state_dict(self) -> dict[str, Any]: ...
 
-    def load_state_dict(self, state: MetricState) -> None:
-        ...
+    def load_state_dict(self, state: MetricState) -> None: ...
 
-    def merge_state(self, state: MetricState) -> None:
-        ...
+    def merge_state(self, state: MetricState) -> None: ...
 
 
 class FunctionalMetric:
@@ -189,8 +182,7 @@ class RegressionMetric:
         prediction, target = _validate_pair(predictions, targets)
         if prediction.shape != target.shape:
             raise ValueError(
-                "regression predictions and targets must have identical shapes: "
-                f"{prediction.shape} != {target.shape}"
+                f"regression predictions and targets must have identical shapes: {prediction.shape} != {target.shape}"
             )
         pred = self._matrix(prediction)
         truth = self._matrix(target)
@@ -398,9 +390,7 @@ class ClassificationMetric:
 
     def __init__(self, metric: str, *, multilabel: bool = False):
         if metric not in self._SUPPORTED:
-            raise ValueError(
-                f"unsupported classification metric {metric!r}; expected one of {sorted(self._SUPPORTED)}"
-            )
+            raise ValueError(f"unsupported classification metric {metric!r}; expected one of {sorted(self._SUPPORTED)}")
         self.metric = metric
         self.multilabel = bool(multilabel)
         self.reset()
@@ -641,8 +631,7 @@ class MetricEvaluator:
         for name, metric in self.metrics.items():
             if not isinstance(metric, MergeableMetric):
                 raise TypeError(
-                    f"metric {name!r} does not expose mergeable state; "
-                    "implement state_dict/load_state_dict/merge_state"
+                    f"metric {name!r} does not expose mergeable state; implement state_dict/load_state_dict/merge_state"
                 )
             states[name] = _copy_state(metric.state_dict())
         return {"schema_version": 1, "metrics": states}

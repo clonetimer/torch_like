@@ -49,6 +49,7 @@ from torch_like.automl.sklearn_backend import (
 )
 from torch_like.automl.specs import LabelGranularity, LeaderboardConfig, SplitType, TaskType
 
+
 def _torch_like_version() -> str:
     """Return the installed distribution version or the source-tree version."""
 

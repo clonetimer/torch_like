@@ -16,8 +16,8 @@ from torch_like.training.distributed import (
     DDPConfig,
     DistributedContext,
     DistributedEvalSampler,
-    DistributedSession,
     DistributedSamplerConfig,
+    DistributedSession,
     create_distributed_sampler,
 )
 from torch_like.training.events import training_events

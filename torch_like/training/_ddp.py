@@ -111,8 +111,10 @@ class _DDPExecution:
         if sampler.dataset is not loader.dataset:
             raise ValueError("sampler and loader must refer to the same dataset object")
         return {
-            "dataset_size": len(loader.dataset), "batch_size": loader.batch_size,
-            "drop_last": loader.drop_last, "sampling": sampling,
+            "dataset_size": len(loader.dataset),
+            "batch_size": loader.batch_size,
+            "drop_last": loader.drop_last,
+            "sampling": sampling,
             **({"steps": len(loader)} if training else {}),
         }
 
@@ -133,21 +135,23 @@ class _DDPExecution:
                 raise TypeError("DDP requires streaming mergeable metrics; buffered callables are single-process only")
             evaluator.reset()
             metric_identity = {
-                name: {"class": f"{type(metric).__module__}.{type(metric).__qualname__}",
-                       "state": repr(metric.state_dict())}
+                name: {
+                    "class": f"{type(metric).__module__}.{type(metric).__qualname__}",
+                    "state": repr(metric.state_dict()),
+                }
                 for name, metric in evaluator.metrics.items()
             }
         # Rank-local user hyperparameters must not silently produce divergent optimizer steps.
         optimizer = trainer.optimizer
         if optimizer.state and self.ddp is None:
             raise ValueError("Construct a fresh optimizer and use resume_from for DDP optimizer restoration")
-        optimizer_groups = [repr({key: val for key, val in group.items() if key != "params"})
-                            for group in optimizer.param_groups]
+        optimizer_groups = [
+            repr({key: val for key, val in group.items() if key != "params"}) for group in optimizer.param_groups
+        ]
         config = trainer.config.to_dict()
         signature_config = {
-            key: config[key] for key in (
-                "optimizer", "learning_rate", "weight_decay", "lr_scheduler", "grad_clip_norm", "amp"
-            )
+            key: config[key]
+            for key in ("optimizer", "learning_rate", "weight_decay", "lr_scheduler", "grad_clip_norm", "amp")
         }
         if config["lr_scheduler"] == "cosine":
             signature_config["cosine_total_epochs"] = config["epochs"]
@@ -179,15 +183,13 @@ class _DDPExecution:
                 if not trainer.config.save_best:
                     raise ValueError("DDP restore_best resume requires save_best=True and a persisted best checkpoint")
                 best_root = (
-                    Path(config["checkpoint_dir"]).expanduser().resolve()
-                    if config["checkpoint_dir"] else path.parent
+                    Path(config["checkpoint_dir"]).expanduser().resolve() if config["checkpoint_dir"] else path.parent
                 )
                 best = best_root / "best_checkpoint.pt"
                 if not best.is_file():
                     raise ValueError("restore_best resume requires the matching best_checkpoint.pt in checkpoint_dir")
                 best_payload = _torch_load(best, "cpu")
-                if (best_payload.get("run_id") != self.run_id
-                        or best_payload.get("epoch") != saved.get("best_epoch")):
+                if best_payload.get("run_id") != self.run_id or best_payload.get("epoch") != saved.get("best_epoch"):
                     raise ValueError("best checkpoint belongs to a different run or best epoch")
             sha = hashlib.sha256()
             with path.open("rb") as stream:
@@ -196,8 +198,11 @@ class _DDPExecution:
             digest = sha.hexdigest()
         comparable = {key: val for key, val in config.items() if key != "device"}
         return {
-            "signature": signature, "config": comparable, "device_type": self.device.type,
-            "optimizer_groups": optimizer_groups, "resume_digest": digest,
+            "signature": signature,
+            "config": comparable,
+            "device_type": self.device.type,
+            "optimizer_groups": optimizer_groups,
+            "resume_digest": digest,
             "resume_from": str(Path(resume_from).expanduser().resolve()) if resume_from is not None else None,
         }
 
@@ -285,10 +290,15 @@ class _DDPExecution:
             if not self.context.is_primary:
                 return
             payload = _build_payload(**kwargs, val_loader=self.val_loader)
-            payload.update({
-                "schema_version": 3, "rng_state_scope": "per_rank", "rank_states": states,
-                "resume_signature": self.resume_signature, "run_id": self.run_id,
-            })
+            payload.update(
+                {
+                    "schema_version": 3,
+                    "rng_state_scope": "per_rank",
+                    "rank_states": states,
+                    "resume_signature": self.resume_signature,
+                    "run_id": self.run_id,
+                }
+            )
             _atomic_save(path, _cpu(payload))
 
         self.guard("checkpoint write", save)

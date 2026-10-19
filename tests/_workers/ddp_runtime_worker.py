@@ -1,4 +1,5 @@
 """Real torchrun worker used by test_ddp_runtime.py (never collected directly)."""
+
 from __future__ import annotations
 
 import argparse
@@ -20,9 +21,17 @@ if not os.environ.get("TORCH_LIKE_INSTALLED_TEST"):
 import torch_like as tl
 from torch_like.evaluation import ClassificationMetric, RegressionMetric, classification_metric_set
 from torch_like.training import (
-    DDPConfig, DistributedContext, DistributedEvalSampler, DistributedSamplerConfig,
-    DistributedSession, IdentityBatchAdapter, Trainer, TrainerConfig, create_distributed_sampler,
-    load_training_checkpoint, training_events,
+    DDPConfig,
+    DistributedContext,
+    DistributedEvalSampler,
+    DistributedSamplerConfig,
+    DistributedSession,
+    IdentityBatchAdapter,
+    Trainer,
+    TrainerConfig,
+    create_distributed_sampler,
+    load_training_checkpoint,
+    training_events,
 )
 
 
@@ -79,10 +88,12 @@ def metrics():
 
 def trainer(model, ctx, *, epochs=2, directory=None, metric=True, **kwargs):
     return Trainer(
-        model, TrainerConfig(epochs=epochs, device="cpu", checkpoint_dir=directory,
-                             learning_rate=0.02, **kwargs),
-        distributed_context=ctx, batch_adapter=IdentityBatchAdapter(),
-        metrics=metrics() if metric else None, prediction_fn=lambda m, b: m(b[0]),
+        model,
+        TrainerConfig(epochs=epochs, device="cpu", checkpoint_dir=directory, learning_rate=0.02, **kwargs),
+        distributed_context=ctx,
+        batch_adapter=IdentityBatchAdapter(),
+        metrics=metrics() if metric else None,
+        prediction_fn=lambda m, b: m(b[0]),
     )
 
 
@@ -117,8 +128,13 @@ def basic(ctx, root):
     assert payload["rng_state_scope"] == "per_rank"
     assert not any(key.startswith("module.") for key in payload["model_state_dict"])
     assert not list((root / "checkpoint").glob("*.tmp"))
-    return {"parameters_synchronized": True, "global_metrics_exact": True,
-            "val_samples": len(val.dataset), "schema": 3, "events": len(observed)}
+    return {
+        "parameters_synchronized": True,
+        "global_metrics_exact": True,
+        "val_samples": len(val.dataset),
+        "schema": 3,
+        "events": len(observed),
+    }
 
 
 def single_equivalence(ctx, root):
@@ -126,14 +142,22 @@ def single_equivalence(ctx, root):
     model = Tiny()
     initial = {key: value.clone() for key, value in model.state_dict().items()}
     train, _ = loaders(ctx, shuffle=False)
-    current = Trainer(model, TrainerConfig(epochs=3, device="cpu", optimizer="sgd", learning_rate=0.01),
-                      distributed_context=ctx, batch_adapter=IdentityBatchAdapter())
+    current = Trainer(
+        model,
+        TrainerConfig(epochs=3, device="cpu", optimizer="sgd", learning_rate=0.01),
+        distributed_context=ctx,
+        batch_adapter=IdentityBatchAdapter(),
+    )
     result = current.fit(train)
     # Global batch size is per-rank batch size * world_size, using the same sample union.
     expected = Tiny()
     expected.load_state_dict(initial)
-    reference = Trainer(expected, TrainerConfig(epochs=3, device="cpu", optimizer="sgd", learning_rate=0.01),
-                        distributed_context=DistributedContext(), batch_adapter=IdentityBatchAdapter())
+    reference = Trainer(
+        expected,
+        TrainerConfig(epochs=3, device="cpu", optimizer="sgd", learning_rate=0.01),
+        distributed_context=DistributedContext(),
+        batch_adapter=IdentityBatchAdapter(),
+    )
     loader = DataLoader(train.dataset, batch_size=6)
     reference.fit(loader)
     for a, b in zip(model.parameters(), expected.parameters(), strict=True):
@@ -147,17 +171,24 @@ def resume(ctx, root):
         seed(offset + ctx.rank)
         model = Tiny(dropout=0.25, buffers=True)
         train, val = loaders(ctx)
+
         # Test Python/NumPy process RNG as well as Torch dropout and loader RNG.
         def loss(m, batch):
             x, y = batch
             noise = (random.random() + float(np.random.random())) * 0.02 if m.training else 0.0
             return torch.nn.functional.mse_loss(m(x) + noise, y)
+
         current = Trainer(
-            model, TrainerConfig(epochs=epochs, device="cpu", learning_rate=0.01, checkpoint_dir=directory),
-            distributed_context=ctx, batch_adapter=IdentityBatchAdapter(), loss_fn=loss,
-            metrics=metrics(), prediction_fn=lambda m, b: m(b[0]),
+            model,
+            TrainerConfig(epochs=epochs, device="cpu", learning_rate=0.01, checkpoint_dir=directory),
+            distributed_context=ctx,
+            batch_adapter=IdentityBatchAdapter(),
+            loss_fn=loss,
+            metrics=metrics(),
+            prediction_fn=lambda m, b: m(b[0]),
         )
         return model, current, train, val
+
     full, full_trainer, full_train, full_val = make(4, None, 70)
     full_result = full_trainer.fit(full_train, full_val)
     part, part_trainer, part_train, part_val = make(2, root / "resume", 70)
@@ -169,8 +200,12 @@ def resume(ctx, root):
     assert full_result.history == resumed_result.history
     assert resumed_result.start_epoch == 2
     equal_parameters(resumed)
-    return {"bitwise_parameters": True, "history_identical": True, "resume_start_epoch": 2,
-            "rng": ["python", "numpy", "torch", "train_loader", "val_loader"]}
+    return {
+        "bitwise_parameters": True,
+        "history_identical": True,
+        "resume_start_epoch": 2,
+        "rng": ["python", "numpy", "torch", "train_loader", "val_loader"],
+    }
 
 
 def empty_validation(ctx, root):
@@ -186,15 +221,19 @@ def empty_validation(ctx, root):
 
 def domain_losses(ctx, root):
     seed(58)
-    model = tl.FTTransformer(input_dim=2, output_dim=2, d_model=4, n_heads=1,
-                             n_layers=1, d_ff=8, dropout=0.0)
+    model = tl.FTTransformer(input_dim=2, output_dim=2, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0)
     x = torch.arange(16, dtype=torch.float32).reshape(8, 2) / 4 - 1
     y = (x[:, 0] > 0).long()
     data = TensorDataset(x, y)
     train = DataLoader(data, batch_size=2, sampler=create_distributed_sampler(data, ctx))
     val = DataLoader(data, batch_size=3, sampler=DistributedEvalSampler(data, ctx))
-    ft = Trainer(model, TrainerConfig(epochs=2, device="cpu"), distributed_context=ctx,
-                 metrics=classification_metric_set(), prediction_fn=lambda m, b: m.predict(b).argmax(-1))
+    ft = Trainer(
+        model,
+        TrainerConfig(epochs=2, device="cpu"),
+        distributed_context=ctx,
+        metrics=classification_metric_set(),
+        prediction_fn=lambda m, b: m.predict(b).argmax(-1),
+    )
     result = ft.fit(train, val)
     equal_parameters(model)
     predictions = model.predict(model.make_tabular_batch(x)).argmax(-1)
@@ -206,12 +245,18 @@ def domain_losses(ctx, root):
     ds = TensorDataset(xs, ys)
     dl = DataLoader(ds, batch_size=2, sampler=create_distributed_sampler(ds, ctx))
     train_result = Trainer(
-        forecast, TrainerConfig(epochs=2, device="cpu"), distributed_context=ctx,
+        forecast,
+        TrainerConfig(epochs=2, device="cpu"),
+        distributed_context=ctx,
         step_fn=lambda m, b: torch.nn.functional.mse_loss(m.predict(b.model_batch), b.targets),
     ).fit(dl)
     equal_parameters(forecast)
-    return {"FTTransformer_runtime_loss": True, "DLinear_step_fn": True, "f1_exact": True,
-            "forecast_epochs": train_result.epochs_ran}
+    return {
+        "FTTransformer_runtime_loss": True,
+        "DLinear_step_fn": True,
+        "f1_exact": True,
+        "forecast_epochs": train_result.epochs_ran,
+    }
 
 
 def failure(ctx, root, kind):
@@ -223,17 +268,21 @@ def failure(ctx, root, kind):
     if kind == "nan":
         current.loss_fn = lambda m, b: m.loss_step(b) * (float("nan") if ctx.rank == 1 else 1)
     elif kind == "bad_adapter":
+
         class Bad:
             def adapt(self, model, batch):
                 if ctx.rank == 1:
                     raise ValueError("injected adaptation fault")
                 return IdentityBatchAdapter().adapt(model, batch)
+
         current.batch_adapter = Bad()
     elif kind == "bad_validation":
+
         def prediction(m, batch):
             if ctx.rank:
                 raise ValueError("bad prediction")
             return m(batch[0])
+
         current.prediction_fn = prediction
     elif kind == "config_mismatch":
         current = trainer(model, ctx, epochs=1 + ctx.rank)
@@ -243,8 +292,11 @@ def failure(ctx, root, kind):
         val = DataLoader(val.dataset, batch_size=2, sampler=create_distributed_sampler(val.dataset, ctx))
     elif kind == "buffered_metric":
         current = Trainer(
-            model, TrainerConfig(epochs=1, device="cpu"), distributed_context=ctx,
-            batch_adapter=IdentityBatchAdapter(), metrics={"bad": lambda y, p: float(np.mean(p - y))},
+            model,
+            TrainerConfig(epochs=1, device="cpu"),
+            distributed_context=ctx,
+            batch_adapter=IdentityBatchAdapter(),
+            metrics={"bad": lambda y, p: float(np.mean(p - y))},
         )
     elif kind == "write_error":
         directory = root / "occupied"
@@ -272,8 +324,9 @@ def early_stop(ctx, root):
     seed(3)
     model = Tiny()
     train, val = loaders(ctx)
-    current = trainer(model, ctx, epochs=8, directory=root / "early", early_stopping_patience=1,
-                      min_delta=1e6, restore_best=True)
+    current = trainer(
+        model, ctx, epochs=8, directory=root / "early", early_stopping_patience=1, min_delta=1e6, restore_best=True
+    )
     result = current.fit(train, val)
     assert result.epochs_ran == 2
     assert result.stopped_early
@@ -350,6 +403,7 @@ def cosine_resume(ctx, root):
         original_save(path, **kwargs)
         if ctx.is_primary and path.name == "last_checkpoint.pt" and kwargs["epoch"] == 2:
             shutil.copyfile(path, snapshot)
+
     current._save_checkpoint = save
     result = current.fit(train, val)
     seed(985 + ctx.rank)
@@ -370,8 +424,11 @@ def unused_parameters(ctx, root):
     model.extra = torch.nn.Linear(2, 1)
     train, _ = loaders(ctx)
     current = Trainer(
-        model, TrainerConfig(epochs=2, device="cpu"), distributed_context=ctx,
-        ddp_config=DDPConfig(find_unused_parameters=True), batch_adapter=IdentityBatchAdapter(),
+        model,
+        TrainerConfig(epochs=2, device="cpu"),
+        distributed_context=ctx,
+        ddp_config=DDPConfig(find_unused_parameters=True),
+        batch_adapter=IdentityBatchAdapter(),
     )
     current.fit(train)
     equal_parameters(model)
@@ -389,10 +446,18 @@ def main():
     args.root.mkdir(parents=True, exist_ok=True)
     with DistributedSession(ctx, device="cpu", timeout_seconds=30) as session:
         assert session.owns_process_group
-        functions = {"basic": basic, "equivalence": single_equivalence, "resume": resume,
-                     "empty_validation": empty_validation, "domains": domain_losses,
-                     "early_stop": early_stop, "lifecycle": lifecycle, "resume_guards": resume_guards,
-                     "cosine_resume": cosine_resume, "unused_parameters": unused_parameters}
+        functions = {
+            "basic": basic,
+            "equivalence": single_equivalence,
+            "resume": resume,
+            "empty_validation": empty_validation,
+            "domains": domain_losses,
+            "early_stop": early_stop,
+            "lifecycle": lifecycle,
+            "resume_guards": resume_guards,
+            "cosine_resume": cosine_resume,
+            "unused_parameters": unused_parameters,
+        }
         if args.scenario.startswith("fail_"):
             result = failure(ctx, args.root, args.scenario.removeprefix("fail_"))
         else:

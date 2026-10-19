@@ -16,8 +16,6 @@ import torch_like as tl
 from runner.common import average_total, build_run_payload, print_epoch_metrics, resolve_results_dir, save_json
 from runner.compile_utils import CompileConfig, maybe_compile_model
 from runner.detection_data import DetectionDataConfig, create_detection_loaders
-from torch_like.evaluation import MeanMetric, MetricEvaluator, StandardDeviationMetric
-
 from runner.performance import (
     ExecutionConfig,
     add_execution_args,
@@ -27,6 +25,7 @@ from runner.performance import (
     execution_config_from_args,
     move_to_device,
 )
+from torch_like.evaluation import MeanMetric, MetricEvaluator, StandardDeviationMetric
 
 
 @dataclass

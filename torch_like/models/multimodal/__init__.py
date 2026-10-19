@@ -5,7 +5,7 @@ from __future__ import annotations
 from torch_like.models._domain_exports import DOMAIN_ALL
 from torch_like.models._lazy import resolve_domain_export
 
-_DOMAIN = 'multimodal'
+_DOMAIN = "multimodal"
 __all__ = list(DOMAIN_ALL[_DOMAIN])
 
 

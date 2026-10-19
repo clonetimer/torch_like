@@ -53,10 +53,15 @@ def _restore_rng(state: dict[str, Any], train_loader: Any = None, val_loader: An
         random.setstate(state["python_rng_state"])
     numpy_state = state.get("numpy_rng_state")
     if numpy_state is not None:
-        np.random.set_state((
-            numpy_state["algorithm"], numpy_state["keys"].cpu().numpy().astype(np.uint32),
-            numpy_state["position"], numpy_state["has_gauss"], numpy_state["cached_gaussian"],
-        ))
+        np.random.set_state(
+            (
+                numpy_state["algorithm"],
+                numpy_state["keys"].cpu().numpy().astype(np.uint32),
+                numpy_state["position"],
+                numpy_state["has_gauss"],
+                numpy_state["cached_gaussian"],
+            )
+        )
     if torch.cuda.is_available():
         if state.get("cuda_rng_state") is not None:
             torch.cuda.set_rng_state(state["cuda_rng_state"].cpu())
@@ -82,10 +87,20 @@ def _atomic_save(target: Path, payload: dict[str, Any]) -> Path:
 
 
 def _build_payload(
-    *, model: Any, optimizer: Any, scheduler: Any = None, scaler: Any = None,
-    epoch: int, history: list[dict[str, Any]], best_monitored_loss: float, best_epoch: int,
-    epochs_without_improvement: int, trainer_config: dict[str, Any], train_loader: Any = None,
-    distributed_context: DistributedContext | None = None, val_loader: Any = None,
+    *,
+    model: Any,
+    optimizer: Any,
+    scheduler: Any = None,
+    scaler: Any = None,
+    epoch: int,
+    history: list[dict[str, Any]],
+    best_monitored_loss: float,
+    best_epoch: int,
+    epochs_without_improvement: int,
+    trainer_config: dict[str, Any],
+    train_loader: Any = None,
+    distributed_context: DistributedContext | None = None,
+    val_loader: Any = None,
 ) -> dict[str, Any]:
     context = distributed_context or DistributedContext()
     from torch_like import __version__
@@ -113,19 +128,38 @@ def _build_payload(
 
 
 def save_training_checkpoint(
-    path: str | os.PathLike[str], *, model: Any, optimizer: Any, scheduler: Any = None,
-    scaler: Any = None, epoch: int, history: list[dict[str, Any]], best_monitored_loss: float,
-    best_epoch: int, epochs_without_improvement: int, trainer_config: dict[str, Any],
-    train_loader: Any = None, distributed_context: DistributedContext | None = None,
+    path: str | os.PathLike[str],
+    *,
+    model: Any,
+    optimizer: Any,
+    scheduler: Any = None,
+    scaler: Any = None,
+    epoch: int,
+    history: list[dict[str, Any]],
+    best_monitored_loss: float,
+    best_epoch: int,
+    epochs_without_improvement: int,
+    trainer_config: dict[str, Any],
+    train_loader: Any = None,
+    distributed_context: DistributedContext | None = None,
     val_loader: Any = None,
 ) -> Path:
     """Atomically save a rank-local checkpoint (DDP coordination belongs to Trainer)."""
 
     payload = _build_payload(
-        model=model, optimizer=optimizer, scheduler=scheduler, scaler=scaler, epoch=epoch,
-        history=history, best_monitored_loss=best_monitored_loss, best_epoch=best_epoch,
-        epochs_without_improvement=epochs_without_improvement, trainer_config=trainer_config,
-        train_loader=train_loader, distributed_context=distributed_context, val_loader=val_loader,
+        model=model,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        scaler=scaler,
+        epoch=epoch,
+        history=history,
+        best_monitored_loss=best_monitored_loss,
+        best_epoch=best_epoch,
+        epochs_without_improvement=epochs_without_improvement,
+        trainer_config=trainer_config,
+        train_loader=train_loader,
+        distributed_context=distributed_context,
+        val_loader=val_loader,
     )
     return _atomic_save(Path(path).expanduser().resolve(), payload)
 
@@ -176,8 +210,7 @@ def load_training_checkpoint(
         saved_context = rank_context
     if saved_context.rank != expected_context.rank:
         raise ValueError(
-            "training checkpoint rank does not match current context: "
-            f"{saved_context.rank} != {expected_context.rank}"
+            f"training checkpoint rank does not match current context: {saved_context.rank} != {expected_context.rank}"
         )
     if "model_state_dict" not in payload:
         raise KeyError("Training checkpoint is missing 'model_state_dict'")

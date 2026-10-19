@@ -7,8 +7,6 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from torch_like.automl.backends import get_backend, has_backend
-
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -26,15 +24,17 @@ from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 
+from torch_like.automl.backends import get_backend, has_backend
 from torch_like.automl.candidate_registry import list_candidate_specs
 from torch_like.automl.specs import CandidatePolicy, SearchSpec, SearchStrategy, TaskType
-
 from torch_like.evaluation import (
     classification_metrics,
     forecasting_metrics,
-    metric_direction as _shared_metric_direction,
     multi_target_regression_metrics,
     regression_metrics,
+)
+from torch_like.evaluation import (
+    metric_direction as _shared_metric_direction,
 )
 
 CLASSIFICATION_TASKS = {
@@ -350,7 +350,9 @@ def build_candidates(
         raise ImportError("LightGBM candidates require: pip install 'torch_like[lightgbm]'")
     specs = [spec for spec in specs if spec not in unavailable]
     grids = {spec.name: list(spec.parameter_grid) for spec in specs if get_backend(spec.backend).kind == "sklearn"}
-    baseline_grids = {spec.name: list(spec.parameter_grid) for spec in specs if get_backend(spec.backend).kind == "baseline"}
+    baseline_grids = {
+        spec.name: list(spec.parameter_grid) for spec in specs if get_backend(spec.backend).kind == "baseline"
+    }
     torch_grids = {spec.name: list(spec.parameter_grid) for spec in specs if get_backend(spec.backend).kind == "torch"}
     feature_strategies: tuple[str | None, ...] = (None,)
     if task_type == TaskType.TIME_SERIES_FORECASTING:
