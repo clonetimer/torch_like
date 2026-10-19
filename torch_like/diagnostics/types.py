@@ -211,7 +211,8 @@ class DiagnosticAlgorithmSpec:
         if task == DiagnosticTask.RUL_REGRESSION and output != DiagnosticOutputKind.RUL_VALUE:
             raise ValueError("RUL spec requires rul_value")
         if task == DiagnosticTask.FAULT_CLASSIFICATION and output not in {
-            DiagnosticOutputKind.CLASS_PROBABILITY, DiagnosticOutputKind.FAULT_LABEL
+            DiagnosticOutputKind.CLASS_PROBABILITY,
+            DiagnosticOutputKind.FAULT_LABEL,
         }:
             raise ValueError("fault classification spec requires probabilities or fault labels")
         object.__setattr__(self, "task", task)
