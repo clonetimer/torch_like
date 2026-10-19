@@ -164,6 +164,10 @@ class DiagnosticResult:
             DiagnosticOutputKind.FAULT_LABEL,
         }:
             raise ValueError("fault classification requires probabilities or fault labels")
+        if task == DiagnosticTask.FAULT_ISOLATION and kind != DiagnosticOutputKind.FAULT_SOURCE_SCORE:
+            raise ValueError("fault isolation requires fault_source_score")
+        if task == DiagnosticTask.HEALTH_ASSESSMENT and kind != DiagnosticOutputKind.HEALTH_INDEX:
+            raise ValueError("health assessment requires health_index")
         values = np.array(values, copy=True)
         values.setflags(write=False)
         object.__setattr__(self, "values", values)
@@ -215,6 +219,10 @@ class DiagnosticAlgorithmSpec:
             DiagnosticOutputKind.FAULT_LABEL,
         }:
             raise ValueError("fault classification spec requires probabilities or fault labels")
+        if task == DiagnosticTask.FAULT_ISOLATION and output != DiagnosticOutputKind.FAULT_SOURCE_SCORE:
+            raise ValueError("fault isolation spec requires fault_source_score")
+        if task == DiagnosticTask.HEALTH_ASSESSMENT and output != DiagnosticOutputKind.HEALTH_INDEX:
+            raise ValueError("health assessment spec requires health_index")
         object.__setattr__(self, "task", task)
         object.__setattr__(self, "output_kind", output)
         object.__setattr__(self, "operations", operations)
