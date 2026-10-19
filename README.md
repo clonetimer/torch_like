@@ -8,6 +8,8 @@ English: `torch_like` is a local PyTorch-native model framework. Its goal is to 
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for long-term milestones and exit criteria, and [`docs/MODEL_CATALOG_AUDIT.md`](docs/MODEL_CATALOG_AUDIT.md) for the complete registry capability and maturity audit.
 
+R1 诊断库基础：新增 `torch_like.diagnostics` 命名空间，提供明确采样率的信号数据协议、诊断结果语义与独立算法注册接口。当前仅完成接口基础，具体统计诊断算法和流程属于后续阶段。详见 [`docs/DIAGNOSTICS_R1.md`](docs/DIAGNOSTICS_R1.md)。
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
