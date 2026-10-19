@@ -140,6 +140,10 @@ class DiagnosticContractsTests(unittest.TestCase):
             DiagnosticAlgorithmSpec("bad", "none", "anomaly_detection", "anomaly_score")
         with self.assertRaisesRegex(ValueError, "operations"):
             DiagnosticAlgorithmSpec("bad", "sklearn", "anomaly_detection", "anomaly_score", ("fit", "fit"))
+        with self.assertRaisesRegex(ValueError, "anomaly_score"):
+            DiagnosticAlgorithmSpec("bad", "statistical", "anomaly_detection", "rul_value")
+        with self.assertRaisesRegex(ValueError, "rul_value"):
+            DiagnosticAlgorithmSpec("bad", "torch_like", "rul_regression", "anomaly_score")
 
 
 if __name__ == "__main__":
