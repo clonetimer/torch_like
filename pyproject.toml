@@ -57,6 +57,7 @@ filterwarnings = [
 [tool.coverage.run]
 branch = true
 source = ["torch_like"]
+patch = ["subprocess"]
 
 [tool.coverage.report]
 fail_under = 83
