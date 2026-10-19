@@ -9,8 +9,8 @@ import unittest
 
 from torch_like.automl.backends import BackendSpec, get_backend, register_backend
 from torch_like.automl.candidate_registry import (
-    CandidateSpec,
     _CANDIDATES,
+    CandidateSpec,
     list_candidate_specs,
     register_candidate,
 )
@@ -19,10 +19,7 @@ from torch_like.core import Scope
 
 
 def _candidate_names(task_type: TaskType = TaskType.TABULAR_REGRESSION) -> set[str]:
-    return {
-        spec.name
-        for spec in list_candidate_specs(task_type, is_sequence=False, equal_sequence_lengths=True)
-    }
+    return {spec.name for spec in list_candidate_specs(task_type, is_sequence=False, equal_sequence_lengths=True)}
 
 
 class CandidateRegistrationScopeTests(unittest.TestCase):

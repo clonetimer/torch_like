@@ -31,7 +31,7 @@ from runner.forecast_runner import (
 from runner.performance import ExecutionConfig, autocast_context, create_grad_scaler, move_to_device
 from runner.report import load_result_jsons, summarize_results
 from runner.rul_data import RULDataConfig, create_rul_loaders
-from runner.rul_runner import RULRunConfig
+from runner.rul_runner import RULRunConfig, _development_loaders
 from runner.rul_runner import run_experiment as run_rul_experiment
 from torch_like.utils.tools import EarlyStopping, dotdict
 
@@ -512,6 +512,79 @@ class RunnerApiTests(unittest.TestCase):
         self.assertEqual(len(loaded), 1)
         self.assertEqual(len(summary), 1)
         self.assertTrue(summary[0]["has_metrics"])
+
+    def test_rul_development_holdout_is_bearing_disjoint(self):
+        class BearingDataset(torch.utils.data.Dataset):
+            bearing_names = ["B1", "B2", "B3"]
+            index_map = [(bearing, index) for bearing in range(3) for index in range(4)]
+
+            def __len__(self):
+                return len(self.index_map)
+
+            def __getitem__(self, index):
+                return torch.zeros(32, 2), torch.tensor(0.5)
+
+        dataset = BearingDataset()
+        bundle = type("Bundle", (), {"train_set": dataset})()
+        cfg = RULRunConfig(data=RULDataConfig(root_dir="dummy", batch_size=2), device="cpu")
+        train_loader, validation_loader, name = _development_loaders(bundle, cfg)
+        training_groups = {dataset.index_map[index][0] for index in train_loader.dataset.indices}
+        validation_groups = {dataset.index_map[index][0] for index in validation_loader.dataset.indices}
+        self.assertEqual(len(training_groups), 2)
+        self.assertEqual(len(validation_groups), 1)
+        self.assertFalse(training_groups & validation_groups)
+        self.assertIn(name, dataset.bearing_names)
+
+    def test_rul_main_uses_sealed_test_only_for_validation_winner(self):
+        from runner import rul_runner
+
+        config = RULRunConfig(
+            data=RULDataConfig(root_dir="dummy_root", condition="35Hz12kN"),
+            device="cpu",
+            results_dir=self.tmp_path,
+        )
+        bundle = type("Bundle", (), {"train_set": object(), "test_set": object()})()
+        train_loader, val_loader, test_loader = object(), object(), object()
+        scores = {"InformerRUL": 0.7, "AutoformerRUL": 0.9, "LogTransRUL": 0.4, "THGNN": 0.6}
+
+        def experiment(model_cls, name, provided_bundle, train, validation, experiment_config):
+            self.assertIs(provided_bundle, bundle)
+            self.assertIs(train, train_loader)
+            self.assertIs(validation, val_loader)
+            self.assertIs(experiment_config, config)
+            return {
+                "model": name,
+                "params": 10,
+                "best_validation_rmse": scores[name],
+                "best_validation_mae": scores[name],
+                "best_epoch": 1,
+                "train_time_s": 0.0,
+                "history": {},
+                "_trained_model": name,
+            }
+
+        with (
+            patch("runner.rul_runner.create_rul_loaders", return_value=(bundle, None, test_loader)),
+            patch(
+                "runner.rul_runner._development_loaders",
+                return_value=(train_loader, val_loader, "Bearing1_1"),
+            ),
+            patch("runner.rul_runner.run_experiment", side_effect=experiment) as run_model,
+            patch("runner.rul_runner.evaluate", return_value=(0.1, 0.2, 0.3)) as evaluate_test,
+            patch("runner.rul_runner.save_json") as save_results,
+        ):
+            results = rul_runner.main(config)
+
+        self.assertEqual(run_model.call_count, 4)
+        evaluate_test.assert_called_once()
+        self.assertEqual(evaluate_test.call_args.args[0], "LogTransRUL")
+        self.assertIs(evaluate_test.call_args.args[1], test_loader)
+        self.assertEqual(len(results), 4)
+        self.assertEqual([item["model"] for item in results if "sealed_test_rmse" in item], ["LogTransRUL"])
+        save_results.assert_called_once()
+        payload = save_results.call_args.args[1]
+        self.assertEqual(payload["extra"]["sealed_test_evaluation_count"], 1)
+        self.assertEqual(payload["extra"]["selected_model"], "LogTransRUL")
 
     def test_thgnn_rul_experiment_smoke(self):
         class DummyDataset(torch.utils.data.Dataset):

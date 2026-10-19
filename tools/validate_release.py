@@ -7,6 +7,7 @@ Usage: python tools/validate_release.py --all
 Writes durable logs, JUnit XML, per-rank attestations and an aggregate manifest.
 This tool makes no repository-wide lint, GPU, performance or coverage claim.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -26,15 +27,47 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "validation"
 ENV = {**os.environ, "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}
 FILE_GROUPS = {
-    "models": ["audio_api", "detection_api", "egnn", "forecasting_api", "generative_api", "mamba2",
-               "multimodal_api", "recommendation_api", "reinforcement_api", "tabular_api", "task_interfaces",
-               "vision_api"],
-    "core": ["api_stability", "capabilities", "catalog_evidence", "contracts_runtime", "core",
-             "engineering_api", "lazy_imports", "model_catalog_audit", "registration_scope", "registry"],
-    "automl_support": ["automl_examples", "automl_protocol", "automl_run_validation", "backend_runners",
-                       "candidate_pool", "run_events"],
-    "training_runner": ["runner_api", "task_data_api", "training_adapters_evaluation", "training_events",
-                        "training_runtime"],
+    "models": [
+        "audio_api",
+        "detection_api",
+        "egnn",
+        "forecasting_api",
+        "generative_api",
+        "mamba2",
+        "multimodal_api",
+        "recommendation_api",
+        "reinforcement_api",
+        "tabular_api",
+        "task_interfaces",
+        "vision_api",
+    ],
+    "core": [
+        "api_stability",
+        "capabilities",
+        "catalog_evidence",
+        "contracts_runtime",
+        "core",
+        "engineering_api",
+        "lazy_imports",
+        "model_catalog_audit",
+        "registration_scope",
+        "registry",
+    ],
+    "automl_support": [
+        "automl_examples",
+        "automl_protocol",
+        "automl_run_validation",
+        "backend_runners",
+        "candidate_pool",
+        "run_events",
+    ],
+    "training_runner": [
+        "runner_api",
+        "task_data_api",
+        "training_adapters_evaluation",
+        "training_events",
+        "training_runtime",
+    ],
     "checkpoint_compatibility": ["checkpoint_compatibility"],
 }
 
@@ -57,8 +90,15 @@ def _digest() -> str:
 
 
 def _collect() -> list[str]:
-    collected = subprocess.run([sys.executable, "-m", "pytest", "--collect-only", "-q"], cwd=ROOT,
-                               env=ENV, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=60)
+    collected = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q"],
+        cwd=ROOT,
+        env=ENV,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        timeout=60,
+    )
     (OUTPUT / "release_collection.log").write_text(collected.stdout, encoding="utf-8")
     if collected.returncode:
         raise RuntimeError("test collection failed; see validation/release_collection.log")
@@ -83,7 +123,7 @@ def _groups(nodes: list[str]) -> dict[str, list[str]]:
         remaining.remove(node)
     ddp = [node for node in nodes if node.startswith("tests/test_ddp_runtime.py::test_real_two_rank_gloo")]
     for offset in range(0, len(ddp), 3):
-        group = ddp[offset:offset + 3]
+        group = ddp[offset : offset + 3]
         groups[f"ddp_{offset // 3:02d}"] = group
         remaining.difference_update(group)
     ddp_units = [node for node in nodes if node.startswith("tests/test_ddp_runtime.py::") and node in remaining]
@@ -134,13 +174,18 @@ def main() -> int:
             log = OUTPUT / f"release_{key}.log"
             xml.unlink(missing_ok=True)
             base = workspace / key
-            command = [sys.executable, "-m", "pytest", *groups[key], "-q", f"--junitxml={xml}",
-                       f"--basetemp={base}"]
+            command = [sys.executable, "-m", "pytest", *groups[key], "-q", f"--junitxml={xml}", f"--basetemp={base}"]
             started = time.monotonic()
             timed_out = False
             with log.open("w", encoding="utf-8") as stream:
-                process = subprocess.Popen(command, cwd=ROOT, env=ENV, stdout=stream, stderr=subprocess.STDOUT,
-                                           start_new_session=os.name != "nt")
+                process = subprocess.Popen(
+                    command,
+                    cwd=ROOT,
+                    env=ENV,
+                    stdout=stream,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=os.name != "nt",
+                )
                 try:
                     code = process.wait(timeout=args.timeout)
                 except subprocess.TimeoutExpired:
@@ -155,14 +200,24 @@ def main() -> int:
             skipped = sum(case.find("skipped") is not None for case in cases)
             passed = len(cases) - failures - skipped
             success = not timed_out and code == 0 and len(cases) == len(groups[key]) and skipped == 0
-            result = {"nodeids": groups[key], "returncode": code, "timeout": timed_out,
-                      "seconds": round(time.monotonic() - started, 3), "executed": len(cases),
-                      "passed": passed, "failed": failures, "skipped": skipped, "success": success,
-                      "log": log.name, "junit": xml.name}
+            result = {
+                "nodeids": groups[key],
+                "returncode": code,
+                "timeout": timed_out,
+                "seconds": round(time.monotonic() - started, 3),
+                "executed": len(cases),
+                "passed": passed,
+                "failed": failures,
+                "skipped": skipped,
+                "success": success,
+                "log": log.name,
+                "junit": xml.name,
+            }
             manifest["groups"][key] = result
             attestations = {
                 path.relative_to(base).as_posix(): json.loads(path.read_text())
-                for path in base.rglob("rank*.json") if not path.is_symlink()
+                for path in base.rglob("rank*.json")
+                if not path.is_symlink()
             }
             if attestations:
                 _write(OUTPUT / f"release_{key}_rank_results.json", attestations)

@@ -69,7 +69,6 @@ class LazyImportTests(unittest.TestCase):
         output = self.run_python(code).splitlines()
         self.assertEqual(output, ["False", "True"])
 
-
     def test_training_and_evaluation_do_not_import_sklearn_until_metric_helpers_are_called(self):
         code = textwrap.dedent(
             """

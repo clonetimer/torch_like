@@ -15,8 +15,8 @@ from torch_like.training import (
     DistributedSamplerConfig,
     Trainer,
     TrainerConfig,
-    load_training_checkpoint,
     create_distributed_sampler,
+    load_training_checkpoint,
     training_events,
 )
 
@@ -136,7 +136,7 @@ class TrainingRuntimeTests(unittest.TestCase):
 
             self.assertEqual(second.start_epoch, 2)
             self.assertEqual(second.epochs_ran, 4)
-            for expected, actual in zip(continuous.parameters(), resumed.parameters()):
+            for expected, actual in zip(continuous.parameters(), resumed.parameters(), strict=True):
                 torch.testing.assert_close(expected, actual, rtol=0, atol=0)
 
     def test_checkpoint_loader_can_restore_model_only(self):
@@ -169,13 +169,11 @@ class TrainingRuntimeTests(unittest.TestCase):
             )
             payload = load_training_checkpoint(result.last_checkpoint, model=clone, restore_rng=False)
             self.assertEqual(payload["epoch"], 1)
-            for expected, actual in zip(model.parameters(), clone.parameters()):
+            for expected, actual in zip(model.parameters(), clone.parameters(), strict=True):
                 torch.testing.assert_close(expected, actual)
 
     def test_checkpoint_loader_accepts_legacy_schema_v1_as_single_process(self):
-        model = tl.FTTransformer(
-            input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0
-        )
+        model = tl.FTTransformer(input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0)
         x = torch.randn(4, 2)
         y = torch.randn(4, 1)
         with tempfile.TemporaryDirectory() as directory:
@@ -193,9 +191,7 @@ class TrainingRuntimeTests(unittest.TestCase):
             payload.pop("rng_state_scope", None)
             legacy = Path(directory) / "legacy_v1.pt"
             torch.save(payload, legacy)
-            clone = tl.FTTransformer(
-                input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0
-            )
+            clone = tl.FTTransformer(input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0)
             loaded = load_training_checkpoint(legacy, model=clone, restore_rng=False)
             self.assertEqual(loaded["schema_version"], 1)
 
@@ -234,17 +230,13 @@ class TrainingRuntimeTests(unittest.TestCase):
         context = DistributedContext(rank=0, world_size=2, local_rank=0)
         self.assertTrue(context.is_distributed)
         self.assertTrue(context.is_primary)
-        model = tl.FTTransformer(
-            input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0
-        )
+        model = tl.FTTransformer(input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0)
         with self.assertRaisesRegex(RuntimeError, "initialized process group"):
             Trainer(model, TrainerConfig(epochs=1, device="cpu"), distributed_context=context)
 
     def test_checkpoint_records_process_context_and_rejects_world_size_mismatch(self):
         torch.manual_seed(4)
-        model = tl.FTTransformer(
-            input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0
-        )
+        model = tl.FTTransformer(input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0)
         x = torch.randn(8, 2)
         y = torch.randn(8, 1)
         with tempfile.TemporaryDirectory() as directory:
@@ -253,9 +245,7 @@ class TrainingRuntimeTests(unittest.TestCase):
                 TrainerConfig(epochs=1, device="cpu", checkpoint_dir=directory),
                 batch_adapter=_tabular_adapter(model),
             ).fit(_make_loader(x, y, seed=3))
-            clone = tl.FTTransformer(
-                input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0
-            )
+            clone = tl.FTTransformer(input_dim=2, output_dim=1, d_model=4, n_heads=1, n_layers=1, d_ff=8, dropout=0.0)
             payload = load_training_checkpoint(result.last_checkpoint, model=clone, restore_rng=False)
             self.assertEqual(payload["schema_version"], 2)
             self.assertEqual(payload["distributed_context"], {"rank": 0, "world_size": 1, "local_rank": 0})

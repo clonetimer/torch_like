@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import inspect
+from dataclasses import dataclass
 from typing import Any
 
 from torch_like.classical import get_estimator_info, has_estimator
@@ -348,9 +348,7 @@ def _operations_for_class(cls: type[Any], template: _TaskTemplate) -> tuple[str,
     # argument; in that case the shared predict contract must fail closed.
     if "predict" in operations and _owner_name(cls, "predict") == "GenerativeModel":
         parameters = [
-            parameter
-            for name, parameter in inspect.signature(cls.forward).parameters.items()
-            if name != "self"
+            parameter for name, parameter in inspect.signature(cls.forward).parameters.items() if name != "self"
         ]
         required = [
             parameter

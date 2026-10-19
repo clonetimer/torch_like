@@ -334,13 +334,18 @@ def run_anomaly_baseline(
 ) -> AnomalyRunResult:
     """Score with a classical detector -- bound to the ``anomaly_baseline`` backend."""
     training_events.emit(
-        "training_start", candidate=candidate.name, backend=candidate.backend, task_type=TaskType.ANOMALY_DETECTION.value
+        "training_start",
+        candidate=candidate.name,
+        backend=candidate.backend,
+        task_type=TaskType.ANOMALY_DETECTION.value,
     )
     transformed = _preprocess(x, split.train, candidate.preprocessing, trial_dir)
     val_scores, test_scores, parameter_count = _run_baseline(
         candidate, transformed, split, seed, workers, trial_dir, validation_only
     )
-    training_events.emit("training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count)
+    training_events.emit(
+        "training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count
+    )
     return _finalize_anomaly_run(
         y,
         split,
@@ -380,7 +385,10 @@ def run_anomaly_pytorch(
 ) -> AnomalyRunResult:
     """Score with a torch detection model -- bound to the ``anomaly_pytorch`` backend."""
     training_events.emit(
-        "training_start", candidate=candidate.name, backend=candidate.backend, task_type=TaskType.ANOMALY_DETECTION.value
+        "training_start",
+        candidate=candidate.name,
+        backend=candidate.backend,
+        task_type=TaskType.ANOMALY_DETECTION.value,
     )
     transformed = _preprocess(x, split.train, candidate.preprocessing, trial_dir)
     val_scores, test_scores, parameter_count = _run_pytorch(
@@ -400,7 +408,9 @@ def run_anomaly_pytorch(
         save_checkpoint=save_checkpoint,
         validation_only=validation_only,
     )
-    training_events.emit("training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count)
+    training_events.emit(
+        "training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count
+    )
     return _finalize_anomaly_run(
         y,
         split,

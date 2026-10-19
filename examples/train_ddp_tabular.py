@@ -6,6 +6,7 @@ Resume through a new total epoch count:
   torchrun --standalone --nproc-per-node=2 examples/train_ddp_tabular.py \
       --device cpu --epochs 4 --resume runs/ddp_tabular/last_checkpoint.pt
 """
+
 from __future__ import annotations
 
 import argparse
@@ -46,25 +47,38 @@ def main() -> None:
         train_data, val_data = TensorDataset(x, y), TensorDataset(vx, vy)
         train_sampler = (
             create_distributed_sampler(train_data, context, DistributedSamplerConfig(seed=42))
-            if context.is_distributed else None
+            if context.is_distributed
+            else None
         )
         val_sampler = DistributedEvalSampler(val_data, context) if context.is_distributed else None
         train_loader = DataLoader(
-            train_data, batch_size=4, sampler=train_sampler, shuffle=train_sampler is None,
-            num_workers=0, generator=torch.Generator().manual_seed(51 + context.rank),
+            train_data,
+            batch_size=4,
+            sampler=train_sampler,
+            shuffle=train_sampler is None,
+            num_workers=0,
+            generator=torch.Generator().manual_seed(51 + context.rank),
         )
         val_loader = DataLoader(
-            val_data, batch_size=3, sampler=val_sampler, num_workers=0,
+            val_data,
+            batch_size=3,
+            sampler=val_sampler,
+            num_workers=0,
             generator=torch.Generator().manual_seed(61 + context.rank),
         )
         torch.manual_seed(7 + context.rank)
         model = tl.FTTransformer(
-            input_dim=3, output_dim=2, d_model=8, n_heads=2, n_layers=1, d_ff=16, dropout=0.1,
+            input_dim=3,
+            output_dim=2,
+            d_model=8,
+            n_heads=2,
+            n_layers=1,
+            d_ff=16,
+            dropout=0.1,
         )
         current = Trainer(
             model,
-            TrainerConfig(epochs=args.epochs, device=str(session.device), learning_rate=1e-3,
-                          checkpoint_dir=args.out),
+            TrainerConfig(epochs=args.epochs, device=str(session.device), learning_rate=1e-3, checkpoint_dir=args.out),
             distributed_context=context,
             metrics=classification_metric_set(),
             prediction_fn=lambda native, batch: native.predict(batch).argmax(dim=-1),
@@ -73,9 +87,12 @@ def main() -> None:
         if context.is_primary:
             tl.save_model(model, args.out / "model", overwrite=True)
             summary = {
-                "version": tl.__version__, "world_size": context.world_size,
-                "device": result.device, "validation_samples": len(val_data),
-                "epochs_ran": result.epochs_ran, "start_epoch": result.start_epoch,
+                "version": tl.__version__,
+                "world_size": context.world_size,
+                "device": result.device,
+                "validation_samples": len(val_data),
+                "epochs_ran": result.epochs_ran,
+                "start_epoch": result.start_epoch,
                 "metrics": result.history[-1].validation_metrics,
                 "last_checkpoint": result.last_checkpoint,
             }

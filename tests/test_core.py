@@ -5,9 +5,7 @@ coverage gate stays satisfied after the refactor.
 """
 
 import unittest
-from collections.abc import Callable
 
-from torch_like.automl import backends
 from torch_like.automl.backends import (
     BackendSpec,
     backends_by_kind,

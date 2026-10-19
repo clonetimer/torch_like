@@ -14,8 +14,7 @@ from torch.utils.data import DataLoader, Dataset, Sampler, TensorDataset
 class DataAdapter(Protocol):
     """Protocol for materializing framework DataLoaders from task data."""
 
-    def loader(self, features: Any, targets: Any = None, **kwargs: Any) -> DataLoader:
-        ...
+    def loader(self, features: Any, targets: Any = None, **kwargs: Any) -> DataLoader: ...
 
 
 @dataclass(frozen=True)

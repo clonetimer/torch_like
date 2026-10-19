@@ -30,9 +30,7 @@ def create(
         raise ValueError("name must be a non-empty string")
     normalized = backend.lower().strip()
     if normalized != "auto" and normalized not in _TORCH_BACKENDS | _SKLEARN_BACKENDS:
-        raise ValueError(
-            "backend must be one of: auto, torch_like, torch, pytorch, sklearn, classical"
-        )
+        raise ValueError("backend must be one of: auto, torch_like, torch, pytorch, sklearn, classical")
 
     if normalized in _SKLEARN_BACKENDS:
         if domain is not None:

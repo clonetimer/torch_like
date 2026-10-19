@@ -43,8 +43,7 @@ class AdaptedBatch:
 class BatchAdapter(Protocol):
     """Convert one loader batch into the model's domain batch contract."""
 
-    def adapt(self, model: Any, raw_batch: Any) -> AdaptedBatch:
-        ...
+    def adapt(self, model: Any, raw_batch: Any) -> AdaptedBatch: ...
 
 
 class IdentityBatchAdapter:
@@ -117,9 +116,7 @@ class ForecastingBatchAdapter:
                 if pred_len is None:
                     pred_len = int(getattr(model, "pred_len", decoder_target.shape[1] - label_len))
                 if pred_len <= 0 or pred_len > decoder_target.shape[1]:
-                    raise ValueError(
-                        f"pred_len must be in [1, {decoder_target.shape[1]}], got {pred_len}"
-                    )
+                    raise ValueError(f"pred_len must be in [1, {decoder_target.shape[1]}], got {pred_len}")
                 targets = decoder_target[:, -pred_len:, :]
             else:
                 x_dec = raw_batch.get("x_dec")

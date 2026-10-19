@@ -34,8 +34,8 @@ import numpy as np
 from torch_like.automl.anomaly_backend import AnomalyRunResult, run_anomaly_baseline, run_anomaly_pytorch
 from torch_like.automl.artifacts import json_dump, write_sklearn_artifact
 from torch_like.automl.backends import attach_runner
-from torch_like.automl.events import training_events
 from torch_like.automl.data import DataSplit, ValidationFold
+from torch_like.automl.events import training_events
 from torch_like.automl.sklearn_backend import (
     AlgorithmCandidate,
     build_pipeline,
@@ -85,28 +85,28 @@ def run_sklearn_single(
     candidate: AlgorithmCandidate, payload: dict[str, Any], split: DataSplit, trial_dir: Path
 ) -> tuple[dict[str, float], dict[str, float], int | None, np.ndarray, np.ndarray]:
     task_type, x, y = payload["task_type"], payload["x"], payload["y"]
-    training_events.emit("training_start", candidate=candidate.name, backend=candidate.backend, task_type=task_type.value)
+    training_events.emit(
+        "training_start", candidate=candidate.name, backend=candidate.backend, task_type=task_type.value
+    )
     pipeline = build_pipeline(candidate, task_type, seed=payload["seed"], workers=payload["workers"])
     pipeline.fit(x[split.train], _fit_targets(task_type, y[split.train]))
     final_only = payload.get("final_only", False)
     val_prediction = (
-        np.asarray(pipeline.predict(x[split.test]))
-        if final_only
-        else np.asarray(pipeline.predict(x[split.val]))
+        np.asarray(pipeline.predict(x[split.test])) if final_only else np.asarray(pipeline.predict(x[split.val]))
     )
     test_prediction = val_prediction if final_only else np.asarray(pipeline.predict(x[split.test]))
     val_prediction = _reshape_predictions(task_type, val_prediction, y[split.test] if final_only else y[split.val])
     test_prediction = _reshape_predictions(task_type, test_prediction, y[split.test])
     validation_metrics = (
-        {}
-        if final_only
-        else evaluate_predictions(task_type, y[split.val], val_prediction, payload["target_weights"])
+        {} if final_only else evaluate_predictions(task_type, y[split.val], val_prediction, payload["target_weights"])
     )
     test_metrics = evaluate_predictions(task_type, y[split.test], test_prediction, payload["target_weights"])
     parameter_count = estimate_parameter_count(pipeline)
     if payload["save_checkpoint"]:
         write_sklearn_artifact(trial_dir / "pipeline.joblib", pipeline, candidate)
-    training_events.emit("training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count)
+    training_events.emit(
+        "training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count
+    )
     return validation_metrics, test_metrics, parameter_count, val_prediction, test_prediction
 
 
@@ -114,7 +114,9 @@ def run_baseline_single(
     candidate: AlgorithmCandidate, payload: dict[str, Any], split: DataSplit, trial_dir: Path
 ) -> tuple[dict[str, float], dict[str, float], int, np.ndarray, np.ndarray]:
     task_type, x, y = payload["task_type"], payload["x"], payload["y"]
-    training_events.emit("training_start", candidate=candidate.name, backend=candidate.backend, task_type=task_type.value)
+    training_events.emit(
+        "training_start", candidate=candidate.name, backend=candidate.backend, task_type=task_type.value
+    )
     final_only = payload.get("final_only", False)
     val_indices = split.test if final_only else split.val
     val_prediction = _last_value_forecast(x[val_indices], payload["forecast_target_indices"], y[val_indices].shape)
@@ -124,9 +126,7 @@ def run_baseline_single(
         else _last_value_forecast(x[split.test], payload["forecast_target_indices"], y[split.test].shape)
     )
     validation_metrics = (
-        {}
-        if final_only
-        else evaluate_predictions(task_type, y[split.val], val_prediction, payload["target_weights"])
+        {} if final_only else evaluate_predictions(task_type, y[split.val], val_prediction, payload["target_weights"])
     )
     test_metrics = evaluate_predictions(task_type, y[split.test], test_prediction, payload["target_weights"])
     json_dump(
@@ -231,19 +231,19 @@ def run_sklearn_cv(
     candidate: AlgorithmCandidate, payload: dict[str, Any], fold: ValidationFold, fold_dir: Path, fold_seed: int
 ) -> tuple[dict[str, float] | None, dict[str, float], int | None, np.ndarray, list[str]]:
     task_type, x, y = payload["task_type"], payload["x"], payload["y"]
-    training_events.emit("training_start", candidate=candidate.name, backend=candidate.backend, task_type=task_type.value)
+    training_events.emit(
+        "training_start", candidate=candidate.name, backend=candidate.backend, task_type=task_type.value
+    )
     pipeline = build_pipeline(candidate, task_type, seed=fold_seed, workers=payload["workers"])
     pipeline.fit(x[fold.train], _fit_targets(task_type, y[fold.train]))
-    val_prediction = _reshape_predictions(
-        task_type, np.asarray(pipeline.predict(x[fold.val])), y[fold.val]
-    )
-    validation_metrics = evaluate_predictions(
-        task_type, y[fold.val], val_prediction, payload["target_weights"]
-    )
+    val_prediction = _reshape_predictions(task_type, np.asarray(pipeline.predict(x[fold.val])), y[fold.val])
+    validation_metrics = evaluate_predictions(task_type, y[fold.val], val_prediction, payload["target_weights"])
     parameter_count = estimate_parameter_count(pipeline)
     if payload["save_checkpoint"]:
         write_sklearn_artifact(fold_dir / "pipeline.joblib", pipeline, candidate)
-    training_events.emit("training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count)
+    training_events.emit(
+        "training_end", candidate=candidate.name, backend=candidate.backend, parameter_count=parameter_count
+    )
     return None, validation_metrics, parameter_count, val_prediction, []
 
 
@@ -251,7 +251,9 @@ def run_baseline_cv(
     candidate: AlgorithmCandidate, payload: dict[str, Any], fold: ValidationFold, fold_dir: Path, fold_seed: int
 ) -> tuple[None, dict[str, float], int, np.ndarray, list[str]]:
     task_type, x, y = payload["task_type"], payload["x"], payload["y"]
-    training_events.emit("training_start", candidate=candidate.name, backend=candidate.backend, task_type=task_type.value)
+    training_events.emit(
+        "training_start", candidate=candidate.name, backend=candidate.backend, task_type=task_type.value
+    )
     val_prediction = _last_value_forecast(x[fold.val], payload["forecast_target_indices"], y[fold.val].shape)
     validation_metrics = evaluate_predictions(task_type, y[fold.val], val_prediction, payload["target_weights"])
     json_dump(

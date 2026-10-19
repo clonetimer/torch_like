@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 import importlib
 import inspect
-from enum import Enum
 import json
 import sys
 from datetime import date
+from enum import Enum
 from pathlib import Path
 from typing import Any
 

@@ -37,7 +37,7 @@ torch-like = "torch_like.automl.cli:main"
 dev = [
     "pytest>=7.0",
     "pytest-cov>=7.0",
-    "ruff>=0.15.0",
+    "ruff==0.17.1",
 ]
 build = [
     "build>=1.2.0",
@@ -56,7 +56,9 @@ filterwarnings = [
 
 [tool.coverage.run]
 branch = true
+parallel = true
 source = ["torch_like"]
+patch = ["subprocess"]
 
 [tool.coverage.report]
 fail_under = 83

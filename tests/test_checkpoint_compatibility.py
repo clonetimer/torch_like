@@ -1,4 +1,5 @@
 """Old checkpoint schemas and additive RNG/best-state correctness regressions."""
+
 from __future__ import annotations
 
 import random
@@ -39,7 +40,7 @@ def test_original_v1_v2_checkpoint_still_loads(version, tmp_path):
     torch.save(payload, legacy)
     clone, _ = model_loader()
     load_training_checkpoint(legacy, model=clone, train_loader=loader)
-    for a, b in zip(model.parameters(), clone.parameters()):
+    for a, b in zip(model.parameters(), clone.parameters(), strict=True):
         torch.testing.assert_close(a, b, rtol=0, atol=0)
 
 
@@ -66,10 +67,13 @@ def test_restore_best_without_persisting_best_uses_memory_not_last(tmp_path):
     Trainer(expected, TrainerConfig(epochs=1, device="cpu"), loss_fn=loss).fit(loader)
     model, loader = model_loader()
     result = Trainer(
-        model, TrainerConfig(epochs=3, device="cpu", checkpoint_dir=tmp_path, save_best=False,
-                             restore_best=True, min_delta=1e6), loss_fn=loss,
+        model,
+        TrainerConfig(
+            epochs=3, device="cpu", checkpoint_dir=tmp_path, save_best=False, restore_best=True, min_delta=1e6
+        ),
+        loss_fn=loss,
     ).fit(loader)
     assert result.best_epoch == 1
     assert result.best_checkpoint is None
-    for a, b in zip(model.parameters(), expected.parameters()):
+    for a, b in zip(model.parameters(), expected.parameters(), strict=True):
         torch.testing.assert_close(a, b, rtol=0, atol=0)

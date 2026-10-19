@@ -79,7 +79,6 @@ class DataAdapterTests(unittest.TestCase):
         torch.testing.assert_close(adapted.targets, decoder_target[:, -2:])
         self.assertEqual(adapted.resolved_sample_count(), 3)
 
-
     def test_forecasting_adapter_accepts_legacy_four_tensor_batches(self):
         model = tl.DLinear(enc_in=1, dec_in=1, c_out=1, seq_len=4, label_len=2, pred_len=2, moving_avg=3)
         x_enc = torch.randn(2, 4, 1)
@@ -93,6 +92,7 @@ class DataAdapterTests(unittest.TestCase):
         torch.testing.assert_close(adapted.model_batch.x_mark_enc, x_mark_enc)
         torch.testing.assert_close(adapted.model_batch.x_mark_dec, x_mark_dec)
         torch.testing.assert_close(adapted.targets, decoder_target[:, -2:])
+
 
 class EvaluationTests(unittest.TestCase):
     def test_metric_evaluator_computes_global_f1_not_mean_of_batch_f1(self):
@@ -155,14 +155,11 @@ class EvaluationTests(unittest.TestCase):
         truth = np.array([0, 1, 2, 2, 1, 0, 2, 1])
         prediction = np.array([0, 2, 2, 1, 1, 0, 0, 1])
         metrics = {
-            name: ClassificationMetric(name)
-            for name in ("accuracy", "precision_macro", "recall_macro", "f1_macro")
+            name: ClassificationMetric(name) for name in ("accuracy", "precision_macro", "recall_macro", "f1_macro")
         }
         evaluator = MetricEvaluator(metrics)
         evaluator.update(prediction[:3], truth[:3])
-        shard = MetricEvaluator(
-            {name: ClassificationMetric(name) for name in metrics}
-        )
+        shard = MetricEvaluator({name: ClassificationMetric(name) for name in metrics})
         shard.update(prediction[3:], truth[3:])
         evaluator.merge(shard)
         from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
@@ -213,7 +210,6 @@ class EvaluationTests(unittest.TestCase):
         self.assertGreaterEqual(accuracy, 0.0)
         self.assertLessEqual(accuracy, 1.0)
 
-
     def test_forecasting_adapter_can_drive_trainer_with_explicit_step_fn(self):
         torch.manual_seed(7)
         model = tl.DLinear(enc_in=1, dec_in=1, c_out=1, seq_len=4, label_len=2, pred_len=2, moving_avg=3)
@@ -241,6 +237,7 @@ class EvaluationTests(unittest.TestCase):
         result = trainer.fit([raw], [raw])
         self.assertEqual(result.epochs_ran, 1)
         self.assertIn("mae", result.history[0].validation_metrics)
+
 
 if __name__ == "__main__":
     unittest.main()

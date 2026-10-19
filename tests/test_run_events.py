@@ -138,9 +138,9 @@ class CrossProcessEventTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             _write_csv(root / "data.csv")
-            LeaderboardTask(
-                _config(root, save_training_events=True, algorithms=("LogisticRegression",))
-            ).run(on_event=lambda name, **kw: seen.append((name, kw)))
+            LeaderboardTask(_config(root, save_training_events=True, algorithms=("LogisticRegression",))).run(
+                on_event=lambda name, **kw: seen.append((name, kw))
+            )
         names = [name for name, _ in seen]
         self.assertIn("training_start", names)
         self.assertIn("training_end", names)
