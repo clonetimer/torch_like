@@ -1,4 +1,5 @@
 """Fault source mapping is explicit, many-to-many, immutable and non-causal."""
+
 import unittest
 
 import numpy as np
@@ -57,7 +58,10 @@ class FaultSourceTests(unittest.TestCase):
     def test_label_schema_order_must_match_exactly(self):
         values = np.array([[0.1, 0.6, 0.3]])
         wrong = DiagnosticResult(
-            "fault_classification", "class_probability", values, "cls",
+            "fault_classification",
+            "class_probability",
+            values,
+            "cls",
             label_names=("normal", "supply_fault", "overheat"),
         )
         with self.assertRaisesRegex(ValueError, "label ordering"):
@@ -68,7 +72,10 @@ class FaultSourceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "class_probability"):
             mapper.predict(DiagnosticResult("anomaly_detection", "anomaly_score", np.array([0.9]), "cls"))
         invalid = DiagnosticResult(
-            "fault_classification", "class_probability", np.array([[0.2, 0.2, 0.2]]), "cls",
+            "fault_classification",
+            "class_probability",
+            np.array([[0.2, 0.2, 0.2]]),
+            "cls",
             label_names=rulebook().class_labels,
         )
         with self.assertRaisesRegex(ValueError, "normalized"):

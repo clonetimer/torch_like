@@ -4,6 +4,7 @@ This module maps known fault type probabilities through a caller-reviewed
 fault-to-component association table. It performs no model fitting, assigns
 no causal priors, and deliberately DOES NOT normalize candidate scores.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,7 +13,7 @@ from typing import Mapping
 
 import numpy as np
 
-from torch_like.diagnostics.types import DiagnosticAlgorithmSpec, DiagnosticResult, DiagnosticTask, DiagnosticOutputKind
+from torch_like.diagnostics.types import DiagnosticAlgorithmSpec, DiagnosticOutputKind, DiagnosticResult, DiagnosticTask
 
 
 @dataclass(frozen=True)
@@ -32,12 +33,16 @@ class FaultSourceRulebook:
     def __post_init__(self) -> None:
         classes = tuple(self.class_labels)
         sources = tuple(self.source_names)
-        if len(classes) < 2 or len(set(classes)) != len(classes) or any(
-            not isinstance(name, str) or not name.strip() for name in classes
+        if (
+            len(classes) < 2
+            or len(set(classes)) != len(classes)
+            or any(not isinstance(name, str) or not name.strip() for name in classes)
         ):
             raise ValueError("class_labels must contain unique nonempty classes")
-        if not sources or len(set(sources)) != len(sources) or any(
-            not isinstance(name, str) or not name.strip() for name in sources
+        if (
+            not sources
+            or len(set(sources)) != len(sources)
+            or any(not isinstance(name, str) or not name.strip() for name in sources)
         ):
             raise ValueError("source_names must contain unique nonempty physical source identifiers")
         if self.normal_label not in classes:
