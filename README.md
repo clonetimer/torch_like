@@ -20,6 +20,8 @@ R3a 诊断任务执行流程：新增按原始记录分组隔离的 `AnomalySpli
 
 R3b 事件级输出：新增 `extract_anomaly_events`，按预测分数的真实分辨率产生事件（窗口级不编造起止时间；时间级允许显式去抖和间隙合并），并支持将 R3a 的一次性窗口评估结果转换为事件提取输入。详见 [`docs/DIAGNOSTICS_R3.md`](docs/DIAGNOSTICS_R3.md)。
 
+R4b 故障源候选证据映射：新增带版本的专家故障类型/部件关联规则 `FaultSourceRulebook` 和无训练的 `FaultSourceEvidenceMapper`。只计算候选部件支持分数，不将其解释为真实故障根因概率。详见 [`docs/DIAGNOSTICS_R4B.md`](docs/DIAGNOSTICS_R4B.md)。
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
