@@ -1,5 +1,7 @@
 """Industrial diagnostics task contracts and backend-preserving algorithm registry."""
 
+from torch_like.diagnostics.features import Spectrum, fft_amplitude, time_domain_features, welch_psd
+from torch_like.diagnostics.pca import PCASPEDetector, PCAT2Detector, register_pca_detectors
 from torch_like.diagnostics.registry import (
     DiagnosticRegistry,
     create_diagnostic_algorithm,
@@ -23,6 +25,13 @@ from torch_like.diagnostics.types import (
 
 __all__ = [
     "CUSUMDetector",
+    "PCASPEDetector",
+    "PCAT2Detector",
+    "Spectrum",
+    "fft_amplitude",
+    "time_domain_features",
+    "welch_psd",
+    "register_pca_detectors",
     "EWMADetector",
     "ZScoreDetector",
     "register_statistical_detectors",

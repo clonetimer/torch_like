@@ -12,6 +12,8 @@ R1 诊断库基础：新增 `torch_like.diagnostics` 命名空间，提供明确
 
 R2 首批统计诊断基线：ZScoreDetector、CUSUMDetector、EWMADetector 使用健康训练基线拟合后进行无标签推理评分，支持逐窗口时间序列评分与固定阈值告警；详见 [R2 说明](docs/DIAGNOSTICS_R2.md)。
 
+R2 多变量与信号特征增强：新增 PCA T²/SPE 监测器（健康基线建模和独立开发集阈值校准），以及基于采样率 Hz 的 FFT 幅值谱、Welch PSD、时域特征计算。详见 [`docs/DIAGNOSTICS_R2B.md`](docs/DIAGNOSTICS_R2B.md)。
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
