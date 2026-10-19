@@ -103,7 +103,9 @@ class FaultClassificationEvaluation:
             or any(label not in labels for label in self.predictions)
         ):
             raise ValueError("prediction labels and recording IDs must align with samples")
-        if len(set(self.sample_ids)) != n or any(not isinstance(item, str) or not item.strip() for item in self.sample_ids):
+        if len(set(self.sample_ids)) != n or any(
+            not isinstance(item, str) or not item.strip() for item in self.sample_ids
+        ):
             raise ValueError("sample_ids must be nonempty and unique")
         if any(not isinstance(item, str) or not item.strip() for item in self.recording_ids):
             raise ValueError("recording_ids must be nonempty source identifiers")
