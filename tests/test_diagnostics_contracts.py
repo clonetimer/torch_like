@@ -111,6 +111,20 @@ class DiagnosticContractsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "threshold"):
             DiagnosticResult("rul_regression", "rul_value", np.array([1.0]), "rul_model", threshold=0.3)
 
+    def test_isolation_and_health_output_semantics(self):
+        isolated = DiagnosticResult("fault_isolation", "fault_source_score", np.array([[0.8, 0.2]]), "isolate")
+        health = DiagnosticResult("health_assessment", "health_index", np.array([0.9]), "health")
+        self.assertEqual(isolated.sample_count, 1)
+        self.assertEqual(health.sample_count, 1)
+        for task, wrong, message in (
+            ("fault_isolation", "anomaly_score", "fault_source_score"),
+            ("health_assessment", "rul_value", "health_index"),
+        ):
+            with self.subTest(task=task), self.assertRaisesRegex(ValueError, message):
+                DiagnosticResult(task, wrong, np.array([0.1]), "invalid")
+            with self.subTest(task=task), self.assertRaisesRegex(ValueError, message):
+                DiagnosticAlgorithmSpec("invalid", "statistical", task, wrong)
+
     def test_registry_preserves_native_sklearn_and_torch_objects(self):
         registry = DiagnosticRegistry()
         registry.register(
