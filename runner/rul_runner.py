@@ -200,10 +200,7 @@ def main(config: RULRunConfig):
         (tl.THGNN, "THGNN"),
     ]
 
-    results = [
-        run_experiment(cls, name, bundle, train_loader, validation_loader, config)
-        for cls, name in model_specs
-    ]
+    results = [run_experiment(cls, name, bundle, train_loader, validation_loader, config) for cls, name in model_specs]
     ranked = sorted(results, key=lambda value: value["best_validation_rmse"])
     selected = ranked[0]
     test_loss, test_rmse, test_mae = evaluate(
@@ -229,8 +226,7 @@ def main(config: RULRunConfig):
     out_dir = resolve_results_dir(config.results_dir, Path(__file__).parent)
     out_path = out_dir / f"rul_comparison_{config.data.condition}.json"
     clean = [
-        {key: value for key, value in item.items() if key not in {"history", "_trained_model"}}
-        for item in results
+        {key: value for key, value in item.items() if key not in {"history", "_trained_model"}} for item in results
     ]
     save_json(
         out_path,
