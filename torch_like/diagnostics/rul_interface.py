@@ -103,15 +103,15 @@ class RULRegressor:
             raise TypeError("RUL inference/training requires SignalBatch")
         if not np.isfinite(signals.values).all():
             raise ValueError("RUL inputs must be finite; caller handles imputation")
-        if self._input_metadata is not None:
-            if (signals.channel_names, signals.units, signals.sample_rate_hz) != self._input_metadata:
-                raise ValueError("channel names, units and sampling rate must match fitted input")
         expected_channels = getattr(self.model, "enc_in", None)
         expected_length = getattr(self.model, "seq_len", None)
         if expected_channels is not None and signals.shape[2] != expected_channels:
             raise ValueError("RUL channel count does not match native model enc_in")
         if expected_length is not None and signals.shape[1] != expected_length:
             raise ValueError("RUL window length does not match native model seq_len")
+        if self._input_metadata is not None:
+            if (signals.channel_names, signals.units, signals.sample_rate_hz) != self._input_metadata:
+                raise ValueError("channel names, units and sampling rate must match fitted input")
         try:
             parameter = next(self.model.parameters())
         except StopIteration as exc:
