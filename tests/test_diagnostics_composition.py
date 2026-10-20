@@ -103,12 +103,13 @@ class CompositionTests(unittest.TestCase):
             ((), "at least one"),
             ((a, a), "duplicate"),
             ((DiagnosticStage("b", FakeAlgorithm(), source="c"),), "unknown"),
-            ((DiagnosticStage("signals", FakeAlgorithm()),), "cannot be signals"),
         ):
             with self.subTest(stages=stages), self.assertRaisesRegex(ValueError, error):
                 DiagnosticPipeline(*stages) if stages else DiagnosticPipeline()
         with self.assertRaises(TypeError):
             DiagnosticPipeline(object())
+        with self.assertRaisesRegex(ValueError, "cannot be signals"):
+            DiagnosticStage("signals", FakeAlgorithm())
         with self.assertRaisesRegex(ValueError, "method"):
             DiagnosticStage("a", FakeAlgorithm(), method="fit")
         with self.assertRaisesRegex(TypeError, "inference method"):
