@@ -24,6 +24,8 @@ R4a 故障类型分类：基于原生 sklearn RandomForest/SVC 和现有时域�
 
 R4b 故障源候选证据映射：新增版本化专家故障类型/部件关联规则 `FaultSourceRulebook` 和无需训练的 `FaultSourceEvidenceMapper`；只输出候选部件支持分数，不将它们解释为真实故障根因的概率。详见 [`docs/DIAGNOSTICS_R4B.md`](docs/DIAGNOSTICS_R4B.md)。
 
+R4c 跨设备/工况泛化评估：新增设备、工况、原始记录的一致性协议，并提供严格的 device/condition/both/pair 留域外测试与分域指标，明确区分未见设备、未见工况和未见组合。不把划分协议等同于真实的跨设备验证结果。详见 [`docs/DIAGNOSTICS_R4C.md`](docs/DIAGNOSTICS_R4C.md)。
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).

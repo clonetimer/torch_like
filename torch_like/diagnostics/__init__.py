@@ -12,6 +12,13 @@ from torch_like.diagnostics.classification_workflow import (
     FaultClassificationWorkflow,
 )
 from torch_like.diagnostics.events import DiagnosticEvent, extract_anomaly_events
+from torch_like.diagnostics.generalization import (
+    FaultDomainMetrics,
+    FaultDomainPartition,
+    FaultGeneralizationEvaluation,
+    FaultGeneralizationSplit,
+    FaultGeneralizationWorkflow,
+)
 from torch_like.diagnostics.fault_sources import (
     FaultSourceEvidenceMapper,
     FaultSourceRulebook,
@@ -53,6 +60,11 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "FaultDomainMetrics",
+    "FaultDomainPartition",
+    "FaultGeneralizationEvaluation",
+    "FaultGeneralizationSplit",
+    "FaultGeneralizationWorkflow",
     "FaultSourceEvidenceMapper",
     "FaultSourceRulebook",
     "register_fault_source_mapper",
