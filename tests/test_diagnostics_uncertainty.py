@@ -222,7 +222,9 @@ class ClusterUncertaintyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "device identities"):
             bootstrap_fault_generalization(altered)
         changed_preds = ("bearing",) + sealed.overall.predictions[1:]
-        malformed = replace(sealed.overall, predictions=changed_preds)
+        malformed = replace(sealed.overall)
+        # Mimic tampering after a valid sealed result was created.
+        object.__setattr__(malformed, "predictions", changed_preds)
         with self.assertRaisesRegex(ValueError, "predictions do not match"):
             bootstrap_fault_generalization(replace(sealed, overall=malformed))
 
