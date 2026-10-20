@@ -3,7 +3,7 @@
 This is an **independently installable algorithms-and-interfaces wheel** assembled
 from the `clonetimer/torch_like` source tree, not a rename of the full framework.
 
-- Distribution: `torch-like-algorithms`, version `0.1.0` (initial stable delivery track).
+- Distribution: `torch-like-algorithms`, version `0.2.0` (initial stable delivery track).
 - Import root: `torch_like_stable` — **does not shadow or overwrite**
   `import torch_like`. Both distributions can be installed together.
 - Core runtime requirements: Python ≥3.10, NumPy, PyTorch, scikit-learn.
@@ -25,6 +25,8 @@ from the `clonetimer/torch_like` source tree, not a rename of the full framework
 | Transparent fault candidate mapping | `FaultSourceRulebook`, `FaultSourceEvidenceMapper` |
 | Diagnostic events | `extract_anomaly_events` |
 | Native RUL models | `TCNRUL`, `PatchTSTRUL`, `TransformerRUL`, `RULBatch` |
+| Explicit composition | `DiagnosticStage`, `DiagnosticPipeline`, `DiagnosticBundleResult` |
+| Native RUL bridge | `RULRegressor`, `RULForecast`, `create_rul_regressor`, `list_rul_models` |
 | Algorithm discovery | `DiagnosticRegistry`, opt-in registration and construction functions |
 
 The **three** RUL backbones above are the self-contained models shipped in
@@ -39,7 +41,7 @@ The stable GitHub Actions workflow uploads a wheel as a build artifact.
 After retrieving the artifact:
 
 ```sh
-python -m pip install torch_like_algorithms-0.1.0-py3-none-any.whl
+python -m pip install torch_like_algorithms-0.2.0-py3-none-any.whl
 ```
 
 Imports work independently of the full `torch_like` package:
@@ -66,6 +68,12 @@ incoming = SignalBatch(
 hi = GaussianHealthIndex().fit(healthy).score(incoming).values
 anomaly = ZScoreDetector().fit(healthy).score(incoming).values
 ```
+
+**v0.2.0 change:** adds native diagnostic composition and RUL adapters.
+Pipeline stages do not automatically fuse scores or calibrate policies;
+RUL targets, time/cycle units and ready-state declarations are caller-owned.
+Full model selection is available in the original framework, while the slim
+wheel still ships three self-contained RUL architectures.
 
 The library **does not validate or certify the user's data sources**.
 Reference choice, label truth, physical provenance, data cleaning and application

@@ -21,6 +21,8 @@ STABLE_MODULES = (
     "classical/__init__.py",
     "classical/_registry.py",
     "diagnostics/types.py",
+    "diagnostics/composition.py",
+    "diagnostics/rul_interface.py",
     "diagnostics/registry.py",
     "diagnostics/statistical.py",
     "diagnostics/pca.py",
@@ -46,6 +48,13 @@ No data provenance audit, experimental workflow, AutoML, CLI or training platfor
 from torch_like_stable import classical, diagnostics, models
 from torch_like_stable.diagnostics import (
     CUSUMDetector,
+    DiagnosticBundleResult,
+    DiagnosticPipeline,
+    DiagnosticStage,
+    RULRegressor,
+    RULForecast,
+    create_rul_regressor,
+    list_rul_models,
     DiagnosticAlgorithmSpec,
     DiagnosticRegistry,
     DiagnosticResult,
@@ -76,9 +85,11 @@ from torch_like_stable.models import (
     TransformerRUL,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [
     "__version__", "classical", "diagnostics", "models", "SignalBatch",
+    "DiagnosticStage", "DiagnosticPipeline", "DiagnosticBundleResult",
+    "RULRegressor", "RULForecast", "create_rul_regressor", "list_rul_models",
     "DiagnosticResult", "DiagnosticTask", "DiagnosticAlgorithmSpec",
     "DiagnosticRegistry", "create_diagnostic_algorithm",
     "get_diagnostic_algorithm_info", "list_diagnostic_algorithms",
@@ -94,6 +105,10 @@ __all__ = [
 
 DIAGNOSTICS_INIT = '''"""Stable algorithm and numerical interface exports only."""
 
+from torch_like_stable.diagnostics.composition import DiagnosticBundleResult, DiagnosticPipeline, DiagnosticStage
+from torch_like_stable.diagnostics.rul_interface import (
+    RULForecast, RULRegressor, create_rul_regressor, list_rul_models,
+)
 from torch_like_stable.diagnostics.classification import (
     FaultLabelSchema, SklearnWindowFaultClassifier, register_sklearn_fault_classifiers,
 )
@@ -130,6 +145,8 @@ from torch_like_stable.diagnostics.types import (
 )
 
 __all__ = [
+    "DiagnosticBundleResult", "DiagnosticPipeline", "DiagnosticStage",
+    "RULForecast", "RULRegressor", "create_rul_regressor", "list_rul_models",
     "FaultLabelSchema", "SklearnWindowFaultClassifier",
     "register_sklearn_fault_classifiers", "DiagnosticEvent",
     "extract_anomaly_events", "FaultSourceEvidenceMapper",
@@ -186,7 +203,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "torch-like-algorithms"
-version = "0.1.0"
+version = "0.2.0"
 description = "Standalone stable diagnostic, health-index and RUL algorithms; no data audit or orchestration"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -260,7 +277,7 @@ def prepare(destination: Path) -> dict[str, object]:
             raise ValueError(f"non-algorithm module leaked into stable package: {path}")
     manifest = {
         "distribution": "torch-like-algorithms",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "import_package": "torch_like_stable",
         "source_modules": list(STABLE_MODULES),
         "python_files": sorted(file_set),

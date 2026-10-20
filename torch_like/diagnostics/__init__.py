@@ -11,6 +11,7 @@ from torch_like.diagnostics.classification_workflow import (
     FaultClassificationSplit,
     FaultClassificationWorkflow,
 )
+from torch_like.diagnostics.composition import DiagnosticBundleResult, DiagnosticPipeline, DiagnosticStage
 from torch_like.diagnostics.events import DiagnosticEvent, extract_anomaly_events
 from torch_like.diagnostics.fault_sources import (
     FaultSourceEvidenceMapper,
@@ -25,6 +26,11 @@ from torch_like.diagnostics.generalization import (
     FaultGeneralizationSplit,
     FaultGeneralizationWorkflow,
 )
+from torch_like.diagnostics.health import (
+    GaussianHealthIndex,
+    MahalanobisHealthIndex,
+    register_health_index_estimators,
+)
 from torch_like.diagnostics.pca import PCASPEDetector, PCAT2Detector, register_pca_detectors
 from torch_like.diagnostics.registry import (
     DiagnosticRegistry,
@@ -32,6 +38,12 @@ from torch_like.diagnostics.registry import (
     get_diagnostic_algorithm_info,
     list_diagnostic_algorithms,
     register_diagnostic_algorithm,
+)
+from torch_like.diagnostics.rul_interface import (
+    RULForecast,
+    RULRegressor,
+    create_rul_regressor,
+    list_rul_models,
 )
 from torch_like.diagnostics.selection import (
     FaultCandidateRanking,
@@ -74,6 +86,13 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "DiagnosticBundleResult",
+    "DiagnosticPipeline",
+    "DiagnosticStage",
+    "RULForecast",
+    "RULRegressor",
+    "create_rul_regressor",
+    "list_rul_models",
     "GaussianHealthIndex",
     "MahalanobisHealthIndex",
     "register_health_index_estimators",

@@ -13,12 +13,17 @@ import numpy as np
 import torch
 import torch_like_stable as tl
 from torch_like_stable.diagnostics import (
+    DiagnosticPipeline,
+    DiagnosticStage,
     FaultLabelSchema,
     GaussianHealthIndex,
     MahalanobisHealthIndex,
+    RULRegressor,
     SignalBatch,
     SklearnWindowFaultClassifier,
     ZScoreDetector,
+    create_rul_regressor,
+    list_rul_models,
 )
 from torch_like_stable.models import ROCKET, TCNRUL, InceptionTime
 
@@ -33,7 +38,7 @@ def make(values: np.ndarray) -> SignalBatch:
 
 
 def main() -> None:
-    assert importlib.metadata.version("torch-like-algorithms") == tl.__version__ == "0.1.0"
+    assert importlib.metadata.version("torch-like-algorithms") == tl.__version__ == "0.2.0"
     assert importlib.util.find_spec("torch_like_stable.automl") is None
     assert importlib.util.find_spec("torch_like_stable.training") is None
     assert importlib.util.find_spec("torch_like_stable.evaluation") is None
@@ -56,8 +61,16 @@ def main() -> None:
         values = model.fit(baseline).score(query).values
         assert values.shape == (2,) and values[0] > values[1]
         assert np.isfinite(values).all()
-    out = ZScoreDetector().fit(baseline).score(query)
+    detector = ZScoreDetector().fit(baseline)
+    out = detector.score(query)
     assert out.values.shape == (2, 4, 2)
+    composition = DiagnosticPipeline(
+        DiagnosticStage("health", GaussianHealthIndex().fit(baseline)),
+        DiagnosticStage("anomaly", detector),
+    ).predict(query)
+    assert set(composition.results) == {"health", "anomaly"}
+    assert "TCNRUL" in list_rul_models()
+    assert "THGNN" not in list_rul_models()
 
     # Native sklearn classifier and PyTorch network construction, no platform.
     labels = FaultLabelSchema(("normal", "fault"))
@@ -101,6 +114,19 @@ def main() -> None:
 
     rul = TCNRUL(enc_in=2, seq_len=8, d_model=8, e_layers=2)
     assert rul(torch.randn(2, 8, 2)).shape == (2,)
+    adapter = RULRegressor(rul, unit="cycles", negative_policy="clip", ready=True)
+    assert adapter.predict_with_unit(make(np.zeros((2, 8, 2)))).values.shape == (2,)
+    another = create_rul_regressor(
+        "TCNRUL",
+        unit="hours",
+        negative_policy="clip",
+        enc_in=2,
+        seq_len=8,
+        d_model=8,
+        e_layers=1,
+        d_ff=16,
+    )
+    assert type(another.model).__name__ == "TCNRUL"
     print("PASS: isolated algorithm wheel contracts, health, sklearn, torch and RUL")
 
 
