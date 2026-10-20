@@ -13,8 +13,8 @@ from torch_like.diagnostics import (
     FaultSourceEvidenceMapper,
     FaultSourceRulebook,
     GaussianHealthIndex,
-    SklearnWindowFaultClassifier,
     SignalBatch,
+    SklearnWindowFaultClassifier,
     ZScoreDetector,
 )
 
@@ -46,12 +46,7 @@ class WrongCount:
 class CompositionTests(unittest.TestCase):
     def setUp(self):
         healthy = signals([[[i, i] for i in (-2, -1, 0, 1, 2)] for _ in range(3)])
-        train = signals(
-            [
-                [[float(k) + (i - 2) * 0.1] * 2 for i in range(5)]
-                for k in (0, 0, 0, 4, 4, 4)
-            ]
-        )
+        train = signals([[[float(k) + (i - 2) * 0.1] * 2 for i in range(5)] for k in (0, 0, 0, 4, 4, 4)])
         self.normal = GaussianHealthIndex().fit(healthy)
         self.z = ZScoreDetector().fit(healthy)
         self.classifier = SklearnWindowFaultClassifier(n_estimators=8, random_state=5)

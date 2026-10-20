@@ -1,6 +1,5 @@
 """Industrial diagnostics task contracts and backend-preserving algorithm registry."""
 
-from torch_like.diagnostics.composition import DiagnosticBundleResult, DiagnosticPipeline, DiagnosticStage
 from torch_like.diagnostics.classification import (
     FaultLabelSchema,
     SklearnWindowFaultClassifier,
@@ -12,6 +11,7 @@ from torch_like.diagnostics.classification_workflow import (
     FaultClassificationSplit,
     FaultClassificationWorkflow,
 )
+from torch_like.diagnostics.composition import DiagnosticBundleResult, DiagnosticPipeline, DiagnosticStage
 from torch_like.diagnostics.events import DiagnosticEvent, extract_anomaly_events
 from torch_like.diagnostics.fault_sources import (
     FaultSourceEvidenceMapper,
@@ -19,17 +19,17 @@ from torch_like.diagnostics.fault_sources import (
     register_fault_source_mapper,
 )
 from torch_like.diagnostics.features import Spectrum, fft_amplitude, time_domain_features, welch_psd
-from torch_like.diagnostics.health import (
-    GaussianHealthIndex,
-    MahalanobisHealthIndex,
-    register_health_index_estimators,
-)
 from torch_like.diagnostics.generalization import (
     FaultDomainMetrics,
     FaultDomainPartition,
     FaultGeneralizationEvaluation,
     FaultGeneralizationSplit,
     FaultGeneralizationWorkflow,
+)
+from torch_like.diagnostics.health import (
+    GaussianHealthIndex,
+    MahalanobisHealthIndex,
+    register_health_index_estimators,
 )
 from torch_like.diagnostics.pca import PCASPEDetector, PCAT2Detector, register_pca_detectors
 from torch_like.diagnostics.registry import (

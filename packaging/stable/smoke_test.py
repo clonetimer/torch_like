@@ -13,15 +13,15 @@ import numpy as np
 import torch
 import torch_like_stable as tl
 from torch_like_stable.diagnostics import (
+    DiagnosticPipeline,
+    DiagnosticStage,
     FaultLabelSchema,
     GaussianHealthIndex,
     MahalanobisHealthIndex,
+    RULRegressor,
     SignalBatch,
     SklearnWindowFaultClassifier,
     ZScoreDetector,
-    DiagnosticStage,
-    DiagnosticPipeline,
-    RULRegressor,
     create_rul_regressor,
     list_rul_models,
 )
@@ -117,8 +117,14 @@ def main() -> None:
     adapter = RULRegressor(rul, unit="cycles", negative_policy="clip", ready=True)
     assert adapter.predict_with_unit(make(np.zeros((2, 8, 2)))).values.shape == (2,)
     another = create_rul_regressor(
-        "TCNRUL", unit="hours", negative_policy="clip",
-        enc_in=2, seq_len=8, d_model=8, e_layers=1, d_ff=16,
+        "TCNRUL",
+        unit="hours",
+        negative_policy="clip",
+        enc_in=2,
+        seq_len=8,
+        d_model=8,
+        e_layers=1,
+        d_ff=16,
     )
     assert type(another.model).__name__ == "TCNRUL"
     print("PASS: isolated algorithm wheel contracts, health, sklearn, torch and RUL")

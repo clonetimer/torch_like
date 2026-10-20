@@ -16,7 +16,6 @@ import torch.nn.functional as F
 
 from torch_like.diagnostics.types import DiagnosticResult, SignalBatch
 
-
 _RUL_MODELS = {
     "TCNRUL": "torch_like.models.rul_backbones",
     "PatchTSTRUL": "torch_like.models.rul_backbones",
@@ -98,7 +97,9 @@ class RULRegressor:
         self._ready = True
         return self
 
-    def _inputs(self, signals: SignalBatch, x_mark: np.ndarray | torch.Tensor | None) -> tuple[torch.Tensor, torch.Tensor | None]:
+    def _inputs(
+        self, signals: SignalBatch, x_mark: np.ndarray | torch.Tensor | None
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         if not isinstance(signals, SignalBatch):
             raise TypeError("RUL inference/training requires SignalBatch")
         if not np.isfinite(signals.values).all():
