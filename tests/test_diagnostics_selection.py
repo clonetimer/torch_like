@@ -48,8 +48,13 @@ def make_split(*, domain=False):
 
 def spec(identifier, *, seeds=(3, 5), backend="sklearn", algorithm="RandomForestClassifier", **kwargs):
     return FaultCandidateSpec(
-        identifier, backend, algorithm, seeds,
-        model_parameters=tuple(kwargs.items()), budget_unit="trees", budget_value=kwargs.get("n_estimators", 100)
+        identifier,
+        backend,
+        algorithm,
+        seeds,
+        model_parameters=tuple(kwargs.items()),
+        budget_unit="trees",
+        budget_value=kwargs.get("n_estimators", 100),
     )
 
 
@@ -187,9 +192,7 @@ class FaultSelectionTests(unittest.TestCase):
         cls = make_split()
         with self.assertRaisesRegex(ValueError, "recording_ids"):
             FaultClassificationSplit(SCHEMA, cls.train, cls.train, cls.validation)
-        duplicate = FaultClassificationPartition(
-            cls.train.signals, ("renamed",) * 6, cls.train.labels
-        )
+        duplicate = FaultClassificationPartition(cls.train.signals, ("renamed",) * 6, cls.train.labels)
         with self.assertRaisesRegex(ValueError, "sample_ids"):
             FaultClassificationSplit(SCHEMA, cls.train, duplicate, cls.validation)
         dom = make_split(domain=True)
@@ -202,8 +205,13 @@ class FaultSelectionTests(unittest.TestCase):
     def test_candidate_specs_immutable_and_budget_audited(self):
         original = [("n_estimators", 5)]
         candidate = FaultCandidateSpec(
-            "rf", "sklearn", "RandomForestClassifier", (0, 2),
-            model_parameters=tuple(original), budget_unit="trees", budget_value=5
+            "rf",
+            "sklearn",
+            "RandomForestClassifier",
+            (0, 2),
+            model_parameters=tuple(original),
+            budget_unit="trees",
+            budget_value=5,
         )
         original.append(("max_depth", 4))
         self.assertEqual(dict(candidate.model_parameters), {"n_estimators": 5})
@@ -218,8 +226,15 @@ class FaultSelectionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "model identity"):
             replace(candidate, model_parameters=(("random_state", 3),))
         with self.assertRaisesRegex(ValueError, "probability=True"):
-            FaultCandidateSpec("svc", "sklearn", "SVC", (1, 2),
-                               model_parameters=(("probability", False),), budget_unit="fits", budget_value=1)
+            FaultCandidateSpec(
+                "svc",
+                "sklearn",
+                "SVC",
+                (1, 2),
+                model_parameters=(("probability", False),),
+                budget_unit="fits",
+                budget_value=1,
+            )
         with self.assertRaisesRegex(ValueError, "candidate identifiers"):
             FaultSelectionWorkflow((candidate, candidate))
         with self.assertRaisesRegex(ValueError, "minimum support"):
@@ -227,8 +242,13 @@ class FaultSelectionTests(unittest.TestCase):
 
     def test_native_sklearn_rf_two_seeds_then_fresh_final_model(self):
         candidate = FaultCandidateSpec(
-            "rf", "sklearn", "RandomForestClassifier", (3, 11),
-            model_parameters=(("n_estimators", 8),), budget_unit="trees", budget_value=8
+            "rf",
+            "sklearn",
+            "RandomForestClassifier",
+            (3, 11),
+            model_parameters=(("n_estimators", 8),),
+            budget_unit="trees",
+            budget_value=8,
         )
         workflow = FaultSelectionWorkflow((candidate,))
         result = workflow.run(make_split())
@@ -238,11 +258,20 @@ class FaultSelectionTests(unittest.TestCase):
 
     def test_native_torch_inception_small_end_to_end(self):
         candidate = FaultCandidateSpec(
-            "inception", "torch_like", "InceptionTime", (0, 1),
-            model_parameters=(("d_model", 8), ("num_blocks", 1), ("bottleneck_dim", 4),
-                              ("kernel_sizes", (3,)), ("dropout", 0)),
+            "inception",
+            "torch_like",
+            "InceptionTime",
+            (0, 1),
+            model_parameters=(
+                ("d_model", 8),
+                ("num_blocks", 1),
+                ("bottleneck_dim", 4),
+                ("kernel_sizes", (3,)),
+                ("dropout", 0),
+            ),
             training_parameters=(("epochs", 1), ("batch_size", 3)),
-            budget_unit="epochs", budget_value=1,
+            budget_unit="epochs",
+            budget_value=1,
         )
         result = FaultSelectionWorkflow((candidate,)).run(make_split(domain=True))
         self.assertEqual(result.sealed.overall.probabilities.shape, (3, 3))

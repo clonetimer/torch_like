@@ -75,27 +75,24 @@ class FaultCandidateSpec:
             seeds = tuple(self.seeds)
         except TypeError as exc:
             raise ValueError("seeds must be a sequence") from exc
-        if (
-            len(seeds) < 2
-            or len(seeds) != len(set(seeds))
-            or any(type(seed) is not int or seed < 0 for seed in seeds)
-        ):
+        if len(seeds) < 2 or len(seeds) != len(set(seeds)) or any(type(seed) is not int or seed < 0 for seed in seeds):
             raise ValueError("seeds must contain at least two distinct nonnegative integers")
         model_args = _immutable_parameters(self.model_parameters, "model_parameters")
         train_args = _immutable_parameters(self.training_parameters, "training_parameters")
         if self.backend == "sklearn" and train_args:
             raise ValueError("sklearn candidates cannot declare training_parameters")
         expected_unit = (
-            "trees" if self.algorithm == "RandomForestClassifier"
-            else "fits" if self.algorithm == "SVC" else "epochs"
+            "trees" if self.algorithm == "RandomForestClassifier" else "fits" if self.algorithm == "SVC" else "epochs"
         )
         if self.budget_unit != expected_unit or type(self.budget_value) is not int or self.budget_value < 1:
             raise ValueError(f"{self.algorithm} must declare a positive {expected_unit} budget")
         model_kwargs = dict(model_args)
         train_kwargs = dict(train_args)
         configured = (
-            model_kwargs.get("n_estimators", 100) if expected_unit == "trees"
-            else train_kwargs.get("epochs", 3) if expected_unit == "epochs"
+            model_kwargs.get("n_estimators", 100)
+            if expected_unit == "trees"
+            else train_kwargs.get("epochs", 3)
+            if expected_unit == "epochs"
             else 1
         )
         if configured != self.budget_value:
@@ -314,8 +311,12 @@ class FaultSelectionWorkflow:
                 except Exception as exc:
                     records.append(
                         FaultSeedResult(
-                            spec.identifier, seed, None, None,
-                            type(exc).__name__, str(exc)[:256],
+                            spec.identifier,
+                            seed,
+                            None,
+                            None,
+                            type(exc).__name__,
+                            str(exc)[:256],
                         )
                     )
             if len(successful) == len(spec.seeds):
@@ -325,7 +326,9 @@ class FaultSelectionWorkflow:
                         float(np.mean(successful)),
                         float(np.min(successful)),
                         float(np.std(successful)),
-                        True, len(successful), len(spec.seeds),
+                        True,
+                        len(successful),
+                        len(spec.seeds),
                     )
                 )
             else:
@@ -347,9 +350,9 @@ class FaultSelectionWorkflow:
         report = FaultSelectionReport(
             metric=self.metric,
             class_labels=split.schema.labels,
-            validation_support=tuple(int(x) for x in np.bincount(
-                split.schema.encode(validation.labels), minlength=len(split.schema.labels)
-            )),
+            validation_support=tuple(
+                int(x) for x in np.bincount(split.schema.encode(validation.labels), minlength=len(split.schema.labels))
+            ),
             validation_recordings=len(set(validation.recording_ids)),
             validation_domains=domains,
             candidates=self.candidates,
