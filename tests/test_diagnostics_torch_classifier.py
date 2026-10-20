@@ -8,7 +8,6 @@ import torch
 from torch_like.diagnostics.classification import FaultLabelSchema
 from torch_like.diagnostics.classification_workflow import (
     FaultClassificationPartition,
-    FaultClassificationSplit,
     FaultClassificationWorkflow,
 )
 from torch_like.diagnostics.generalization import (
