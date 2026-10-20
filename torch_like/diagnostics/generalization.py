@@ -34,7 +34,7 @@ class FaultDomainPartition:
                 raise ValueError(f"{field} must identify every window with a nonempty string")
             object.__setattr__(self, field, ids)
         context_by_run: dict[str, tuple[str, str]] = {}
-        for run, device, condition in zip(self.classification.recording_ids, self.device_ids, self.condition_ids):
+        for run, device, condition in zip(self.classification.recording_ids, self.device_ids, self.condition_ids, strict=True):
             current = (device, condition)
             if run in context_by_run and current != context_by_run[run]:
                 raise ValueError("one original recording_id cannot span multiple physical contexts")
@@ -42,7 +42,7 @@ class FaultDomainPartition:
 
     @property
     def context_pairs(self) -> tuple[tuple[str, str], ...]:
-        return tuple(zip(self.device_ids, self.condition_ids))
+        return tuple(zip(self.device_ids, self.condition_ids, strict=True))
 
 
 @dataclass(frozen=True)
@@ -159,7 +159,7 @@ class FaultDomainMetrics:
             "num_recordings": self.recording_count,
             "confusion": self.confusion.tolist(),
             "support": support.tolist(),
-            "absent_true_classes": [name for name, count in zip(self.class_labels, support) if count == 0],
+            "absent_true_classes": [name for name, count in zip(self.class_labels, support, strict=True) if count == 0],
             "accuracy": self.accuracy,
             "macro_f1_all_classes": self.macro_f1_all_classes,
             "macro_f1_present_classes": self.macro_f1_present_classes,
