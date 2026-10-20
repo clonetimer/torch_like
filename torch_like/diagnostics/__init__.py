@@ -74,6 +74,9 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "GaussianHealthIndex",
+    "MahalanobisHealthIndex",
+    "register_health_index_estimators",
     "FaultClusterUncertainty",
     "FaultMetricInterval",
     "bootstrap_fault_generalization",

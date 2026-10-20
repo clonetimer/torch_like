@@ -4,6 +4,28 @@
 
 English: `torch_like` aims to become a local-first, interface-consistent, evidence-driven, multi-domain model framework built on PyTorch. Users should be able to compose models like ordinary `torch.nn.Module` objects or use the optional AutoML layer to turn explicit datasets and task specifications into reproducible rankings and trusted-local model bundles.
 
+## Diagnostics / Health Assessment track (R5+) — Scope clarification
+
+`torch_like.diagnostics` develops a directly callable **diagnosis and health-assessment
+algorithm library** over the existing multi-domain PyTorch framework. Data quality,
+source authenticity, labels, operating conditions, reference selection, and physical
+validation are the **caller's responsibility**. We do not implement a source-provenance
+audit service, mandatory dataset manifest, certification workflow, or curated dataset
+admission pipeline. Only basic algorithm-required input constraints are checked.
+
+- R5a: Gaussian and regularized Mahalanobis healthy-reference indices, stable
+  `fit/score/deviation` APIs, opt-in registry and numerical contract tests.
+- R5b: health-state assessment, health trend/features, configurable compositions
+  of existing statistical/ML/neural algorithms; thresholds and grading are caller-owned.
+- R5c: adapters around existing native RUL models; explicit time/cycle semantics,
+  degradation evaluation, and no invented failure threshold.
+- R3/R4 holdout selection, uncertainty and sealed evaluation remain **optional**
+  research utilities rather than prerequisites to calling an algorithm.
+
+See [R5 development issue](https://github.com/clonetimer/torch_like/issues/19).
+This scoped clarification does not remove the framework's existing model-runtime,
+test, API stability, or optional AutoML capabilities.
+
 ## Non-goals / 非目标
 
 - 不重新实现 Tensor、autograd、优化器算法、分布式运行时或 CUDA 内核。 / Do not reimplement tensors, autograd, optimizer algorithms, distributed runtimes, or CUDA kernels.

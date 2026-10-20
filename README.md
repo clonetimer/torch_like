@@ -8,6 +8,12 @@ English: `torch_like` is a local PyTorch-native model framework. Its goal is to 
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for long-term milestones and exit criteria, and [`docs/MODEL_CATALOG_AUDIT.md`](docs/MODEL_CATALOG_AUDIT.md) for the complete registry capability and maturity audit.
 
+## 工业诊断与健康评估算法库的职责边界
+
+`torch_like.diagnostics` 面向调用方提供可独立使用的故障诊断、健康评估与退化/寿命算法。**数据来源真实性、清洗、故障标签、工况与训练/测试数据选择由用户自行负责**；本库不建设数据源审计、准入认证或强制物理来源清单。算法仅检查数值/形状以及与已拟合模型相匹配的通道、单位和采样率等必要输入约束。此前 R3/R4 的防泄漏评估和分域报告保留为可选工具，**不得作为直接 fit/score/predict 的必选步骤**。后续开发优先补齐健康指数、状态评估、故障诊断模型组合与 RUL 算法适配。详见 [R5 路线图](https://github.com/clonetimer/torch_like/issues/19)。
+
+R5a 健康指数算法：新增 `GaussianHealthIndex` 和 `MahalanobisHealthIndex`，基于用户传入的健康参考信号给出无监督、可解释的相对健康指数。分数不是故障概率、物理健康百分比或剩余寿命，详见 [R5a 文档](docs/DIAGNOSTICS_R5A.md)。
+
 R1 诊断库基础：新增 `torch_like.diagnostics` 命名空间，提供明确采样率的信号数据协议、诊断结果语义与独立算法注册接口。当前仅完成接口基础，具体统计诊断算法和流程属于后续阶段。详见 [`docs/DIAGNOSTICS_R1.md`](docs/DIAGNOSTICS_R1.md)。
 
 R2 首批统计诊断基线：ZScoreDetector、CUSUMDetector、EWMADetector 使用健康训练基线拟合后进行无标签推理评分，支持逐窗口时间序列评分与固定阈值告警；详见 [R2 说明](docs/DIAGNOSTICS_R2.md)。
