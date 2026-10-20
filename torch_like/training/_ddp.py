@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import uuid
+import weakref
 from collections.abc import Callable
 from dataclasses import asdict
 from pathlib import Path
@@ -42,15 +43,22 @@ class _LossModule(torch.nn.Module):
     def __init__(self, model: torch.nn.Module, loss: Callable):
         super().__init__()
         self.model = model
-        self._loss = loss
+        # A bound Trainer method must not keep the trainer and its DDP wrapper
+        # alive after the calling scenario exits. Native DDP reducers may have
+        # pending background state that should finalize before group teardown.
+        self._loss = weakref.WeakMethod(loss)
 
     def forward(self, batch: Any) -> torch.Tensor:
-        return self._loss(batch)
+        loss = self._loss()
+        if loss is None:
+            raise RuntimeError("DDP training objective owner is no longer alive")
+        return loss(batch)
 
 
 class _DDPExecution:
     def __init__(self, trainer: Any, config: DDPConfig):
-        self.trainer = trainer
+        # Trainer owns this execution helper; avoid a strong reference cycle.
+        self.trainer = weakref.proxy(trainer)
         self.context = trainer.distributed_context
         self.device = trainer.device
         self.config = config
