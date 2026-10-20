@@ -35,21 +35,28 @@ def make_split(*, holdout="both", minimum=2):
     train = make_part(
         [[0] * 8, [0.1] * 8, [1] * 8, [1.1] * 8, [3] * 8, [3.1] * 8],
         ("normal", "normal", "bearing", "bearing", "imbalance", "imbalance"),
-        run="train-run", device="device-A", condition="cold", prefix="train",
+        run="train-run",
+        device="device-A",
+        condition="cold",
+        prefix="train",
     )
     validation = make_part(
         [[0] * 8, [1] * 8, [3] * 8],
         ("normal", "bearing", "imbalance"),
-        run="val-run", device="device-B", condition="warm", prefix="val",
+        run="val-run",
+        device="device-B",
+        condition="warm",
+        prefix="val",
     )
     test = make_part(
         [[0] * 8, [1] * 8, [3] * 8, [1] * 8],
         ("normal", "bearing", "imbalance", "bearing"),
-        run="test-run", device="device-C", condition="hot", prefix="test",
+        run="test-run",
+        device="device-C",
+        condition="hot",
+        prefix="test",
     )
-    return FaultGeneralizationSplit(
-        SCHEMA, train, test, validation, holdout=holdout, min_domain_windows=minimum
-    )
+    return FaultGeneralizationSplit(SCHEMA, train, test, validation, holdout=holdout, min_domain_windows=minimum)
 
 
 class SpyClassifier:
@@ -114,8 +121,12 @@ class GeneralizationTests(unittest.TestCase):
     def test_device_holdout_rejects_same_device_under_renamed_run(self):
         split = make_split()
         violation = make_part(
-            [[0] * 8], ("normal",),
-            run="renamed-run", device="device-A", condition="hot", prefix="new",
+            [[0] * 8],
+            ("normal",),
+            run="renamed-run",
+            device="device-A",
+            condition="hot",
+            prefix="new",
         )
         with self.assertRaisesRegex(ValueError, "leaks device"):
             FaultGeneralizationSplit(SCHEMA, split.train, violation, holdout="device")
@@ -123,8 +134,12 @@ class GeneralizationTests(unittest.TestCase):
     def test_condition_holdout_rejects_seen_operating_condition(self):
         split = make_split()
         violation = make_part(
-            [[3] * 8], ("imbalance",),
-            run="new-run", device="device-Q", condition="cold", prefix="new",
+            [[3] * 8],
+            ("imbalance",),
+            run="new-run",
+            device="device-Q",
+            condition="cold",
+            prefix="new",
         )
         with self.assertRaisesRegex(ValueError, "leaks condition"):
             FaultGeneralizationSplit(SCHEMA, split.train, violation, holdout="condition")
@@ -132,8 +147,12 @@ class GeneralizationTests(unittest.TestCase):
     def test_validation_also_cannot_overlap_target_domain(self):
         split = make_split()
         val = make_part(
-            [[0] * 8], ("normal",),
-            run="different-run", device="device-A", condition="warm", prefix="val-new",
+            [[0] * 8],
+            ("normal",),
+            run="different-run",
+            device="device-A",
+            condition="warm",
+            prefix="val-new",
         )
         with self.assertRaisesRegex(ValueError, "leaks device"):
             FaultGeneralizationSplit(SCHEMA, split.train, split.test, val, holdout="device")
@@ -141,16 +160,24 @@ class GeneralizationTests(unittest.TestCase):
     def test_pair_holdout_allows_reused_individual_domain_identity(self):
         split = make_split()
         unseen_combo = make_part(
-            [[0] * 8], ("normal",),
-            run="combo-run", device="device-A", condition="hot", prefix="combo",
+            [[0] * 8],
+            ("normal",),
+            run="combo-run",
+            device="device-A",
+            condition="hot",
+            prefix="combo",
         )
         result = FaultGeneralizationSplit(SCHEMA, split.train, unseen_combo, holdout="pair")
         self.assertEqual(result.holdout, "pair")
         with self.assertRaisesRegex(ValueError, "leaks device"):
             FaultGeneralizationSplit(SCHEMA, split.train, unseen_combo, holdout="both")
         repeated_pair = make_part(
-            [[0] * 8], ("normal",),
-            run="another-run", device="device-A", condition="cold", prefix="repeated",
+            [[0] * 8],
+            ("normal",),
+            run="another-run",
+            device="device-A",
+            condition="cold",
+            prefix="repeated",
         )
         with self.assertRaisesRegex(ValueError, "leaks pair"):
             FaultGeneralizationSplit(SCHEMA, split.train, repeated_pair, holdout="pair")
@@ -182,13 +209,21 @@ class GeneralizationTests(unittest.TestCase):
     def test_absent_true_classes_and_low_support_exposed(self):
         split = make_split()
         sparse = make_part(
-            [[0] * 8, [3] * 8], ("normal", "imbalance"),
-            run="sparse-sealed", device="device-C", condition="hot", prefix="sparse",
+            [[0] * 8, [3] * 8],
+            ("normal", "imbalance"),
+            run="sparse-sealed",
+            device="device-C",
+            condition="hot",
+            prefix="sparse",
         )
         evaluated = FaultGeneralizationWorkflow(SpyClassifier()).run(
             FaultGeneralizationSplit(
-                SCHEMA, split.train, sparse, split.validation,
-                holdout="both", min_domain_windows=3,
+                SCHEMA,
+                split.train,
+                sparse,
+                split.validation,
+                holdout="both",
+                min_domain_windows=3,
             )
         )
         report = evaluated.to_dict()

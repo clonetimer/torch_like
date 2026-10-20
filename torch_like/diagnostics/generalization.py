@@ -34,7 +34,9 @@ class FaultDomainPartition:
                 raise ValueError(f"{field} must identify every window with a nonempty string")
             object.__setattr__(self, field, ids)
         context_by_run: dict[str, tuple[str, str]] = {}
-        for run, device, condition in zip(self.classification.recording_ids, self.device_ids, self.condition_ids, strict=True):
+        for run, device, condition in zip(
+            self.classification.recording_ids, self.device_ids, self.condition_ids, strict=True
+        ):
             current = (device, condition)
             if run in context_by_run and current != context_by_run[run]:
                 raise ValueError("one original recording_id cannot span multiple physical contexts")
@@ -191,9 +193,7 @@ class FaultGeneralizationEvaluation:
             "test_conditions": list(self.test_conditions),
             "overall": self.overall.to_dict(),
             "domain_slices": [part.to_dict() for part in self.slices],
-            "underpowered_domain_count": sum(
-                part.window_count < self.min_domain_windows for part in self.slices
-            ),
+            "underpowered_domain_count": sum(part.window_count < self.min_domain_windows for part in self.slices),
         }
 
 
@@ -201,9 +201,7 @@ class FaultGeneralizationWorkflow:
     """Fit on train labels; score sealed test once; slice only after scoring."""
 
     def __init__(self, classifier: Any) -> None:
-        if not callable(getattr(classifier, "fit", None)) or not callable(
-            getattr(classifier, "predict_proba", None)
-        ):
+        if not callable(getattr(classifier, "fit", None)) or not callable(getattr(classifier, "predict_proba", None)):
             raise TypeError("classifier must implement fit and predict_proba")
         self.classifier = classifier
         self._consumed = False

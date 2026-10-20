@@ -12,6 +12,12 @@ from torch_like.diagnostics.classification_workflow import (
     FaultClassificationWorkflow,
 )
 from torch_like.diagnostics.events import DiagnosticEvent, extract_anomaly_events
+from torch_like.diagnostics.fault_sources import (
+    FaultSourceEvidenceMapper,
+    FaultSourceRulebook,
+    register_fault_source_mapper,
+)
+from torch_like.diagnostics.features import Spectrum, fft_amplitude, time_domain_features, welch_psd
 from torch_like.diagnostics.generalization import (
     FaultDomainMetrics,
     FaultDomainPartition,
@@ -19,12 +25,6 @@ from torch_like.diagnostics.generalization import (
     FaultGeneralizationSplit,
     FaultGeneralizationWorkflow,
 )
-from torch_like.diagnostics.fault_sources import (
-    FaultSourceEvidenceMapper,
-    FaultSourceRulebook,
-    register_fault_source_mapper,
-)
-from torch_like.diagnostics.features import Spectrum, fft_amplitude, time_domain_features, welch_psd
 from torch_like.diagnostics.pca import PCASPEDetector, PCAT2Detector, register_pca_detectors
 from torch_like.diagnostics.registry import (
     DiagnosticRegistry,
