@@ -180,7 +180,7 @@ __all__ = [
 ]
 '''
 
-PROJECT = '''[build-system]
+PROJECT = """[build-system]
 requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
@@ -202,7 +202,7 @@ classifiers = [
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["torch_like_stable*"]
-'''
+"""
 
 FORBIDDEN = (
     "torch_like_stable/automl",

@@ -11,7 +11,6 @@ import importlib.util
 
 import numpy as np
 import torch
-
 import torch_like_stable as tl
 from torch_like_stable.diagnostics import (
     FaultLabelSchema,
@@ -21,7 +20,7 @@ from torch_like_stable.diagnostics import (
     SklearnWindowFaultClassifier,
     ZScoreDetector,
 )
-from torch_like_stable.models import InceptionTime, ROCKET, TCNRUL
+from torch_like_stable.models import ROCKET, TCNRUL, InceptionTime
 
 
 def make(values: np.ndarray) -> SignalBatch:
@@ -43,12 +42,16 @@ def main() -> None:
     assert importlib.util.find_spec("torch_like_stable.diagnostics.selection") is None
     assert importlib.util.find_spec("torch_like_stable.models.forecasting") is None
 
-    baseline = make(np.array([
-        [[-1, -1], [0, 0], [1, 1], [0, 0]],
-        [[-1, -1], [0, 0], [1, 1], [0, 0]],
-    ], dtype=float))
-    query = make(np.array([[[0, 0], [0, 0], [0, 0], [0, 0]],
-                           [[4, 4], [4, 4], [4, 4], [4, 4]]], dtype=float))
+    baseline = make(
+        np.array(
+            [
+                [[-1, -1], [0, 0], [1, 1], [0, 0]],
+                [[-1, -1], [0, 0], [1, 1], [0, 0]],
+            ],
+            dtype=float,
+        )
+    )
+    query = make(np.array([[[0, 0], [0, 0], [0, 0], [0, 0]], [[4, 4], [4, 4], [4, 4], [4, 4]]], dtype=float))
     for model in (GaussianHealthIndex(), MahalanobisHealthIndex()):
         values = model.fit(baseline).score(query).values
         assert values.shape == (2,) and values[0] > values[1]
@@ -58,9 +61,14 @@ def main() -> None:
 
     # Native sklearn classifier and PyTorch network construction, no platform.
     labels = FaultLabelSchema(("normal", "fault"))
-    train = make(np.concatenate([
-        np.zeros((3, 8, 2)), np.full((3, 8, 2), 5.0),
-    ]))
+    train = make(
+        np.concatenate(
+            [
+                np.zeros((3, 8, 2)),
+                np.full((3, 8, 2), 5.0),
+            ]
+        )
+    )
     classifier = SklearnWindowFaultClassifier(n_estimators=8, random_state=3)
     clf_result = classifier.fit(
         train,
@@ -71,14 +79,23 @@ def main() -> None:
     assert np.allclose(clf_result.values.sum(axis=1), 1)
 
     model = InceptionTime(
-        input_dim=2, num_classes=2, seq_len=8, d_model=8,
-        num_blocks=1, bottleneck_dim=4, kernel_sizes=(3,),
+        input_dim=2,
+        num_classes=2,
+        seq_len=8,
+        d_model=8,
+        num_blocks=1,
+        bottleneck_dim=4,
+        kernel_sizes=(3,),
     )
     logits = model(torch.zeros((2, 8, 2)))
     assert logits.shape == (2, 2)
 
     random_features_model = ROCKET(
-        input_dim=2, num_classes=2, seq_len=16, num_kernels=4, kernel_sizes=(3,),
+        input_dim=2,
+        num_classes=2,
+        seq_len=16,
+        num_kernels=4,
+        kernel_sizes=(3,),
     )
     assert random_features_model(torch.randn(2, 16, 2)).shape == (2, 2)
 
