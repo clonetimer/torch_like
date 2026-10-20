@@ -34,8 +34,9 @@ class DDPLifetimeTests(unittest.TestCase):
 
     def test_execution_helper_does_not_keep_owning_trainer_alive(self):
         owner = Owner()
-        with mock.patch("torch_like.training._ddp._require_process_group"), mock.patch(
-            "torch_like.training._ddp.dist.get_backend", return_value="gloo"
+        with (
+            mock.patch("torch_like.training._ddp._require_process_group"),
+            mock.patch("torch_like.training._ddp.dist.get_backend", return_value="gloo"),
         ):
             execution = _DDPExecution(owner, DDPConfig())
         owner_ref = weakref.ref(owner)
