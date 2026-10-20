@@ -2,6 +2,8 @@ name: stable-algorithms-wheel
 
 on:
   push:
+    branches:
+      - main
     paths:
       - "packaging/stable/**"
       - "tests/test_stable_packaging.py"
