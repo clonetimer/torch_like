@@ -26,6 +26,8 @@ R4b 故障源候选证据映射：新增版本化专家故障类型/部件关联
 
 R4c 跨设备/工况泛化评估：新增设备、工况、原始记录的一致性协议，并提供严格的 device/condition/both/pair 留域外测试与分域指标，明确区分未见设备、未见工况和未见组合。不把划分协议等同于真实的跨设备验证结果。详见 [`docs/DIAGNOSTICS_R4C.md`](docs/DIAGNOSTICS_R4C.md)。
 
+R4d 原生神经网络故障分类接入：新增 `TorchWindowFaultClassifier`，将既有 InceptionTime/ROCKET 原生 PyTorch 模型及自定义 `nn.Module` 对接 R4a/R4c 的封存分类评估协议，要求训练仅使用开发标签、推理为 `eval()` / `inference_mode()`、物理输入元数据一致，不将 softmax 解释为物理根因概率。详见 [`docs/DIAGNOSTICS_R4D.md`](docs/DIAGNOSTICS_R4D.md)。
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
