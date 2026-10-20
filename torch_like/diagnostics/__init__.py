@@ -18,6 +18,13 @@ from torch_like.diagnostics.fault_sources import (
     register_fault_source_mapper,
 )
 from torch_like.diagnostics.features import Spectrum, fft_amplitude, time_domain_features, welch_psd
+from torch_like.diagnostics.generalization import (
+    FaultDomainMetrics,
+    FaultDomainPartition,
+    FaultGeneralizationEvaluation,
+    FaultGeneralizationSplit,
+    FaultGeneralizationWorkflow,
+)
 from torch_like.diagnostics.pca import PCASPEDetector, PCAT2Detector, register_pca_detectors
 from torch_like.diagnostics.registry import (
     DiagnosticRegistry,
@@ -53,6 +60,11 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "FaultDomainMetrics",
+    "FaultDomainPartition",
+    "FaultGeneralizationEvaluation",
+    "FaultGeneralizationSplit",
+    "FaultGeneralizationWorkflow",
     "FaultSourceEvidenceMapper",
     "FaultSourceRulebook",
     "register_fault_source_mapper",
