@@ -134,8 +134,9 @@ class TorchFaultClassifierTests(unittest.TestCase):
                 )
                 clf.predict_proba(batch)
         with self.assertRaisesRegex(ValueError, "must match"):
-            clf.predict_proba(SignalBatch(np.ones((2, 9, 1)), sample_rate_hz=100, units=("g",),
-                                          channel_names=("vibration",)))
+            clf.predict_proba(
+                SignalBatch(np.ones((2, 9, 1)), sample_rate_hz=100, units=("g",), channel_names=("vibration",))
+            )
         missing = SignalBatch(
             np.full((1, 8, 1), np.nan),
             sample_rate_hz=100,
@@ -182,8 +183,14 @@ class TorchFaultClassifierTests(unittest.TestCase):
             workflow.run(data.as_classification_split())
 
     def test_hyperparameter_validation_and_explicit_registration(self):
-        for options in ({"epochs": 0}, {"epochs": True}, {"batch_size": 0},
-                        {"learning_rate": 0}, {"learning_rate": float("inf")}, {"random_state": -1}):
+        for options in (
+            {"epochs": 0},
+            {"epochs": True},
+            {"batch_size": 0},
+            {"learning_rate": 0},
+            {"learning_rate": float("inf")},
+            {"random_state": -1},
+        ):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 TorchWindowFaultClassifier(**options)
         with self.assertRaisesRegex(ValueError, "model_name"):
