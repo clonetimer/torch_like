@@ -1,0 +1,175 @@
+name: publish algorithms-only source release
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/release-algorithms-source.yml"
+  push:
+    branches:
+      - "release/algorithms-v0.1.0"
+
+permissions:
+  contents: read
+
+env:
+  RELEASE_TAG: algorithms-v0.1.0
+  RELEASE_SOURCE_SHA: 5a6b15e15f5874b8558145bbffc4df8c1a3133d8
+  GH_REPO: ${{ github.repository }}
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install pinned algorithm runtime and build tools
+        run: |
+          python -m pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install "numpy>=1.20" "scikit-learn==1.8.0" "setuptools>=77" wheel "build>=1.2"
+      - name: Stage the algorithm-only sources from immutable verified commit
+        run: |
+          python packaging/stable/prepare.py --destination build/stable
+          python -m compileall -q build/stable/src
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path("build/stable/stable-manifest.json").read_text())
+          assert (m["distribution"], m["version"], m["scope"]) == (
+              "torch-like-algorithms", "0.1.0", "algorithms_and_interfaces_only"
+          )
+          assert not any(m[k] for k in ("dataset_source_audit", "automl_included", "runner_included", "evaluation_platform_included"))
+          print("SOURCE ALLOWLIST VERIFIED", len(m["source_modules"]))
+          PY
+      - name: Build reproducible source distribution and wheel
+        run: |
+          python -m build --sdist --wheel --no-isolation --outdir dist/release build/stable
+          cp build/stable/stable-manifest.json dist/release/stable-manifest.json
+      - name: Inspect source archive membership against allowlist
+        run: |
+          python - <<'PY'
+          import json
+          import tarfile
+          from pathlib import Path
+
+          d=Path("dist/release")
+          archives=list(d.glob("torch_like_algorithms-0.1.0.tar.gz"))
+          wheels=list(d.glob("torch_like_algorithms-0.1.0-*.whl"))
+          assert len(archives) == 1 and len(wheels) == 1, (archives,wheels)
+          expected=set(json.loads((d/"stable-manifest.json").read_text())["python_files"])
+          with tarfile.open(archives[0],"r:gz") as archive:
+              names=[x.name for x in archive.getmembers() if x.isfile()]
+          prefix="torch_like_algorithms-0.1.0/"
+          assert all(n.startswith(prefix) for n in names), names
+          actual={
+              n[len(prefix):] for n in names
+              if n.endswith(".py") and n.startswith(prefix+"src/torch_like_stable/")
+          }
+          assert actual == expected, (sorted(expected-actual), sorted(actual-expected))
+          assert not any(
+              n.endswith(".py") and not n.startswith(prefix+"src/torch_like_stable/")
+              for n in names
+          )
+          for banned in ("automl", "training", "evaluation", "runtime", "runner", "data"):
+              assert not any(n.startswith(prefix+f"src/torch_like_stable/{banned}/") for n in names)
+          for banned in ("workflow.py", "selection.py", "generalization.py", "uncertainty.py"):
+              assert prefix+"src/torch_like_stable/diagnostics/"+banned not in names
+          print("SOURCE SDIST ALLOWLIST VERIFIED", archives[0].name)
+          PY
+      - name: Install built source tarball, verify public algorithm imports
+        run: |
+          python -m pip install --force-reinstall --no-deps --no-build-isolation dist/release/torch_like_algorithms-0.1.0.tar.gz
+          cd /tmp
+          python -I "$GITHUB_WORKSPACE/packaging/stable/smoke_test.py"
+      - name: Hash all user release assets
+        run: |
+          cd dist/release
+          sha256sum torch_like_algorithms-0.1.0.tar.gz torch_like_algorithms-0.1.0-*.whl stable-manifest.json > SHA256SUMS
+          cat SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: algorithms-v0.1.0-verified-sdist-and-wheel-${{ github.sha }}
+          path: dist/release/*
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/release/algorithms-v0.1.0' && github.repository == 'clonetimer/torch_like'
+    needs: build-and-verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: algorithms-v0.1.0-verified-sdist-and-wheel-${{ github.sha }}
+          path: dist/release
+      - name: Author release notes
+        run: |
+          cat > RELEASE_NOTES.md <<'EOF'
+          # torch-like-algorithms v0.1.0 — algorithms-only stable source
+
+          This release is a separately installable, algorithm-focused distribution
+          with import root `torch_like_stable`; it does **not** replace the full
+          `torch_like` multi-domain framework.
+
+          **Download the attached `torch_like_algorithms-0.1.0.tar.gz` for
+          the standalone algorithm-only source package** (PEP 517 sdist).
+          The automatic GitHub 'Source code' ZIP/TAR archives are snapshots of
+          the **entire repository**, and are not the trimmed algorithms-only source.
+
+          Included: Z-score, CUSUM, EWMA, PCA T2/SPE, signal features,
+          sklearn-based anomaly/fault classification, native InceptionTime/ROCKET,
+          healthy-reference Gaussian/Mahalanobis health indices, candidate
+          fault-source support mapping, and three self-contained RUL models
+          (TCNRUL, PatchTSTRUL and TransformerRUL).
+
+          Excluded: datasets, provenance auditing, AutoML, experiment/training
+          platforms, CLI, data ingestion and evaluation workflows.
+
+          ```bash
+          python -m pip install torch_like_algorithms-0.1.0.tar.gz
+          # or:
+          python -m pip install torch_like_algorithms-0.1.0-py3-none-any.whl
+          ```
+
+          Verify downloads with attached `SHA256SUMS`. The packaged
+          `stable-manifest.json` records the exact included sources.
+          Data authenticity, labels, cleaning and task-specific decision
+          thresholds are the caller's responsibility.
+
+          Exact verified algorithm source: `5a6b15e15f5874b8558145bbffc4df8c1a3133d8`.
+          This is a stable **API/distribution** scope, not a certification
+          of fault-diagnosis accuracy on any external dataset.
+          EOF
+      - name: Guard against replacing an existing tag or release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo "Release already exists; refusing to replace assets or notes"
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git" "refs/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "Tag already exists; refusing to repoint release"
+            exit 1
+          fi
+      - name: Publish GitHub release with verified algorithm-only sdist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            dist/release/torch_like_algorithms-0.1.0.tar.gz \
+            dist/release/torch_like_algorithms-0.1.0-*.whl \
+            dist/release/stable-manifest.json \
+            dist/release/SHA256SUMS \
+            --repo "$GH_REPO" \
+            --target "$RELEASE_SOURCE_SHA" \
+            --title "torch-like-algorithms v0.1.0 (stable source)" \
+            --notes-file RELEASE_NOTES.md \
+            --latest=false
