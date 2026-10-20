@@ -2,12 +2,22 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from packaging.stable.prepare import FORBIDDEN, REPO, STABLE_MODULES, prepare
+STAGING_SCRIPT = Path(__file__).resolve().parents[1] / "packaging" / "stable" / "prepare.py"
+SPEC = importlib.util.spec_from_file_location("torch_like_stable_build_profile", STAGING_SCRIPT)
+assert SPEC is not None and SPEC.loader is not None
+build_profile = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(build_profile)
+FORBIDDEN = build_profile.FORBIDDEN
+REPO = build_profile.REPO
+STABLE_MODULES = build_profile.STABLE_MODULES
+prepare = build_profile.prepare
 
 
 class StableDistributionTests(unittest.TestCase):
@@ -51,13 +61,8 @@ class StableDistributionTests(unittest.TestCase):
                 (stage / "stable-manifest.json").read_text(encoding="utf-8"),
                 (stage / "stable-manifest.json").read_text(encoding="utf-8"),
             )
-            with self.assertRaises(FileNotFoundError):
-                source = REPO / "torch_like" / "diagnostics" / "health.py"
-                self.assertTrue(source.exists())
-                # Missing manifest entry must stop publication.
-                from unittest.mock import patch
-
-                with patch("packaging.stable.prepare.STABLE_MODULES", STABLE_MODULES + ("missing.py",)):
+            with patch.object(build_profile, "STABLE_MODULES", STABLE_MODULES + ("missing.py",)):
+                with self.assertRaisesRegex(FileNotFoundError, "missing.py"):
                     prepare(stage)
 
 
