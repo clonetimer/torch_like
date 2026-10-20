@@ -188,15 +188,16 @@ class FaultSelectionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "recording_ids"):
             FaultClassificationSplit(SCHEMA, cls.train, cls.train, cls.validation)
         duplicate = FaultClassificationPartition(
-            cls.test.signals, ("renamed",) * 3, cls.test.labels
+            cls.train.signals, ("renamed",) * 6, cls.train.labels
         )
         with self.assertRaisesRegex(ValueError, "sample_ids"):
             FaultClassificationSplit(SCHEMA, cls.train, duplicate, cls.validation)
         dom = make_split(domain=True)
+        renamed = make_part("renamed", device="A", condition="cold")
         with self.assertRaisesRegex(ValueError, "leaks device"):
-            FaultGeneralizationSplit(SCHEMA, dom.train, dom.test, dom.train, holdout="device")
+            FaultGeneralizationSplit(SCHEMA, dom.train, dom.test, renamed, holdout="device")
         with self.assertRaisesRegex(ValueError, "leaks pair"):
-            FaultGeneralizationSplit(SCHEMA, dom.train, dom.test, dom.train, holdout="pair")
+            FaultGeneralizationSplit(SCHEMA, dom.train, dom.test, renamed, holdout="pair")
 
     def test_candidate_specs_immutable_and_budget_audited(self):
         original = [("n_estimators", 5)]
