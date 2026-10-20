@@ -195,9 +195,7 @@ def bootstrap_fault_generalization(
     if not np.array_equal(confusions.sum(axis=0), evaluation.overall.confusion):
         raise ValueError("selected clusters do not reconcile with sealed confusion")
     rng = np.random.default_rng(seed)
-    repeats = rng.multinomial(
-        len(selected), np.full(len(selected), 1 / len(selected)), size=n_resamples
-    )
+    repeats = rng.multinomial(len(selected), np.full(len(selected), 1 / len(selected)), size=n_resamples)
     aggregated = np.tensordot(repeats, confusions, axes=(1, 0))
     windows = aggregated.sum(axis=(1, 2))
     if np.any(windows == 0):

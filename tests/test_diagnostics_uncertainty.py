@@ -112,9 +112,7 @@ class ClusterUncertaintyTests(unittest.TestCase):
 
     def test_device_bootstrap_with_three_genuinely_held_out_device_ids(self):
         sealed, _ = make_sealed()
-        result = bootstrap_fault_generalization(
-            sealed, cluster_by="device", seed=7, n_resamples=700
-        )
+        result = bootstrap_fault_generalization(sealed, cluster_by="device", seed=7, n_resamples=700)
         report = result.to_dict()
         self.assertEqual(report["cluster_by"], "device")
         self.assertEqual(report["cluster_ids"], ["D0", "D1", "D2"])
@@ -141,10 +139,7 @@ class ClusterUncertaintyTests(unittest.TestCase):
         self.assertEqual(clustered.window_count, 36)
 
     def test_no_variation_and_absent_class_resamples_are_reported(self):
-        all_correct = [
-            (f"r{i}", f"D{i}", f"hot{i}", [(0, 0), (1, 1), (2, 2)])
-            for i in range(3)
-        ]
+        all_correct = [(f"r{i}", f"D{i}", f"hot{i}", [(0, 0), (1, 1), (2, 2)]) for i in range(3)]
         sealed, _ = make_sealed(test_runs=all_correct)
         result = bootstrap_fault_generalization(sealed, n_resamples=200, seed=7)
         self.assertEqual(result.accuracy.lower, 1)
@@ -180,10 +175,7 @@ class ClusterUncertaintyTests(unittest.TestCase):
             bootstrap_fault_generalization(make_sealed()[0], min_class_clusters=7)
 
     def test_do_not_confuse_recording_and_device_uncertainty(self):
-        same_device = [
-            (f"r{i}", "D0", "hot0", [(0, 0), (1, 1), (2, 2)])
-            for i in range(4)
-        ]
+        same_device = [(f"r{i}", "D0", "hot0", [(0, 0), (1, 1), (2, 2)]) for i in range(4)]
         sealed, _ = make_sealed(test_runs=same_device)
         self.assertEqual(bootstrap_fault_generalization(sealed, n_resamples=100).recording_count, 4)
         with self.assertRaisesRegex(ValueError, "source clusters"):
