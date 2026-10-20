@@ -101,7 +101,7 @@ class TorchWindowFaultClassifier:
         with torch.random.fork_rng(devices=[]):
             torch.manual_seed(self.random_state)
             if self.model is None:
-                from torch_like.models.diagnosis import InceptionTime, ROCKET
+                from torch_like.models.diagnosis import ROCKET, InceptionTime
 
                 model_class = {"InceptionTime": InceptionTime, "ROCKET": ROCKET}[self.model_name]
                 self.model = model_class(
