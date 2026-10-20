@@ -111,10 +111,11 @@ class TorchFaultClassifierTests(unittest.TestCase):
 
     def test_training_does_not_advance_global_torch_cpu_rng(self):
         data = split()
+        module = TrackedLinear()
         torch.manual_seed(7)
         expected = torch.rand(2)
         torch.manual_seed(7)
-        clf = TorchWindowFaultClassifier(model=TrackedLinear(), epochs=1, batch_size=3)
+        clf = TorchWindowFaultClassifier(model=module, epochs=1, batch_size=3)
         clf.fit(data.train.classification.signals, data.train.classification.labels, SCHEMA)
         torch.testing.assert_close(expected, torch.rand(2))
 
