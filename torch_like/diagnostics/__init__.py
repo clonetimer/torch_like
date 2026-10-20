@@ -33,6 +33,14 @@ from torch_like.diagnostics.registry import (
     list_diagnostic_algorithms,
     register_diagnostic_algorithm,
 )
+from torch_like.diagnostics.selection import (
+    FaultCandidateRanking,
+    FaultCandidateSpec,
+    FaultSeedResult,
+    FaultSelectionEvaluation,
+    FaultSelectionReport,
+    FaultSelectionWorkflow,
+)
 from torch_like.diagnostics.sklearn_adapter import (
     DEFAULT_WINDOW_FEATURES,
     SklearnWindowAnomalyDetector,
@@ -61,6 +69,12 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "FaultCandidateRanking",
+    "FaultCandidateSpec",
+    "FaultSeedResult",
+    "FaultSelectionEvaluation",
+    "FaultSelectionReport",
+    "FaultSelectionWorkflow",
     "TorchWindowFaultClassifier",
     "register_torch_fault_classifiers",
     "FaultDomainMetrics",
