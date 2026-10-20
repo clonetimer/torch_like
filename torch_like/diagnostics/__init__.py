@@ -61,6 +61,11 @@ from torch_like.diagnostics.types import (
     DiagnosticTask,
     SignalBatch,
 )
+from torch_like.diagnostics.uncertainty import (
+    FaultClusterUncertainty,
+    FaultMetricInterval,
+    bootstrap_fault_generalization,
+)
 from torch_like.diagnostics.workflow import (
     AnomalyDiagnosticWorkflow,
     AnomalyEvaluation,
@@ -69,6 +74,9 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "FaultClusterUncertainty",
+    "FaultMetricInterval",
+    "bootstrap_fault_generalization",
     "FaultCandidateRanking",
     "FaultCandidateSpec",
     "FaultSeedResult",
