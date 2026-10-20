@@ -101,9 +101,7 @@ class GaussianHealthIndex(_ReferenceHealthIndex):
 class MahalanobisHealthIndex(_ReferenceHealthIndex):
     """Regularized channel-covariance RMS Mahalanobis reference distance."""
 
-    def __init__(
-        self, *, health_scale: float = 1.0, min_std: float = 1e-8, shrinkage: float = 0.1
-    ) -> None:
+    def __init__(self, *, health_scale: float = 1.0, min_std: float = 1e-8, shrinkage: float = 0.1) -> None:
         super().__init__(health_scale=health_scale, min_std=min_std)
         if not np.isfinite(shrinkage) or not 0 < shrinkage <= 1:
             raise ValueError("shrinkage must be finite and in (0, 1]")
