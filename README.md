@@ -30,6 +30,8 @@ R4d 原生神经网络故障分类接入：新增 `TorchWindowFaultClassifier`�
 
 R4e 验证集模型选择协议：新增 `FaultCandidateSpec` 和 `FaultSelectionWorkflow`，按声明预算及多随机种子比较原生 sklearn/PyTorch 故障分类候选，验证集独立评分和失败隔离，最终获选模型重新训练后仅执行一次封存测试；不把名义树数/epoch 当作可比较计算预算。详见 [`docs/DIAGNOSTICS_R4E.md`](docs/DIAGNOSTICS_R4E.md)。
 
+R4f 封存结果聚类不确定性：新增 `bootstrap_fault_generalization`，对 R4c 已完成评估的原始记录或独立设备级混淆矩阵做整簇 Bootstrap；严格禁止逐窗口独立重采样、再次推理或模型选择，报告固定类别 Macro-F1、Accuracy 的百分位区间与稀疏来源限制。详见 [`docs/DIAGNOSTICS_R4F.md`](docs/DIAGNOSTICS_R4F.md)。
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
