@@ -21,6 +21,9 @@ STABLE_MODULES = (
     "classical/__init__.py",
     "classical/_registry.py",
     "diagnostics/types.py",
+    "diagnostics/decisions.py",
+    "diagnostics/streaming.py",
+    "diagnostics/score_projection.py",
     "diagnostics/composition.py",
     "diagnostics/rul_interface.py",
     "diagnostics/registry.py",
@@ -49,6 +52,12 @@ from torch_like_stable import classical, diagnostics, models
 from torch_like_stable.diagnostics import (
     CUSUMDetector,
     DiagnosticBundleResult,
+    DiagnosticDecision,
+    DecisionMode,
+    DiagnosticParameterSpec,
+    StreamingThreshold,
+    AnomalyScoreProjection,
+    project_anomaly_scores,
     DiagnosticPipeline,
     DiagnosticStage,
     RULRegressor,
@@ -85,12 +94,14 @@ from torch_like_stable.models import (
     TransformerRUL,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __all__ = [
     "__version__", "classical", "diagnostics", "models", "SignalBatch",
     "DiagnosticStage", "DiagnosticPipeline", "DiagnosticBundleResult",
     "RULRegressor", "RULForecast", "create_rul_regressor", "list_rul_models",
     "DiagnosticResult", "DiagnosticTask", "DiagnosticAlgorithmSpec",
+    "DiagnosticDecision", "DecisionMode", "DiagnosticParameterSpec",
+    "StreamingThreshold", "AnomalyScoreProjection", "project_anomaly_scores",
     "DiagnosticRegistry", "create_diagnostic_algorithm",
     "get_diagnostic_algorithm_info", "list_diagnostic_algorithms",
     "register_diagnostic_algorithm", "ZScoreDetector", "CUSUMDetector",
@@ -106,6 +117,9 @@ __all__ = [
 DIAGNOSTICS_INIT = '''"""Stable algorithm and numerical interface exports only."""
 
 from torch_like_stable.diagnostics.composition import DiagnosticBundleResult, DiagnosticPipeline, DiagnosticStage
+from torch_like_stable.diagnostics.decisions import DecisionMode, DiagnosticDecision
+from torch_like_stable.diagnostics.streaming import StreamingThreshold
+from torch_like_stable.diagnostics.score_projection import AnomalyScoreProjection, project_anomaly_scores
 from torch_like_stable.diagnostics.rul_interface import (
     RULForecast, RULRegressor, create_rul_regressor, list_rul_models,
 )
@@ -140,7 +154,7 @@ from torch_like_stable.diagnostics.torch_classifier import (
     TorchWindowFaultClassifier, register_torch_fault_classifiers,
 )
 from torch_like_stable.diagnostics.types import (
-    DiagnosticAlgorithmSpec, DiagnosticOutputKind, DiagnosticResult,
+    DiagnosticAlgorithmSpec, DiagnosticOutputKind, DiagnosticParameterSpec, DiagnosticResult,
     DiagnosticTask, SignalBatch,
 )
 
@@ -162,7 +176,9 @@ __all__ = [
     "CUSUMDetector", "EWMADetector", "ZScoreDetector",
     "register_statistical_detectors", "TorchWindowFaultClassifier",
     "register_torch_fault_classifiers", "DiagnosticAlgorithmSpec",
-    "DiagnosticOutputKind", "DiagnosticResult", "DiagnosticTask", "SignalBatch",
+    "DiagnosticOutputKind", "DiagnosticParameterSpec", "DiagnosticResult", "DiagnosticTask", "SignalBatch",
+    "DecisionMode", "DiagnosticDecision", "StreamingThreshold",
+    "AnomalyScoreProjection", "project_anomaly_scores",
 ]
 '''
 
@@ -203,7 +219,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "torch-like-algorithms"
-version = "0.2.0"
+version = "0.3.0"
 description = "Standalone stable diagnostic, health-index and RUL algorithms; no data audit or orchestration"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -229,6 +245,7 @@ FORBIDDEN = (
     "torch_like_stable/runtime",
     "torch_like_stable/data",
     "torch_like_stable/runner",
+    "torch_like_stable/native",
     "torch_like_stable/diagnostics/workflow.py",
     "torch_like_stable/diagnostics/generalization.py",
     "torch_like_stable/diagnostics/selection.py",
@@ -277,7 +294,7 @@ def prepare(destination: Path) -> dict[str, object]:
             raise ValueError(f"non-algorithm module leaked into stable package: {path}")
     manifest = {
         "distribution": "torch-like-algorithms",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "import_package": "torch_like_stable",
         "source_modules": list(STABLE_MODULES),
         "python_files": sorted(file_set),
