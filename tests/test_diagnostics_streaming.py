@@ -11,9 +11,7 @@ from torch_like.diagnostics import DiagnosticResult, StreamingThreshold
 def scores(values, *, name="CUSUM"):
     x = np.asarray(values, dtype=float)
     assert x.ndim == 2
-    return DiagnosticResult(
-        "anomaly_detection", "anomaly_score", x[np.newaxis], name
-    )
+    return DiagnosticResult("anomaly_detection", "anomaly_score", x[np.newaxis], name)
 
 
 class StreamingThresholdTests(unittest.TestCase):
@@ -31,10 +29,19 @@ class StreamingThresholdTests(unittest.TestCase):
 
     @staticmethod
     def input_samples():
-        return np.array([
-            [0.2, 1.2], [0.1, 0.9], [5.0, 8.0], [0.3, 0.6],
-            [0.4, 1.3], [0.0, 1.0], [0.9, 6.0], [0.1, 1.1],
-        ], dtype=float)
+        return np.array(
+            [
+                [0.2, 1.2],
+                [0.1, 0.9],
+                [5.0, 8.0],
+                [0.3, 0.6],
+                [0.4, 1.3],
+                [0.0, 1.0],
+                [0.9, 6.0],
+                [0.1, 1.1],
+            ],
+            dtype=float,
+        )
 
     def test_continuous_equals_segmented_exactly(self):
         x = self.input_samples()
@@ -44,12 +51,8 @@ class StreamingThresholdTests(unittest.TestCase):
         segmented = self.make_adaptive()
         left = segmented.decide_chunk(scores(x[:3]), start_index=0, **kwargs)
         right = segmented.decide_chunk(scores(x[3:]), start_index=3, **kwargs)
-        np.testing.assert_array_equal(
-            full.labels, np.concatenate([left.labels, right.labels], axis=1)
-        )
-        np.testing.assert_array_equal(
-            full.thresholds, np.concatenate([left.thresholds, right.thresholds], axis=1)
-        )
+        np.testing.assert_array_equal(full.labels, np.concatenate([left.labels, right.labels], axis=1))
+        np.testing.assert_array_equal(full.thresholds, np.concatenate([left.thresholds, right.thresholds], axis=1))
         self.assertEqual(single.state_dict(), segmented.state_dict())
         self.assertEqual(segmented.observations, 8)
 
@@ -72,9 +75,13 @@ class StreamingThresholdTests(unittest.TestCase):
 
     def test_predecision_cutoff_and_alarm_freeze(self):
         stream = StreamingThreshold(
-            algorithm_name="CUSUM", mode="adaptive_ewma",
-            initial_mean=0.0, initial_std=1.0, alpha=0.5,
-            sigma=2.0, freeze_on_alarm=True,
+            algorithm_name="CUSUM",
+            mode="adaptive_ewma",
+            initial_mean=0.0,
+            initial_std=1.0,
+            alpha=0.5,
+            sigma=2.0,
+            freeze_on_alarm=True,
         )
         result = stream.decide_chunk(scores([[3.0], [0.0]]), start_index=0)
         self.assertEqual(result.thresholds[0, 0, 0], 2.0)
@@ -83,9 +90,7 @@ class StreamingThresholdTests(unittest.TestCase):
         self.assertEqual(stream.observations, 2)
 
     def test_fixed_mode_no_adaptive_mutation_and_reset(self):
-        stream = StreamingThreshold(
-            algorithm_name="CUSUM", mode="fixed", thresholds=(1.0, 2.0)
-        )
+        stream = StreamingThreshold(algorithm_name="CUSUM", mode="fixed", thresholds=(1.0, 2.0))
         first = stream.decide_chunk(scores([[0.5, 2.5], [2.5, 1.0]]), start_index=0)
         self.assertEqual(first.labels.tolist(), [[[0, 1], [1, 0]]])
         self.assertEqual(stream.state_dict()["mean"], None)
@@ -111,22 +116,19 @@ class StreamingThresholdTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "start_index"):
             stream.decide_chunk(x, start_index=True, channel_names=("wheel", "temperature"))
         with self.assertRaisesRegex(ValueError, "algorithm_name"):
-            stream.decide_chunk(scores([[0.1, 0.2]], name="EWMA"), start_index=0,
-                                channel_names=("wheel", "temperature"))
+            stream.decide_chunk(
+                scores([[0.1, 0.2]], name="EWMA"), start_index=0, channel_names=("wheel", "temperature")
+            )
         with self.assertRaisesRegex(ValueError, "channel count"):
-            stream.decide_chunk(scores([[0.1]]), start_index=0,
-                                channel_names=("wheel", "temperature"))
-        wrong_shape = DiagnosticResult(
-            "anomaly_detection", "anomaly_score", np.ones((2, 2, 2)), "CUSUM"
-        )
+            stream.decide_chunk(scores([[0.1]]), start_index=0, channel_names=("wheel", "temperature"))
+        wrong_shape = DiagnosticResult("anomaly_detection", "anomaly_score", np.ones((2, 2, 2)), "CUSUM")
         with self.assertRaisesRegex(ValueError, "shape"):
             stream.decide_chunk(wrong_shape, start_index=0)
         self.assertEqual(stream.observations, 0)
 
     def test_invalid_or_incompatible_checkpoint_is_atomic(self):
         stream = self.make_adaptive()
-        stream.decide_chunk(scores([[0.1, 1.0]]), start_index=0,
-                            channel_names=("wheel", "temperature"))
+        stream.decide_chunk(scores([[0.1, 1.0]]), start_index=0, channel_names=("wheel", "temperature"))
         original = stream.state_dict()
         cases = [
             {"schema_version": 2},

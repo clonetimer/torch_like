@@ -156,9 +156,7 @@ class StreamingThreshold:
             raise ValueError("algorithm_name differs from fitted streaming threshold configuration")
         if result.values.ndim != 3 or result.values.shape[0] != 1:
             raise ValueError("streaming scores must have shape (1, time, channels)")
-        expected_channels = (
-            len(self._initial_cutoffs) if self._initial_cutoffs is not None else len(self._initial_mean)
-        )
+        expected_channels = len(self._initial_cutoffs) if self._initial_cutoffs is not None else len(self._initial_mean)
         if result.values.shape[2] != expected_channels:
             raise ValueError("streaming score channel count changed")
         if self._config["channel_names"] is not None:
@@ -211,7 +209,11 @@ class StreamingThreshold:
     def load_state_dict(self, state: Mapping[str, Any]) -> None:
         """Validate entirely before atomic restoration. Only load trusted state."""
         if not isinstance(state, Mapping) or set(state) != {
-            "schema_version", "config", "observations", "mean", "variance"
+            "schema_version",
+            "config",
+            "observations",
+            "mean",
+            "variance",
         }:
             raise ValueError("invalid streaming checkpoint structure")
         if type(state["schema_version"]) is not int or state["schema_version"] != _STREAM_STATE_VERSION:
