@@ -49,10 +49,12 @@ class NeuralAASPhase9FrozenParityTests(unittest.TestCase):
     def test_usad_and_tranad_mapped_weight_parity_with_original_aas(self):
         x = torch.linspace(-1, 1, 48, dtype=torch.float32).reshape(4, 4, 3)
         cases = (
-            ("USAD", USAD(input_dim=3, seq_len=4, hidden_dim=12, latent_dim=5,
-                          dropout=0.0, alpha=0.45), _AAS_USAD),
-            ("TranAD", TranAD(input_dim=3, seq_len=4, d_model=8, n_heads=2,
-                              e_layers=1, d_ff=16, dropout=0.0), _AAS_TRANAD),
+            ("USAD", USAD(input_dim=3, seq_len=4, hidden_dim=12, latent_dim=5, dropout=0.0, alpha=0.45), _AAS_USAD),
+            (
+                "TranAD",
+                TranAD(input_dim=3, seq_len=4, d_model=8, n_heads=2, e_layers=1, d_ff=16, dropout=0.0),
+                _AAS_TRANAD,
+            ),
         )
         for name, model, golden in cases:
             with self.subTest(model=name):
@@ -65,15 +67,14 @@ class NeuralAASPhase9FrozenParityTests(unittest.TestCase):
                 np.testing.assert_allclose([actual_loss], [golden["loss"]], rtol=2e-5, atol=2e-6)
 
     def test_usad_decoder_key_remapping_is_explicit_and_lossless(self):
-        model = USAD(input_dim=3, seq_len=4, hidden_dim=12, latent_dim=5,
-                     dropout=0.0, alpha=0.45)
+        model = USAD(input_dim=3, seq_len=4, hidden_dim=12, latent_dim=5, dropout=0.0, alpha=0.45)
         upstream = model.state_dict()
         aas_style = {}
         for key, tensor in upstream.items():
             name = key
             for decoder in ("decoder_1.", "decoder_2."):
                 if key.startswith(decoder + "net."):
-                    name = decoder + key[len(decoder + "net."):]
+                    name = decoder + key[len(decoder + "net.") :]
                     break
             self.assertNotIn(name, aas_style)
             aas_style[name] = tensor.clone()
@@ -90,8 +91,10 @@ class NeuralAASPhase9FrozenParityTests(unittest.TestCase):
             self.assertNotIn(new_key, mapped)
             mapped[new_key] = tensor
         self.assertEqual(set(mapped), set(upstream))
-        self.assertEqual({key: tuple(value.shape) for key, value in mapped.items()},
-                         {key: tuple(value.shape) for key, value in upstream.items()})
+        self.assertEqual(
+            {key: tuple(value.shape) for key, value in mapped.items()},
+            {key: tuple(value.shape) for key, value in upstream.items()},
+        )
         model.load_state_dict(mapped, strict=True)
 
 
