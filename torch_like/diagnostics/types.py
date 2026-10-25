@@ -213,7 +213,9 @@ class DiagnosticParameterSpec:
         if (self.exclusive_minimum and self.minimum is None) or (self.exclusive_maximum and self.maximum is None):
             raise ValueError("exclusive bounds require minimum/maximum")
         for bound in (self.minimum, self.maximum):
-            if bound is not None and (isinstance(bound, bool) or not isinstance(bound, Real) or not math.isfinite(bound)):
+            if bound is not None and (
+                isinstance(bound, bool) or not isinstance(bound, Real) or not math.isfinite(bound)
+            ):
                 raise ValueError("parameter bounds must be finite numbers")
         if self.minimum is not None and self.maximum is not None and self.minimum > self.maximum:
             raise ValueError("parameter minimum exceeds maximum")

@@ -22,11 +22,19 @@ from torch_like.diagnostics import (
 class ParameterContractTests(unittest.TestCase):
     def test_schema_is_json_serializable_and_exact(self):
         p = DiagnosticParameterSpec(
-            "alpha", "number", default=0.2, minimum=0.0,
-            exclusive_minimum=True, maximum=1.0, description="EWMA smoothing",
+            "alpha",
+            "number",
+            default=0.2,
+            minimum=0.0,
+            exclusive_minimum=True,
+            maximum=1.0,
+            description="EWMA smoothing",
         )
         spec = DiagnosticAlgorithmSpec(
-            "ewma", "statistical", "anomaly_detection", "anomaly_score",
+            "ewma",
+            "statistical",
+            "anomaly_detection",
+            "anomaly_score",
             parameters=(p, DiagnosticParameterSpec("enabled", "boolean", default=False)),
         )
         self.assertEqual(json.loads(json.dumps(spec.to_dict()))["parameters"][0]["name"], "alpha")
@@ -51,7 +59,10 @@ class ParameterContractTests(unittest.TestCase):
             with self.subTest(kwargs=kwargs), self.assertRaises((ValueError, TypeError)):
                 DiagnosticParameterSpec(**kwargs)
         spec = DiagnosticAlgorithmSpec(
-            "x", "external", "anomaly_detection", "anomaly_score",
+            "x",
+            "external",
+            "anomaly_detection",
+            "anomaly_score",
             parameters=(DiagnosticParameterSpec("foo", "integer", required=True),),
         )
         with self.assertRaisesRegex(ValueError, "required"):
@@ -60,7 +71,10 @@ class ParameterContractTests(unittest.TestCase):
             spec.validate_parameters({"foo": 1.4})
         with self.assertRaisesRegex(ValueError, "duplicate"):
             DiagnosticAlgorithmSpec(
-                "dup", "external", "anomaly_detection", "anomaly_score",
+                "dup",
+                "external",
+                "anomaly_detection",
+                "anomaly_score",
                 parameters=(DiagnosticParameterSpec("x", "string"), DiagnosticParameterSpec("x", "string")),
             )
 
@@ -93,8 +107,11 @@ class ParameterContractTests(unittest.TestCase):
 class DiagnosticDecisionTests(unittest.TestCase):
     def test_score_threshold_keeps_resolution_and_does_not_calibrate(self):
         result = DiagnosticResult(
-            "anomaly_detection", "anomaly_score",
-            np.array([[[0.1, 3.5], [4.0, 2.1]]]), "CUSUM", threshold=99.0,
+            "anomaly_detection",
+            "anomaly_score",
+            np.array([[[0.1, 3.5], [4.0, 2.1]]]),
+            "CUSUM",
+            threshold=99.0,
         )
         decision = DiagnosticDecision.from_threshold(result, 3.0)
         np.testing.assert_array_equal(decision.labels, [[[0, 1], [1, 0]]])
@@ -108,10 +125,12 @@ class DiagnosticDecisionTests(unittest.TestCase):
 
     def test_time_varying_thresholds_and_invalid_broadcasting(self):
         result = DiagnosticResult(
-            "anomaly_detection", "anomaly_score",
-            np.array([[1., 2., 3.], [3., 2., 1.]]), "EWMA",
+            "anomaly_detection",
+            "anomaly_score",
+            np.array([[1.0, 2.0, 3.0], [3.0, 2.0, 1.0]]),
+            "EWMA",
         )
-        thresholds = np.array([[0., 2., 4.], [2., 3., 0.]])
+        thresholds = np.array([[0.0, 2.0, 4.0], [2.0, 3.0, 0.0]])
         d = DiagnosticDecision.from_threshold(result, thresholds)
         np.testing.assert_array_equal(d.labels, [[1, 0, 0], [1, 0, 1]])
         thresholds[0, 0] = 100.0
@@ -123,39 +142,53 @@ class DiagnosticDecisionTests(unittest.TestCase):
     def test_single_authority_rejects_fabricated_label_and_generic_threshold(self):
         score = DiagnosticResult("anomaly_detection", "anomaly_score", np.array([0.9, 0.3]), "S")
         with self.assertRaisesRegex(ValueError, "disagree"):
-            DiagnosticDecision("anomaly_detection", "score_threshold", [0, 0], "S",
-                               source_result=score, thresholds=np.array([0.5, 0.5]))
+            DiagnosticDecision(
+                "anomaly_detection",
+                "score_threshold",
+                [0, 0],
+                "S",
+                source_result=score,
+                thresholds=np.array([0.5, 0.5]),
+            )
         with self.assertRaisesRegex(ValueError, "generic thresholds"):
             DiagnosticDecision("anomaly_detection", "native", [1, 0], "S", thresholds=np.array([0.5, 0.5]))
         with self.assertRaisesRegex(ValueError, "competing score"):
-            DiagnosticDecision.from_labels(task="anomaly_detection", labels=np.array([1, 0]),
-                                           algorithm_name="S", source_result=score)
+            DiagnosticDecision.from_labels(
+                task="anomaly_detection", labels=np.array([1, 0]), algorithm_name="S", source_result=score
+            )
         with self.assertRaisesRegex(ValueError, "binary"):
-            DiagnosticDecision.from_labels(task="anomaly_detection", labels=np.array([0, 2]),
-                                           algorithm_name="S")
+            DiagnosticDecision.from_labels(task="anomaly_detection", labels=np.array([0, 2]), algorithm_name="S")
 
     def test_native_and_multiclass_label_are_distinct_from_scores(self):
         score = DiagnosticResult("anomaly_detection", "anomaly_score", np.array([2.2, 0.1]), "Native")
         native = DiagnosticDecision.from_labels(
-            task="anomaly_detection", labels=np.array([1, 0]), algorithm_name="Native",
-            decision_mode="native", source_result=score,
+            task="anomaly_detection",
+            labels=np.array([1, 0]),
+            algorithm_name="Native",
+            decision_mode="native",
+            source_result=score,
         )
         self.assertIs(native.source_result, score)
         multiclass = DiagnosticDecision.from_labels(
-            task="fault_classification", labels=np.array([0, 2, 1]),
-            algorithm_name="Classifier", label_names=("normal", "bearing", "gear"),
+            task="fault_classification",
+            labels=np.array([0, 2, 1]),
+            algorithm_name="Classifier",
+            label_names=("normal", "bearing", "gear"),
         )
         self.assertEqual(multiclass.sample_count, 3)
         np.testing.assert_array_equal(multiclass.labels, [0, 2, 1])
         self.assertEqual(multiclass.to_dict()["label_names"][2], "gear")
         with self.assertRaisesRegex(ValueError, "outside"):
             DiagnosticDecision.from_labels(
-                task="fault_classification", labels=np.array([3]),
-                algorithm_name="Bad", label_names=("normal", "fault"),
+                task="fault_classification",
+                labels=np.array([3]),
+                algorithm_name="Bad",
+                label_names=("normal", "fault"),
             )
         with self.assertRaisesRegex(ValueError, "one-dimensional"):
             DiagnosticDecision.from_labels(
-                task="fault_classification", labels=np.ones((2, 2), dtype=int),
+                task="fault_classification",
+                labels=np.ones((2, 2), dtype=int),
                 algorithm_name="Bad",
             )
 

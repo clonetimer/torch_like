@@ -63,8 +63,10 @@ class DiagnosticDecision:
         if names is not None:
             if task != DiagnosticTask.FAULT_CLASSIFICATION:
                 raise ValueError("label_names only apply to fault classification")
-            if not names or len(set(names)) != len(names) or any(
-                not isinstance(name, str) or not name.strip() for name in names
+            if (
+                not names
+                or len(set(names)) != len(names)
+                or any(not isinstance(name, str) or not name.strip() for name in names)
             ):
                 raise ValueError("label_names must contain unique nonempty strings")
             if labels.dtype.kind in {"i", "u"}:
@@ -113,9 +115,7 @@ class DiagnosticDecision:
         return self.labels.shape[0]
 
     @classmethod
-    def from_threshold(
-        cls, result: DiagnosticResult, threshold: float | np.ndarray
-    ) -> DiagnosticDecision:
+    def from_threshold(cls, result: DiagnosticResult, threshold: float | np.ndarray) -> DiagnosticDecision:
         """Apply a caller-selected fixed/online threshold without fitting it.
 
         A scalar cutoff expands to the exact score shape. For a time-varying
@@ -164,7 +164,9 @@ class DiagnosticDecision:
             "labels": self.labels.tolist(),
             "label_names": None if self.label_names is None else list(self.label_names),
             "thresholds": None if self.thresholds is None else self.thresholds.tolist(),
-            "source_result": None if self.source_result is None else {
+            "source_result": None
+            if self.source_result is None
+            else {
                 "algorithm_name": self.source_result.algorithm_name,
                 "output_kind": self.source_result.output_kind.value,
                 "values": self.source_result.values.tolist(),

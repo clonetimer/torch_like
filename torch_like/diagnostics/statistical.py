@@ -170,10 +170,10 @@ def register_statistical_detectors(registry: Any = None) -> None:
     from torch_like.diagnostics.types import DiagnosticAlgorithmSpec, DiagnosticParameterSpec
 
     target = diagnostic_registry if registry is None else registry
+
     def positive(name: str, default: float) -> DiagnosticParameterSpec:
-        return DiagnosticParameterSpec(
-            name, "number", default=default, minimum=0.0, exclusive_minimum=True
-        )
+        return DiagnosticParameterSpec(name, "number", default=default, minimum=0.0, exclusive_minimum=True)
+
     schemas = {
         "ZScoreDetector": (
             positive("sigma_threshold", 3.0),
@@ -186,8 +186,12 @@ def register_statistical_detectors(registry: Any = None) -> None:
         ),
         "EWMADetector": (
             DiagnosticParameterSpec(
-                "alpha", "number", default=0.2, minimum=0.0,
-                exclusive_minimum=True, maximum=1.0,
+                "alpha",
+                "number",
+                default=0.2,
+                minimum=0.0,
+                exclusive_minimum=True,
+                maximum=1.0,
             ),
             positive("control_limit", 3.0),
             positive("min_std", 1e-8),
