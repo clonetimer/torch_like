@@ -64,10 +64,8 @@ def _verify_statistical(aas_classes: tuple[type, type, type]) -> list[dict[str, 
     results: list[dict[str, object]] = []
     configurations = (
         ("CUSUM", aas_cusum, CUSUMDetector, {"k": 0.6, "h": 4.5, "min_std": 1e-8}, "time_channel", "max"),
-        ("EWMA", aas_ewma, EWMADetector, {"alpha": 0.3, "control_limit": 2.5, "min_std": 1e-8},
-         "time_channel", "max"),
-        ("PCA-SPE", aas_pca, PCASPEDetector, {"n_components": 2, "contamination": 0.1, "min_std": 1e-8},
-         "time", None),
+        ("EWMA", aas_ewma, EWMADetector, {"alpha": 0.3, "control_limit": 2.5, "min_std": 1e-8}, "time_channel", "max"),
+        ("PCA-SPE", aas_pca, PCASPEDetector, {"n_components": 2, "contamination": 0.1, "min_std": 1e-8}, "time", None),
     )
     for name, aas_type, torch_type, params, layout, reduction in configurations:
         aas = aas_type(params)
@@ -92,8 +90,9 @@ def _verify_statistical(aas_classes: tuple[type, type, type]) -> list[dict[str, 
         projected_windows = project_anomaly_scores(
             raw_windows, score_layout=layout, sequence_mode="independent_windows", channel_reduction=reduction
         )
-        results.append(_assert_parity(f"{name}/independent-windows", projected_windows.values,
-                                      expected_windows, **STAT_TOLERANCE))
+        results.append(
+            _assert_parity(f"{name}/independent-windows", projected_windows.values, expected_windows, **STAT_TOLERANCE)
+        )
     return results
 
 
@@ -122,10 +121,18 @@ def _verify_neural(aas_neural_module: object) -> list[dict[str, object]]:
     torch.manual_seed(70)
     x = torch.linspace(-1, 1, 48, dtype=torch.float32).reshape(4, 4, 3)
     cases = (
-        ("USAD", aas_neural_module._USADModel.create(3, 4, 12, 5, 0.0, 0.45),
-         USAD(input_dim=3, seq_len=4, hidden_dim=12, latent_dim=5, dropout=0.0, alpha=0.45), True),
-        ("TranAD", aas_neural_module._TranADModel.create(3, 4, 8, 2, 1, 16, 0.0),
-         TranAD(input_dim=3, seq_len=4, d_model=8, n_heads=2, e_layers=1, d_ff=16, dropout=0.0), False),
+        (
+            "USAD",
+            aas_neural_module._USADModel.create(3, 4, 12, 5, 0.0, 0.45),
+            USAD(input_dim=3, seq_len=4, hidden_dim=12, latent_dim=5, dropout=0.0, alpha=0.45),
+            True,
+        ),
+        (
+            "TranAD",
+            aas_neural_module._TranADModel.create(3, 4, 8, 2, 1, 16, 0.0),
+            TranAD(input_dim=3, seq_len=4, d_model=8, n_heads=2, e_layers=1, d_ff=16, dropout=0.0),
+            False,
+        ),
     )
     results = []
     for name, aas, upstream, remap in cases:
@@ -146,10 +153,10 @@ def _verify_neural(aas_neural_module: object) -> list[dict[str, object]]:
             # fit_step uses model training semantics but dropout is disabled.
             aas_loss = aas.fit_step(x).item()
             upstream_loss = upstream.fit_step(DetectionBatch(x)).item()
-        results.append(_assert_parity(f"{name}/mapped-weights-score", upstream_scores,
-                                      aas_scores, **NEURAL_TOLERANCE))
-        results.append(_assert_parity(f"{name}/mapped-weights-training-loss", [upstream_loss],
-                                      [aas_loss], **NEURAL_TOLERANCE))
+        results.append(_assert_parity(f"{name}/mapped-weights-score", upstream_scores, aas_scores, **NEURAL_TOLERANCE))
+        results.append(
+            _assert_parity(f"{name}/mapped-weights-training-loss", [upstream_loss], [aas_loss], **NEURAL_TOLERANCE)
+        )
     return results
 
 
@@ -166,9 +173,7 @@ def verify(aas_root: Path) -> dict[str, object]:
             TorchLikePCASPEDetector,
         )
 
-        statistical = _verify_statistical(
-            (TorchLikeCUSUMDetector, TorchLikeEWMADetector, TorchLikePCASPEDetector)
-        )
+        statistical = _verify_statistical((TorchLikeCUSUMDetector, TorchLikeEWMADetector, TorchLikePCASPEDetector))
         neural = _verify_neural(torch_like_neural)
         return {
             "protocol": "explicit_aas_phase9_numeric_and_mapped_weight_parity_v1",

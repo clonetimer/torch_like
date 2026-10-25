@@ -27,28 +27,52 @@ from torch_like.diagnostics import (
 _AAS_GOLDEN = {
     "cusum": {
         "continuous": [
-            0.07380162547839741, 2.623637078189788, 1.6319903689308735,
-            2.7214125669013254, 2.6874842831615373, 1.9081107798917705,
-            2.3209583713471384, 1.8849889018304289, 1.5200101353460163,
-            2.4603508843747375, 4.573971520040817, 3.252441028143278,
+            0.07380162547839741,
+            2.623637078189788,
+            1.6319903689308735,
+            2.7214125669013254,
+            2.6874842831615373,
+            1.9081107798917705,
+            2.3209583713471384,
+            1.8849889018304289,
+            1.5200101353460163,
+            2.4603508843747375,
+            4.573971520040817,
+            3.252441028143278,
         ],
         "windows": [2.7447084057682436, 0.7996342245802727, 3.692915578881236],
     },
     "ewma": {
         "continuous": [
-            0.6738016254783973, 2.3041357109119063, 1.1990446149096932,
-            2.055015289736991, 1.8266719760331052, 2.50811077989177,
-            2.3797618327047614, 1.6706337969326013, 1.6503205586292808,
-            2.165874111758994, 3.047269331258581, 2.0834693986313972,
+            0.6738016254783973,
+            2.3041357109119063,
+            1.1990446149096932,
+            2.055015289736991,
+            1.8266719760331052,
+            2.50811077989177,
+            2.3797618327047614,
+            1.6706337969326013,
+            1.6503205586292808,
+            2.165874111758994,
+            3.047269331258581,
+            2.0834693986313972,
         ],
         "windows": [2.7109071219665095, 1.0293448035353236, 2.8461348564702997],
     },
     "pca_spe": {
         "continuous": [
-            0.0006134755872767869, 2.092160728548987, 0.013880513955273626,
-            3.8445626285023375, 0.1535320004268827, 3.165370204758353,
-            4.5607203815697686, 0.026973374943228153, 1.5676203210680484,
-            0.17627797544589685, 4.538939929056183, 0.7935118145594608,
+            0.0006134755872767869,
+            2.092160728548987,
+            0.013880513955273626,
+            3.8445626285023375,
+            0.1535320004268827,
+            3.165370204758353,
+            4.5607203815697686,
+            0.026973374943228153,
+            1.5676203210680484,
+            0.17627797544589685,
+            4.538939929056183,
+            0.7935118145594608,
         ],
         "windows": [0.7367364642976693, 0.4538038434056465, 0.7937332859640089],
     },
@@ -95,9 +119,7 @@ class AASPhase9FrozenParityTests(unittest.TestCase):
                     )
                     self.assertEqual(projected.resolution, "time")
                     actual.extend(projected.values)
-                np.testing.assert_allclose(
-                    actual, _AAS_GOLDEN[name]["continuous"], rtol=1e-9, atol=1e-9
-                )
+                np.testing.assert_allclose(actual, _AAS_GOLDEN[name]["continuous"], rtol=1e-9, atol=1e-9)
 
                 raw = detector.score(self._batch(windows))
                 projected = project_anomaly_scores(
@@ -107,9 +129,7 @@ class AASPhase9FrozenParityTests(unittest.TestCase):
                     channel_reduction=reduction,
                 )
                 self.assertEqual(projected.resolution, "window")
-                np.testing.assert_allclose(
-                    projected.values, _AAS_GOLDEN[name]["windows"], rtol=1e-9, atol=1e-9
-                )
+                np.testing.assert_allclose(projected.values, _AAS_GOLDEN[name]["windows"], rtol=1e-9, atol=1e-9)
 
     def test_reset_of_independent_windows_is_not_stream_continuation(self):
         train, _, windows = self._data()
@@ -118,8 +138,7 @@ class AASPhase9FrozenParityTests(unittest.TestCase):
                 detector.fit(self._batch(train))
                 combined = detector.score(self._batch(windows)).values
                 isolated = np.concatenate(
-                    [detector.score(self._batch(windows[index : index + 1])).values
-                     for index in range(len(windows))],
+                    [detector.score(self._batch(windows[index : index + 1])).values for index in range(len(windows))],
                     axis=0,
                 )
                 np.testing.assert_array_equal(combined, isolated)
