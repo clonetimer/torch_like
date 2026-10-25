@@ -50,7 +50,8 @@ class DiagnosticRegistry:
                 factory = self._factories[name]
             except KeyError as exc:
                 raise KeyError(f"unknown diagnostic algorithm {name!r}") from exc
-        return factory(**kwargs)
+        validated = self.get_spec(name).validate_parameters(kwargs)
+        return factory(**validated)
 
 
 diagnostic_registry = DiagnosticRegistry()
