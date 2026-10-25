@@ -28,6 +28,14 @@ class StableDistributionTests(unittest.TestCase):
             self.assertEqual(metadata["scope"], "algorithms_and_interfaces_only")
             self.assertEqual(metadata["distribution"], "torch-like-algorithms")
             self.assertEqual(metadata["import_package"], "torch_like_stable")
+            self.assertEqual(metadata["version"], "0.3.0")
+            for required in (
+                "diagnostics/decisions.py",
+                "diagnostics/streaming.py",
+                "diagnostics/score_projection.py",
+            ):
+                self.assertIn(required, metadata["source_modules"])
+            self.assertNotIn("native/anomaly.py", metadata["source_modules"])
             self.assertFalse(metadata["dataset_source_audit"])
             self.assertFalse(metadata["automl_included"])
             self.assertFalse(metadata["runner_included"])
