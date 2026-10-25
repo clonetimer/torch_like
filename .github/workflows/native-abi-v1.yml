@@ -1,6 +1,7 @@
 name: native-abi-v1
 on:
   push:
+    branches: [main]
     paths:
       - "torch_like/native/**"
       - "examples/native/**"
@@ -8,6 +9,7 @@ on:
       - "pyproject.toml"
       - ".github/workflows/native-abi-v1.yml"
   pull_request:
+    branches: [main]
     paths:
       - "torch_like/native/**"
       - "examples/native/**"
