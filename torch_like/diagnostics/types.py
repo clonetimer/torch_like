@@ -194,6 +194,8 @@ class DiagnosticParameterSpec:
     required: bool = False
     minimum: float | None = None
     maximum: float | None = None
+    exclusive_minimum: bool = False
+    exclusive_maximum: bool = False
     choices: tuple[Any, ...] | None = None
     description: str = ""
 
@@ -206,6 +208,10 @@ class DiagnosticParameterSpec:
             raise ValueError("required parameters cannot declare a default")
         if self.kind not in {"integer", "number"} and (self.minimum is not None or self.maximum is not None):
             raise ValueError("minimum/maximum require a numeric parameter")
+        if not isinstance(self.exclusive_minimum, bool) or not isinstance(self.exclusive_maximum, bool):
+            raise TypeError("exclusive bounds must be booleans")
+        if (self.exclusive_minimum and self.minimum is None) or (self.exclusive_maximum and self.maximum is None):
+            raise ValueError("exclusive bounds require minimum/maximum")
         for bound in (self.minimum, self.maximum):
             if bound is not None and (isinstance(bound, bool) or not isinstance(bound, Real) or not math.isfinite(bound)):
                 raise ValueError("parameter bounds must be finite numbers")
@@ -239,6 +245,10 @@ class DiagnosticParameterSpec:
                 return False
             if self.maximum is not None and value > self.maximum:
                 return False
+            if self.minimum is not None and self.exclusive_minimum and value == self.minimum:
+                return False
+            if self.maximum is not None and self.exclusive_maximum and value == self.maximum:
+                return False
         return not (check_choices and self.choices is not None and value not in self.choices)
 
     def validate(self, value: Any) -> Any:
@@ -254,6 +264,8 @@ class DiagnosticParameterSpec:
             "default": self.default,
             "minimum": self.minimum,
             "maximum": self.maximum,
+            "exclusive_minimum": self.exclusive_minimum,
+            "exclusive_maximum": self.exclusive_maximum,
             "choices": None if self.choices is None else list(self.choices),
             "description": self.description,
         }
