@@ -3,11 +3,11 @@
 This is an **independently installable algorithms-and-interfaces wheel** assembled
 from the `clonetimer/torch_like` source tree, not a rename of the full framework.
 
-- Distribution: `torch-like-algorithms`, version `0.2.0` (initial stable delivery track).
+- Distribution: `torch-like-algorithms`, version `0.3.0` (initial stable delivery track).
 - Import root: `torch_like_stable` — **does not shadow or overwrite**
   `import torch_like`. Both distributions can be installed together.
 - Core runtime requirements: Python ≥3.10, NumPy, PyTorch, scikit-learn.
-- Not included: AutoML, training/experiment orchestration, CLI, runner,
+- Not included: optional native C ABI/plugin loaders, AutoML, training/experiment orchestration, CLI, runner,
   data-source/provenance audits, dataset ingestion, sealed-test management,
   benchmark platform, reporting dashboards, generalization/uncertainty workflows,
   unrelated forecasting, vision, language and generative model families.
@@ -16,7 +16,10 @@ from the `clonetimer/torch_like` source tree, not a rename of the full framework
 
 | Capability | Classes and interfaces |
 |---|---|
-| Input/output contracts | `SignalBatch`, `DiagnosticResult`, `DiagnosticAlgorithmSpec`, `DiagnosticTask` |
+| Input/output contracts | `SignalBatch`, `DiagnosticResult`, `DiagnosticAlgorithmSpec`, `DiagnosticParameterSpec`, `DiagnosticTask` |
+| Explicit diagnostic decisions | `DecisionMode`, `DiagnosticDecision` (threshold/native/label modes) |
+| Streaming score thresholds | `StreamingThreshold` (fixed/adaptive-EWMA, versioned checkpoint) |
+| Explicit score-axis projection | `AnomalyScoreProjection`, `project_anomaly_scores` |
 | Statistical anomaly detection | `ZScoreDetector`, `CUSUMDetector`, `EWMADetector`, `PCAT2Detector`, `PCASPEDetector` |
 | Signal features | `time_domain_features`, `fft_amplitude`, `welch_psd`, `WindowFeatureTransformer` |
 | Traditional machine learning | `SklearnWindowAnomalyDetector`, `SklearnWindowFaultClassifier`, native sklearn `classical.create_estimator` |
@@ -37,11 +40,11 @@ represent the slim wheel as containing every model of the full framework.
 
 ## Installation
 
-The stable GitHub Actions workflow uploads a wheel as a build artifact.
+This is a **release candidate**, not a claim that v0.3.0 has been published to GitHub Releases or PyPI. The stable GitHub Actions workflow uploads a verified wheel as a build artifact.
 After retrieving the artifact:
 
 ```sh
-python -m pip install torch_like_algorithms-0.2.0-py3-none-any.whl
+python -m pip install torch_like_algorithms-0.3.0-py3-none-any.whl
 ```
 
 Imports work independently of the full `torch_like` package:
@@ -69,7 +72,7 @@ hi = GaussianHealthIndex().fit(healthy).score(incoming).values
 anomaly = ZScoreDetector().fit(healthy).score(incoming).values
 ```
 
-**v0.2.0 change:** adds native diagnostic composition and RUL adapters.
+**v0.3.0 candidate:** adds machine-readable diagnostic parameter descriptors, explicit final decision results, streaming score thresholds with checkpointing, and continuous-vs-independent-window score projection. The previously published v0.2.0 release added native diagnostic composition and RUL adapters.
 Pipeline stages do not automatically fuse scores or calibrate policies;
 RUL targets, time/cycle units and ready-state declarations are caller-owned.
 Full model selection is available in the original framework, while the slim
