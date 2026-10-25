@@ -93,6 +93,8 @@ class ParameterContractTests(unittest.TestCase):
         self.assertIsInstance(reg.create("ZScoreDetector"), ZScoreDetector)
         self.assertIsInstance(reg.create("EWMADetector"), EWMADetector)
         self.assertEqual(reg.get_spec("CUSUMDetector").validate_parameters({"k": 0.5})["h"], 5.0)
+        self.assertEqual(reg.get_spec("CUSUMDetector").validate_parameters({"k": 0})["k"], 0)
+        self.assertEqual(reg.create("CUSUMDetector", k=0).k, 0.0)
         self.assertEqual(reg.get_spec("EWMADetector").to_dict()["parameters"][0]["name"], "alpha")
         for name, kwargs in (
             ("CUSUMDetector", {"h": 0}),
