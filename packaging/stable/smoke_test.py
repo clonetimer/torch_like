@@ -13,17 +13,23 @@ import numpy as np
 import torch
 import torch_like_stable as tl
 from torch_like_stable.diagnostics import (
+    AnomalyScoreProjection,
+    DecisionMode,
+    DiagnosticDecision,
+    DiagnosticParameterSpec,
     DiagnosticPipeline,
     DiagnosticStage,
     FaultLabelSchema,
     GaussianHealthIndex,
     MahalanobisHealthIndex,
     RULRegressor,
+    StreamingThreshold,
     SignalBatch,
     SklearnWindowFaultClassifier,
     ZScoreDetector,
     create_rul_regressor,
     list_rul_models,
+    project_anomaly_scores,
 )
 from torch_like_stable.models import ROCKET, TCNRUL, InceptionTime
 
@@ -38,7 +44,7 @@ def make(values: np.ndarray) -> SignalBatch:
 
 
 def main() -> None:
-    assert importlib.metadata.version("torch-like-algorithms") == tl.__version__ == "0.2.0"
+    assert importlib.metadata.version("torch-like-algorithms") == tl.__version__ == "0.3.0"
     assert importlib.util.find_spec("torch_like_stable.automl") is None
     assert importlib.util.find_spec("torch_like_stable.training") is None
     assert importlib.util.find_spec("torch_like_stable.evaluation") is None
@@ -64,6 +70,34 @@ def main() -> None:
     detector = ZScoreDetector().fit(baseline)
     out = detector.score(query)
     assert out.values.shape == (2, 4, 2)
+    schema = DiagnosticParameterSpec("sigma_threshold", "number", default=3.0, minimum=0.0,
+                                     exclusive_minimum=True)
+    assert schema.validate(3.0) == 3.0
+    decision = DiagnosticDecision.from_threshold(out, 3.0)
+    assert decision.decision_mode == DecisionMode.SCORE_THRESHOLD
+    assert decision.labels.shape == out.values.shape
+    segment = detector.score(make(query.values[:1]))
+    stream = StreamingThreshold(
+        algorithm_name="ZScoreDetector", mode="fixed", thresholds=(3.0, 3.0),
+        channel_names=("vibration", "temperature"),
+    )
+    stream_decision = stream.decide_chunk(
+        segment, start_index=0, channel_names=("vibration", "temperature"),
+    )
+    assert stream_decision.labels.shape == segment.values.shape
+    assert stream.observations == 4
+    snapshot = stream.state_dict()
+    resumed = StreamingThreshold(
+        algorithm_name="ZScoreDetector", mode="fixed", thresholds=(3.0, 3.0),
+        channel_names=("vibration", "temperature"),
+    )
+    resumed.load_state_dict(snapshot)
+    assert resumed.observations == 4
+    projected = project_anomaly_scores(
+        segment, score_layout="time_channel", sequence_mode="continuous", channel_reduction="max",
+    )
+    assert isinstance(projected, AnomalyScoreProjection)
+    assert projected.resolution == "time" and projected.values.shape == (4,)
     composition = DiagnosticPipeline(
         DiagnosticStage("health", GaussianHealthIndex().fit(baseline)),
         DiagnosticStage("anomaly", detector),
