@@ -66,6 +66,7 @@ from torch_like.diagnostics.statistical import (
     ZScoreDetector,
     register_statistical_detectors,
 )
+from torch_like.diagnostics.streaming import StreamingThreshold
 from torch_like.diagnostics.torch_classifier import TorchWindowFaultClassifier, register_torch_fault_classifiers
 from torch_like.diagnostics.types import (
     DiagnosticAlgorithmSpec,
@@ -88,6 +89,7 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "StreamingThreshold",
     "DecisionMode",
     "DiagnosticDecision",
     "DiagnosticBundleResult",
