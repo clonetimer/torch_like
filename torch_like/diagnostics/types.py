@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
-from numbers import Integral, Real
 from collections.abc import Mapping
+from dataclasses import dataclass
 from enum import Enum
+from numbers import Integral, Real
 from typing import Any
 
 import numpy as np
