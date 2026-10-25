@@ -3,7 +3,7 @@
 This is an **independently installable algorithms-and-interfaces wheel** assembled
 from the `clonetimer/torch_like` source tree, not a rename of the full framework.
 
-- Distribution: `torch-like-algorithms`, version `0.3.0` (initial stable delivery track).
+- Distribution: `torch-like-algorithms`, version `0.3.0` (proposed candidate; v0.2.0 remains the published baseline).
 - Import root: `torch_like_stable` — **does not shadow or overwrite**
   `import torch_like`. Both distributions can be installed together.
 - Core runtime requirements: Python ≥3.10, NumPy, PyTorch, scikit-learn.
