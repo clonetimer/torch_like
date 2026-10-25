@@ -226,10 +226,22 @@ class NativeAnomalyDetector:
         }
 
     def close(self) -> None:
+        """Destroy the native instance; on Windows also release the DLL lock."""
         handle = getattr(self, "_handle", None)
+        library = getattr(self, "_library", None)
         if handle is not None:
             self._handle = None
-            self._library.tl_native_destroy(handle)
+            library.tl_native_destroy(handle)
+        if library is not None and getattr(library, "_handle", None) and hasattr(ctypes, "windll"):
+            # ctypes.CDLL does not offer a public portable unload method.
+            # A Windows DLL would otherwise remain locked throughout this
+            # process (including temp dirs and plugin upgrade/removal).
+            release = ctypes.windll.kernel32.FreeLibrary
+            release.argtypes = (ctypes.c_void_p,)
+            release.restype = ctypes.c_int
+            if not release(library._handle):
+                raise OSError("FreeLibrary failed for native plugin DLL")
+        self._library = None
 
     def __enter__(self) -> NativeAnomalyDetector:
         self._active()
