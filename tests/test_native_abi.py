@@ -21,22 +21,30 @@ DEMO = ROOT / "examples" / "native" / "demo_mean_deviation.c"
 
 
 def build_fixture(destination, *, bad_version=False):
-    compiler = shutil.which("gcc") or shutil.which("cc") or shutil.which("clang")
+    compiler = shutil.which("gcc") or shutil.which("cc") or shutil.which("clang") or shutil.which("cl")
     if compiler is None:
         raise unittest.SkipTest("no C compiler available for native smoke test")
     suffix = ".dll" if os.name == "nt" else (".dylib" if sys.platform == "darwin" else ".so")
     output = Path(destination) / ("demo_bad" if bad_version else "demo")
     output = output.with_suffix(suffix)
-    args = [
-        compiler, "-std=c11", "-O2", "-shared", "-I", str(HEADER_DIR),
-        str(DEMO), "-o", str(output),
-    ]
-    if os.name != "nt":
-        args.insert(3, "-fPIC")
-        args.append("-lm")
-    if bad_version:
-        args.insert(1, "-DTL_FORCE_BAD_VERSION")
-    subprocess.run(args, check=True, capture_output=True, text=True)
+    if Path(compiler).stem.lower() == "cl":
+        args = [
+            compiler, "/nologo", "/LD", "/std:c11", "/I" + str(HEADER_DIR),
+            str(DEMO), "/Fe:" + str(output),
+        ]
+        if bad_version:
+            args.insert(1, "/DTL_FORCE_BAD_VERSION")
+    else:
+        args = [
+            compiler, "-std=c11", "-O2", "-shared", "-I", str(HEADER_DIR),
+            str(DEMO), "-o", str(output),
+        ]
+        if os.name != "nt":
+            args.insert(3, "-fPIC")
+            args.append("-lm")
+        if bad_version:
+            args.insert(1, "-DTL_FORCE_BAD_VERSION")
+    subprocess.run(args, check=True, capture_output=True, text=True, cwd=destination)
     return output
 
 
