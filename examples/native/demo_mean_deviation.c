@@ -5,6 +5,12 @@
  */
 #include "torch_like_native_anomaly_v1.h"
 #include <math.h>
+#if defined(_MSC_VER)
+#  include <float.h>
+#  define TL_ISFINITE(x) _finite(x)
+#else
+#  define TL_ISFINITE(x) isfinite(x)
+#endif
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,7 +47,7 @@ TL_NATIVE_EXPORT int32_t tl_native_fit(void *handle, const tl_native_input_v1 *i
     length *= input->channels;
     double total = 0.0;
     for (uint64_t i = 0; i < length; ++i) {
-        if (!isfinite(input->values[i])) return -4;
+        if (!TL_ISFINITE(input->values[i])) return -4;
         total += input->values[i];
     }
     if (!isfinite(total)) return -4;
