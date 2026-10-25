@@ -12,6 +12,7 @@ from torch_like.diagnostics.classification_workflow import (
     FaultClassificationWorkflow,
 )
 from torch_like.diagnostics.composition import DiagnosticBundleResult, DiagnosticPipeline, DiagnosticStage
+from torch_like.diagnostics.decisions import DecisionMode, DiagnosticDecision
 from torch_like.diagnostics.events import DiagnosticEvent, extract_anomaly_events
 from torch_like.diagnostics.fault_sources import (
     FaultSourceEvidenceMapper,
@@ -69,6 +70,7 @@ from torch_like.diagnostics.torch_classifier import TorchWindowFaultClassifier, 
 from torch_like.diagnostics.types import (
     DiagnosticAlgorithmSpec,
     DiagnosticOutputKind,
+    DiagnosticParameterSpec,
     DiagnosticResult,
     DiagnosticTask,
     SignalBatch,
@@ -86,6 +88,8 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "DecisionMode",
+    "DiagnosticDecision",
     "DiagnosticBundleResult",
     "DiagnosticPipeline",
     "DiagnosticStage",
@@ -144,6 +148,7 @@ __all__ = [
     "ZScoreDetector",
     "register_statistical_detectors",
     "DiagnosticAlgorithmSpec",
+    "DiagnosticParameterSpec",
     "DiagnosticOutputKind",
     "DiagnosticRegistry",
     "DiagnosticResult",
