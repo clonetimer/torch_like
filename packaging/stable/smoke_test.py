@@ -19,6 +19,8 @@ from torch_like_stable.diagnostics import (
     DiagnosticParameterSpec,
     DiagnosticPipeline,
     DiagnosticStage,
+    DiagnosticRegistry,
+    register_statistical_detectors,
     FaultLabelSchema,
     GaussianHealthIndex,
     MahalanobisHealthIndex,
@@ -73,6 +75,10 @@ def main() -> None:
     schema = DiagnosticParameterSpec("sigma_threshold", "number", default=3.0, minimum=0.0,
                                      exclusive_minimum=True)
     assert schema.validate(3.0) == 3.0
+    registry = DiagnosticRegistry()
+    register_statistical_detectors(registry)
+    assert registry.create("CUSUMDetector", k=0).k == 0.0
+    assert registry.get_spec("CUSUMDetector").validate_parameters({"k": 0})["k"] == 0
     decision = DiagnosticDecision.from_threshold(out, 3.0)
     assert decision.decision_mode == DecisionMode.SCORE_THRESHOLD
     assert decision.labels.shape == out.values.shape
