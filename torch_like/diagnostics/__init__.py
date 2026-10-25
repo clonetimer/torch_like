@@ -46,6 +46,7 @@ from torch_like.diagnostics.rul_interface import (
     create_rul_regressor,
     list_rul_models,
 )
+from torch_like.diagnostics.score_projection import AnomalyScoreProjection, project_anomaly_scores
 from torch_like.diagnostics.selection import (
     FaultCandidateRanking,
     FaultCandidateSpec,
@@ -89,6 +90,8 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "AnomalyScoreProjection",
+    "project_anomaly_scores",
     "StreamingThreshold",
     "DecisionMode",
     "DiagnosticDecision",
