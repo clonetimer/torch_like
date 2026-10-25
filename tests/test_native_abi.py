@@ -29,15 +29,27 @@ def build_fixture(destination, *, bad_version=False):
     output = output.with_suffix(suffix)
     if Path(compiler).stem.lower() == "cl":
         args = [
-            compiler, "/nologo", "/LD", "/std:c11", "/I" + str(HEADER_DIR),
-            str(DEMO), "/Fe:" + str(output),
+            compiler,
+            "/nologo",
+            "/LD",
+            "/std:c11",
+            "/I" + str(HEADER_DIR),
+            str(DEMO),
+            "/Fe:" + str(output),
         ]
         if bad_version:
             args.insert(1, "/DTL_FORCE_BAD_VERSION")
     else:
         args = [
-            compiler, "-std=c11", "-O2", "-shared", "-I", str(HEADER_DIR),
-            str(DEMO), "-o", str(output),
+            compiler,
+            "-std=c11",
+            "-O2",
+            "-shared",
+            "-I",
+            str(HEADER_DIR),
+            str(DEMO),
+            "-o",
+            str(output),
         ]
         if os.name != "nt":
             args.insert(3, "-fPIC")
@@ -61,16 +73,18 @@ class NativeAbiTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             library = build_fixture(directory)
             reference = SignalBatch(
-                np.array([[[1., 2.], [3., 4.]]]), sample_rate_hz=10,
-                channel_names=("a", "b"), units=("A", "B"),
+                np.array([[[1.0, 2.0], [3.0, 4.0]]]),
+                sample_rate_hz=10,
+                channel_names=("a", "b"),
+                units=("A", "B"),
             )
             new = SignalBatch(
-                np.array([[[2., 3.], [5., 1.]]]), sample_rate_hz=10,
-                channel_names=("a", "b"), units=("A", "B"),
+                np.array([[[2.0, 3.0], [5.0, 1.0]]]),
+                sample_rate_hz=10,
+                channel_names=("a", "b"),
+                units=("A", "B"),
             )
-            with NativeAnomalyDetector(
-                library, algorithm_name="demo_mean_dev", config={"seed": 5}
-            ) as model:
+            with NativeAnomalyDetector(library, algorithm_name="demo_mean_dev", config={"seed": 5}) as model:
                 with self.assertRaisesRegex(RuntimeError, "fit"):
                     model.score(new)
                 self.assertIs(model.fit(reference), model)
@@ -79,15 +93,17 @@ class NativeAbiTests(unittest.TestCase):
                 self.assertEqual(result.task.value, "anomaly_detection")
                 snapshot = json.loads(json.dumps(model.export_state()))
                 with self.assertRaisesRegex(ValueError, "metadata"):
-                    model.score(SignalBatch(
-                        np.ones((1, 2, 2)), sample_rate_hz=10,
-                        channel_names=("b", "a"), units=("A", "B"),
-                    ))
+                    model.score(
+                        SignalBatch(
+                            np.ones((1, 2, 2)),
+                            sample_rate_hz=10,
+                            channel_names=("b", "a"),
+                            units=("A", "B"),
+                        )
+                    )
             with self.assertRaisesRegex(RuntimeError, "closed"):
                 model.score(new)
-            with NativeAnomalyDetector(
-                library, algorithm_name="demo_mean_dev", config={"seed": 5}
-            ) as restored:
+            with NativeAnomalyDetector(library, algorithm_name="demo_mean_dev", config={"seed": 5}) as restored:
                 restored.import_state(snapshot)
                 np.testing.assert_allclose(restored.score(new).values, result.values)
                 before = restored.export_state()

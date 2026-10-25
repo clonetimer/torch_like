@@ -85,14 +85,17 @@ class NativeAnomalyDetector:
             "tl_native_create": (ctypes.c_int32, (ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p))),
             "tl_native_fit": (ctypes.c_int32, (ctypes.c_void_p, ctypes.POINTER(_NativeInput))),
             "tl_native_score": (
-                ctypes.c_int32, (ctypes.c_void_p, ctypes.POINTER(_NativeInput), ctypes.POINTER(_NativeOutput))
+                ctypes.c_int32,
+                (ctypes.c_void_p, ctypes.POINTER(_NativeInput), ctypes.POINTER(_NativeOutput)),
             ),
             "tl_native_state_size": (ctypes.c_int32, (ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint64))),
             "tl_native_save_state": (
-                ctypes.c_int32, (ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64)
+                ctypes.c_int32,
+                (ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64),
             ),
             "tl_native_load_state": (
-                ctypes.c_int32, (ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64)
+                ctypes.c_int32,
+                (ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64),
             ),
             "tl_native_destroy": (None, (ctypes.c_void_p,)),
         }
@@ -150,9 +153,7 @@ class NativeAnomalyDetector:
             raise ValueError("native inference metadata differ from the fitted reference")
         array, native = self._data(batch)
         scores = np.empty_like(array)
-        output = _NativeOutput(
-            ABI_VERSION, 0, scores.size, scores.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        )
+        output = _NativeOutput(ABI_VERSION, 0, scores.size, scores.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
         self._check(self._library.tl_native_score(self._handle, ctypes.byref(native), ctypes.byref(output)), "score")
         return DiagnosticResult("anomaly_detection", "anomaly_score", scores, self.algorithm_name)
 
@@ -179,7 +180,11 @@ class NativeAnomalyDetector:
         """Restore caller-trusted state. Plugin must implement transactional load."""
         self._active()
         if not isinstance(state, Mapping) or set(state) != {
-            "abi_version", "algorithm_name", "config_json", "reference", "plugin_state_base64"
+            "abi_version",
+            "algorithm_name",
+            "config_json",
+            "reference",
+            "plugin_state_base64",
         }:
             raise ValueError("invalid native checkpoint manifest")
         if type(state["abi_version"]) is not int or state["abi_version"] != ABI_VERSION:
