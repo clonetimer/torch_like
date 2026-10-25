@@ -77,6 +77,7 @@ include = ["torch_like*"]
 
 [tool.setuptools.package-data]
 "torch_like.models" = ["catalog_schema_v2.json", "model_evidence.json"]
+"torch_like.native" = ["include/*.h"]
 
 [tool.setuptools.dynamic]
 version = { attr = "torch_like.__version__" }
