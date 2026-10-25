@@ -167,9 +167,28 @@ class EWMADetector(_GaussianBaseline):
 def register_statistical_detectors(registry: Any = None) -> None:
     """Explicitly install the built-in detectors; no import-time global mutation."""
     from torch_like.diagnostics.registry import diagnostic_registry
-    from torch_like.diagnostics.types import DiagnosticAlgorithmSpec
+    from torch_like.diagnostics.types import DiagnosticAlgorithmSpec, DiagnosticParameterSpec
 
     target = diagnostic_registry if registry is None else registry
+    positive = lambda name, default: DiagnosticParameterSpec(
+        name, "number", default=default, minimum=0.0
+    )
+    schemas = {
+        "ZScoreDetector": (
+            DiagnosticParameterSpec("sigma_threshold", "number", default=3.0, minimum=0.0),
+            positive("min_std", 1e-8),
+        ),
+        "CUSUMDetector": (
+            positive("k", 0.5),
+            positive("h", 5.0),
+            positive("min_std", 1e-8),
+        ),
+        "EWMADetector": (
+            DiagnosticParameterSpec("alpha", "number", default=0.2, minimum=0.0, maximum=1.0),
+            positive("control_limit", 3.0),
+            positive("min_std", 1e-8),
+        ),
+    }
     for name, factory in (
         ("ZScoreDetector", ZScoreDetector),
         ("CUSUMDetector", CUSUMDetector),
@@ -182,6 +201,7 @@ def register_statistical_detectors(registry: Any = None) -> None:
                 task="anomaly_detection",
                 output_kind="anomaly_score",
                 operations=("fit", "score"),
+                parameters=schemas[name],
             ),
             factory,
         )
