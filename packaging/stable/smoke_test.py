@@ -18,20 +18,20 @@ from torch_like_stable.diagnostics import (
     DiagnosticDecision,
     DiagnosticParameterSpec,
     DiagnosticPipeline,
-    DiagnosticStage,
     DiagnosticRegistry,
-    register_statistical_detectors,
+    DiagnosticStage,
     FaultLabelSchema,
     GaussianHealthIndex,
     MahalanobisHealthIndex,
     RULRegressor,
-    StreamingThreshold,
     SignalBatch,
+    StreamingThreshold,
     SklearnWindowFaultClassifier,
     ZScoreDetector,
     create_rul_regressor,
     list_rul_models,
     project_anomaly_scores,
+    register_statistical_detectors,
 )
 from torch_like_stable.models import ROCKET, TCNRUL, InceptionTime
 
