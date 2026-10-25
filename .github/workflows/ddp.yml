@@ -1,7 +1,9 @@
 name: ddp-cpu-gloo
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
 jobs:
   two-rank:
     runs-on: ubuntu-latest
