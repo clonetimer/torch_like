@@ -68,6 +68,7 @@ from torch_like.diagnostics.statistical import (
 from torch_like.diagnostics.torch_classifier import TorchWindowFaultClassifier, register_torch_fault_classifiers
 from torch_like.diagnostics.types import (
     DiagnosticAlgorithmSpec,
+    DiagnosticParameterSpec,
     DiagnosticOutputKind,
     DiagnosticResult,
     DiagnosticTask,
@@ -144,6 +145,7 @@ __all__ = [
     "ZScoreDetector",
     "register_statistical_detectors",
     "DiagnosticAlgorithmSpec",
+    "DiagnosticParameterSpec",
     "DiagnosticOutputKind",
     "DiagnosticRegistry",
     "DiagnosticResult",
