@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
+from numbers import Integral, Real
+from collections.abc import Mapping
 from enum import Enum
 from typing import Any
 
@@ -182,6 +185,81 @@ class DiagnosticResult:
 
 
 @dataclass(frozen=True)
+class DiagnosticParameterSpec:
+    """JSON-compatible constructor parameter descriptor, not a UI schema."""
+
+    name: str
+    kind: str
+    default: Any = None
+    required: bool = False
+    minimum: float | None = None
+    maximum: float | None = None
+    choices: tuple[Any, ...] | None = None
+    description: str = ""
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.name, str) or not self.name.strip():
+            raise ValueError("parameter name must be nonempty")
+        if self.kind not in {"integer", "number", "boolean", "string"}:
+            raise ValueError("parameter kind must be integer, number, boolean or string")
+        if not isinstance(self.required, bool) or (self.required and self.default is not None):
+            raise ValueError("required parameters cannot declare a default")
+        if self.kind not in {"integer", "number"} and (self.minimum is not None or self.maximum is not None):
+            raise ValueError("minimum/maximum require a numeric parameter")
+        for bound in (self.minimum, self.maximum):
+            if bound is not None and (isinstance(bound, bool) or not isinstance(bound, Real) or not math.isfinite(bound)):
+                raise ValueError("parameter bounds must be finite numbers")
+        if self.minimum is not None and self.maximum is not None and self.minimum > self.maximum:
+            raise ValueError("parameter minimum exceeds maximum")
+        if self.choices is not None:
+            choices = tuple(self.choices)
+            if not choices or any(not self._accepts(value, check_range=False) for value in choices):
+                raise ValueError("parameter choices must be nonempty, finite and match kind")
+            if len(set(choices)) != len(choices):
+                raise ValueError("parameter choices must be unique")
+            if any(not self._accepts(value, check_choices=False) for value in choices):
+                raise ValueError("parameter choice violates bounds")
+            object.__setattr__(self, "choices", choices)
+        if self.default is not None:
+            self.validate(self.default)
+
+    def _accepts(self, value: Any, *, check_range: bool = True, check_choices: bool = True) -> bool:
+        if self.kind == "boolean":
+            valid = isinstance(value, bool)
+        elif self.kind == "string":
+            valid = isinstance(value, str)
+        elif self.kind == "integer":
+            valid = isinstance(value, Integral) and not isinstance(value, bool)
+        else:
+            valid = isinstance(value, Real) and not isinstance(value, bool) and math.isfinite(value)
+        if not valid:
+            return False
+        if self.kind in {"integer", "number"} and check_range:
+            if self.minimum is not None and value < self.minimum:
+                return False
+            if self.maximum is not None and value > self.maximum:
+                return False
+        return not (check_choices and self.choices is not None and value not in self.choices)
+
+    def validate(self, value: Any) -> Any:
+        if not self._accepts(value):
+            raise ValueError(f"invalid value for diagnostic parameter {self.name!r}")
+        return value
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "kind": self.kind,
+            "required": self.required,
+            "default": self.default,
+            "minimum": self.minimum,
+            "maximum": self.maximum,
+            "choices": None if self.choices is None else list(self.choices),
+            "description": self.description,
+        }
+
+
+@dataclass(frozen=True)
 class DiagnosticAlgorithmSpec:
     """Backend-independent metadata, with no change to native estimator types."""
 
@@ -193,6 +271,7 @@ class DiagnosticAlgorithmSpec:
     input_kind: str = "signal_batch"
     supports_online: bool = False
     description: str = ""
+    parameters: tuple[DiagnosticParameterSpec, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name.strip():
@@ -226,3 +305,45 @@ class DiagnosticAlgorithmSpec:
         object.__setattr__(self, "task", task)
         object.__setattr__(self, "output_kind", output)
         object.__setattr__(self, "operations", operations)
+        parameters = tuple(self.parameters)
+        if any(not isinstance(item, DiagnosticParameterSpec) for item in parameters):
+            raise TypeError("parameters must be DiagnosticParameterSpec instances")
+        if len({item.name for item in parameters}) != len(parameters):
+            raise ValueError("duplicate diagnostic parameter names")
+        object.__setattr__(self, "parameters", parameters)
+
+    def validate_parameters(self, values: Mapping[str, Any]) -> dict[str, Any]:
+        """Validate explicit, opt-in constructor metadata.
+
+        Existing unannotated factories continue receiving arbitrary kwargs.
+        No implicit casting of strings/bools into numeric hyperparameters.
+        """
+        supplied = dict(values)
+        if not self.parameters:
+            return supplied
+        declared = {parameter.name: parameter for parameter in self.parameters}
+        unknown = set(supplied) - set(declared)
+        if unknown:
+            raise ValueError(f"unknown diagnostic parameters: {sorted(unknown)}")
+        resolved: dict[str, Any] = {}
+        for parameter in self.parameters:
+            if parameter.name in supplied:
+                resolved[parameter.name] = parameter.validate(supplied[parameter.name])
+            elif parameter.required:
+                raise ValueError(f"missing required diagnostic parameter {parameter.name!r}")
+            elif parameter.default is not None:
+                resolved[parameter.name] = parameter.default
+        return resolved
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "backend": self.backend,
+            "task": self.task.value,
+            "output_kind": self.output_kind.value,
+            "operations": list(self.operations),
+            "input_kind": self.input_kind,
+            "supports_online": self.supports_online,
+            "description": self.description,
+            "parameters": [item.to_dict() for item in self.parameters],
+        }
