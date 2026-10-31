@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-31",
+  "scope": "Workbuddy forecasting intake R1: FITS and STGCN; local code/API verification, not benchmark evidence or a release",
+  "upstream_base_commit": "a403cb7a790136fa5e351a9154030e7a0ece82b9",
+  "feature_branch": "feat/workbuddy-forecasting-fits-stgcn",
+  "environment": {
+    "platform": "Linux",
+    "python": "3.12.14",
+    "torch": "2.10.0+cpu",
+    "numpy": "2.3.5",
+    "scikit_learn": "1.8.0",
+    "pytest": "9.2.0",
+    "pytest_cov": "7.1.0",
+    "coverage": "7.17.0",
+    "ruff": "0.17.1",
+    "omp_threads": 1,
+    "mkl_threads": 1,
+    "openblas_threads": 1,
+    "cpu_gloo_loopback_permission": true,
+    "cuda_tested": false,
+    "ci_python": "3.13"
+  },
+  "report_inventory": {
+    "reports": 36,
+    "distinct_main_models": 96,
+    "baseline_mapped": 33,
+    "baseline_unmapped": 63,
+    "newly_implemented": 2,
+    "mapped_after_batch": 35,
+    "remaining_unmapped": 61
+  },
+  "baseline_tests": {
+    "passed": 764,
+    "skipped": 2,
+    "subtests_passed": 161,
+    "elapsed_seconds": 179.7
+  },
+  "integrated_tests": {
+    "passed": 878,
+    "skipped": 2,
+    "subtests_passed": 261,
+    "failures": 0,
+    "errors": 0,
+    "elapsed_seconds": 308.29,
+    "command": "python -m pytest -q --cov=torch_like --cov-report=term --cov-report=json:../workbuddy-coverage.json --junitxml=../workbuddy-tests.xml",
+    "coverage_process_start": "absolute checkout path to pyproject.toml",
+    "skips": [
+      {
+        "test": "test_lightgbm_regression_pipeline",
+        "reason": "lightgbm is not installed"
+      },
+      {
+        "test": "test_lightgbm_rul_candidates_cover_all_sequence_feature_strategies",
+        "reason": "lightgbm is not installed"
+      }
+    ]
+  },
+  "targeted_tests": {
+    "model_and_integration_passed": 109,
+    "subtests_passed": 100,
+    "lazy_generator_passed": 5
+  },
+  "coverage": {
+    "combined_percent": 84.17653067355646,
+    "required_percent": 83,
+    "covered_lines": 23126,
+    "statements": 25962,
+    "covered_branches": 4893,
+    "branches": 7324,
+    "new_models": {
+      "FITS": {
+        "statements": 118,
+        "covered_lines": 118,
+        "branches": 50,
+        "covered_branches": 50
+      },
+      "STGCN": {
+        "statements": 174,
+        "covered_lines": 174,
+        "branches": 52,
+        "covered_branches": 52
+      }
+    }
+  },
+  "checks": {
+    "compileall": "passed",
+    "ruff_lint": "passed",
+    "ruff_format": "passed, 399 files in CI scope",
+    "lazy_indexes": "passed",
+    "candidate_pool": "passed: 18 gated, 16 scored, 18 reviews",
+    "automl_examples": "passed: 11 YAML files",
+    "automl_run_contract": "passed with --allow-empty --skip-legacy: 0 run directories",
+    "catalog_audit": "passed: 167 models, 45 forecasting",
+    "public_api": "passed: 912 symbols, 8 additions, 0 removals, 0 changes to existing 904",
+    "synthetic_demo": "passed: both output (4, 6, 3), finite, save/load matches"
+  },
+  "source_git_blobs": {
+    "torch_like/models/forecasting/fits.py": "4941dc52e2901f610989def23122db4e32d18564",
+    "torch_like/models/forecasting/stgcn.py": "39e27c9f80a068731aadc803a34e46cce49ba970",
+    "tests/test_fits.py": "6b65b29b9986f7b6103a165b8c8ac6d87eac7d53",
+    "tests/test_stgcn.py": "e38e4550c4c31c79e8bc9cf470d6804af679e2a5",
+    "tests/test_workbuddy_forecasting_integration.py": "b1ebf24d8de2dea0ac411315473aa9ad259e29c0"
+  },
+  "wheels": {
+    "full": {
+      "filename": "torch_like-0.9.0-py3-none-any.whl",
+      "size_bytes": 634894,
+      "sha256": "f83ba249362223d7848819c0877c2eb759f210a2f021ed0975eea2633e556b87",
+      "members": 309,
+      "build": "passed",
+      "isolated_install": "passed",
+      "isolated_module_origins": "all loaded torch_like modules came from fresh venv site-packages",
+      "model_config_prediction_persistence": "passed for FITS and STGCN; prediction (2,3,3), exact reload outputs",
+      "existing_dlinear_evidence": "unchanged: benchmarked / single_dataset / ett-h1-forecasting-rolling-v1"
+    },
+    "stable": {
+      "filename": "torch_like_algorithms-0.2.0-py3-none-any.whl",
+      "size_bytes": 51604,
+      "sha256": "e7304986ef38d6211e27ea04c30b5f8630ac1cab32ed54f480a71a83819488b3",
+      "members": 30,
+      "source_modules": 21,
+      "staged_python_files": 25,
+      "build": "passed",
+      "isolated_install": "passed",
+      "original_smoke": "PASS: isolated algorithm wheel contracts, health, sklearn, torch and RUL",
+      "new_models_included": false,
+      "imported_full_framework": false,
+      "coexistence_with_full_package": "passed"
+    }
+  },
+  "unchanged": [
+    "governance/model_registry_baseline.txt (161 historical entries)",
+    "torch_like/models/model_evidence.json",
+    "packaging/stable/prepare.py",
+    "pyproject.toml",
+    "torch_like/__init__.py version",
+    "all CI workflows"
+  ],
+  "boundaries": {
+    "FITS_fidelity": "paper_aligned",
+    "STGCN_fidelity": "framework_oriented",
+    "both_maturity": "unassessed",
+    "both_benchmark_evidence": "unassessed",
+    "real_data_benchmark_added": false,
+    "official_checkpoint_parity_claimed": false,
+    "stable_allowlist_expanded": false,
+    "release_published": false,
+    "remote_ci": "not represented by this local validation record"
+  }
+}

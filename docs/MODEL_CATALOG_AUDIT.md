@@ -8,17 +8,17 @@ English: This file is generated deterministically from the live registry by `too
 
 - Registry version / 注册表版本: `0.9.0`
 - Domains / 领域数: 13
-- Models / 模型数: 165
-- Schema-v2 migration ready / 可迁移: 165
+- Models / 模型数: 167
+- Schema-v2 migration ready / 可迁移: 167
 - Unmapped integration levels / 未映射值: 0
-- Maturity unassessed / 成熟度未评估: 146
-- Benchmark evidence unassessed / 基准证据未评估: 146
+- Maturity unassessed / 成熟度未评估: 148
+- Benchmark evidence unassessed / 基准证据未评估: 148
 
 ## Domain Coverage / 领域覆盖
 
 | Domain / 领域 | Models / 模型数 |
 |---|---:|
-| `forecasting` | 43 |
+| `forecasting` | 45 |
 | `diagnosis` | 2 |
 | `detection` | 10 |
 | `graph` | 16 |
@@ -36,10 +36,10 @@ English: This file is generated deterministically from the live registry by `too
 
 | Value / 取值 | Models / 模型数 |
 |---|---:|
-| `framework_oriented` | 117 |
+| `framework_oriented` | 118 |
 | `framework_oriented_dense` | 3 |
 | `framework_oriented_lsh` | 1 |
-| `paper_aligned` | 7 |
+| `paper_aligned` | 8 |
 | `paper_aligned_core` | 28 |
 | `paper_aligned_dense` | 1 |
 | `paper_aligned_mlstm_reference` | 1 |
@@ -56,14 +56,14 @@ English: These counts indicate callable class attributes only. They do not prove
 
 | Signal / 信号 | Models / 模型数 |
 |---|---:|
-| `forward` | 165 |
-| `predict` | 140 |
+| `forward` | 167 |
+| `predict` | 142 |
 | `loss_step` | 73 |
 | `fit_step` | 15 |
-| `config` | 165 |
-| `from_config` | 165 |
-| `param_count` | 165 |
-| `nn_module` | 165 |
+| `config` | 167 |
+| `from_config` | 167 |
+| `param_count` | 167 |
+| `nn_module` | 167 |
 | `task_loss` | 88 |
 
 ## Complete Inventory / 完整清单
@@ -84,6 +84,7 @@ English: These counts indicate callable class attributes only. They do not prove
 | `forecasting` | `DeepAR` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | distribution, sampling, likelihood | forward, predict, fit_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `forecasting` | `FCGAGA` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `FEDformer` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, decomposition | forward, predict, config, from_config, param_count, nn_module | `ready` |
+| `forecasting` | `FITS` | `paper_aligned` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, channel_independent, low_pass_filter | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `FreTS` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, complex_mlp, channel_mixing | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `GTS` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode, graph_structure_learning | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `GraphWaveNet` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode | forward, predict, config, from_config, param_count, nn_module | `ready` |
@@ -104,6 +105,7 @@ English: These counts indicate callable class attributes only. They do not prove
 | `forecasting` | `SOFTS` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | series_core_fusion, channel_mixing, linear_complexity | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `STDN` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | none | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `STFGNN` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode | forward, predict, config, from_config, param_count, nn_module | `ready` |
+| `forecasting` | `STGCN` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | fixed_graph, spectral_graph_convolution, temporal_convolution | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `STGODE` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode, continuous_dynamics | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `StemGNN` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `TFT` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | exogenous, variable_selection, interpretable_attention, gated_residual | forward, predict, config, from_config, param_count, nn_module | `ready` |

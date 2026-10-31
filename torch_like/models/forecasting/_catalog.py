@@ -22,6 +22,7 @@ from torch_like.models.forecasting.dlinear import DLinear, DLinearConfig
 from torch_like.models.forecasting.dmstgcn import DMSTGCN
 from torch_like.models.forecasting.fcgaga import FCGAGA
 from torch_like.models.forecasting.fedformer import FEDformer
+from torch_like.models.forecasting.fits import FITS, FITSConfig
 from torch_like.models.forecasting.frets import FreTS, FreTSConfig
 from torch_like.models.forecasting.graphwavenet import GraphWaveNet
 from torch_like.models.forecasting.gts import GTS
@@ -44,6 +45,7 @@ from torch_like.models.forecasting.softs import SOFTS, SOFTSConfig
 from torch_like.models.forecasting.stdn import STDN
 from torch_like.models.forecasting.stemgnn import StemGNN
 from torch_like.models.forecasting.stfgnn import STFGNN
+from torch_like.models.forecasting.stgcn import STGCN, STGCNConfig
 from torch_like.models.forecasting.stgode import STGODE
 from torch_like.models.forecasting.tft import TFT, TFTConfig
 from torch_like.models.forecasting.tide import TiDE, TiDEConfig
@@ -56,6 +58,26 @@ from torch_like.models.registry import register_model_catalog
 from torch_like.models.rul import RULBatch, RULConfig, RULModel
 
 model_zoo = {
+    "FITS": {
+        "cls": FITS,
+        "family": "frequency_domain_linear",
+        "layer": "MLP / decomposition / convolutional mixing",
+        "integration_level": "paper_aligned",
+        "supports": ["frequency_domain", "channel_independent", "low_pass_filter"],
+        "paper": "FITS: Modeling Time Series with 10k Parameters (ICLR 2024)",
+        "description": "Low-pass complex frequency interpolation with explicit inverse FFT length and horizon slicing",
+        "complexity": "O(B * C * (L log L + K_in * K_out + (L+T) log(L+T))) with retained frequency bins K",
+    },
+    "STGCN": {
+        "cls": STGCN,
+        "family": "graph_spatiotemporal",
+        "layer": "Graph spatiotemporal forecasting",
+        "integration_level": "framework_oriented",
+        "supports": ["fixed_graph", "spectral_graph_convolution", "temporal_convolution"],
+        "paper": "Spatio-Temporal Graph Convolutional Networks: A Deep Learning Framework for Traffic Forecasting (IJCAI 2018)",
+        "description": "Supplied-graph Chebyshev convolution between temporal convolutions, with a direct horizon head",
+        "complexity": "O(N^3) graph setup; dense O(B * L * K * N^2 * D) per block plus projections; not sparse O(|E|)",
+    },
     "ModernTCN": {
         "cls": ModernTCN,
         "family": "modern_convolution",
@@ -494,6 +516,10 @@ __all__ = [
     "ForecastingConfig",
     "ForecastingBatch",
     "ForecastingModel",
+    "FITSConfig",
+    "FITS",
+    "STGCNConfig",
+    "STGCN",
     "AGCRNConfig",
     "AGCRN",
     "ProbabilisticForecastingConfig",

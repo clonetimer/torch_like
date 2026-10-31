@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import importlib
 import pprint
 import sys
@@ -112,14 +113,24 @@ def generate() -> dict[Path, str]:
     )
 
 
+def _is_current(path: Path, content: str) -> bool:
+    """Compare Python structure so formatters do not make indexes appear stale."""
+    try:
+        actual = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except (OSError, SyntaxError, UnicodeError, ValueError):
+        return False
+    expected = ast.parse(content)
+    return ast.dump(actual, include_attributes=False) == ast.dump(expected, include_attributes=False)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail when generated files are stale")
     args = parser.parse_args()
 
     generated = generate()
-    stale = [path for path, content in generated.items() if not path.is_file() or path.read_text() != content]
     if args.check:
+        stale = [path for path, content in generated.items() if not _is_current(path, content)]
         if stale:
             print("Lazy export indexes are stale:")
             for path in stale:

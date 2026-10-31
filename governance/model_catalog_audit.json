@@ -6,18 +6,18 @@
   "target_catalog_schema_version": 2,
   "summary": {
     "domain_count": 13,
-    "model_count": 165,
-    "migration_ready_count": 165,
+    "model_count": 167,
+    "migration_ready_count": 167,
     "migration_unmapped_count": 0,
-    "maturity_unassessed_count": 146,
-    "benchmark_evidence_unassessed_count": 146,
+    "maturity_unassessed_count": 148,
+    "benchmark_evidence_unassessed_count": 148,
     "benchmarked_model_count": 19,
     "evidence_record_count": 4
   },
   "domains": [
     {
       "domain": "forecasting",
-      "model_count": 43
+      "model_count": 45
     },
     {
       "domain": "diagnosis",
@@ -71,7 +71,7 @@
   "legacy_integration_levels": [
     {
       "value": "framework_oriented",
-      "model_count": 117
+      "model_count": 118
     },
     {
       "value": "framework_oriented_dense",
@@ -83,7 +83,7 @@
     },
     {
       "value": "paper_aligned",
-      "model_count": 7
+      "model_count": 8
     },
     {
       "value": "paper_aligned_core",
@@ -115,14 +115,14 @@
     }
   ],
   "api_contract_counts": {
-    "forward": 165,
-    "predict": 140,
+    "forward": 167,
+    "predict": 142,
     "loss_step": 73,
     "fit_step": 15,
-    "config": 165,
-    "from_config": 165,
-    "param_count": 165,
-    "nn_module": 165,
+    "config": 167,
+    "from_config": 167,
+    "param_count": 167,
+    "nn_module": 167,
     "task_loss": 88
   },
   "evidence_records": {
@@ -684,6 +684,43 @@
       "legacy_integration_level": "framework_oriented",
       "catalog_v2": {
         "implementation_fidelity": "framework_oriented",
+        "implementation_scope": "full",
+        "execution_profile": "standard",
+        "maturity": "unassessed",
+        "benchmark_evidence": "unassessed",
+        "evidence_record": null
+      },
+      "api_contract": {
+        "forward": true,
+        "predict": true,
+        "loss_step": false,
+        "fit_step": false,
+        "config": true,
+        "from_config": true,
+        "param_count": true,
+        "nn_module": true,
+        "task_loss": false
+      },
+      "migration_status": "ready"
+    },
+    {
+      "domain": "forecasting",
+      "name": "FITS",
+      "class_path": "torch_like.models.forecasting.fits.FITS",
+      "family": "frequency_domain_linear",
+      "layer": "MLP / decomposition / convolutional mixing",
+      "supports": [
+        "frequency_domain",
+        "channel_independent",
+        "low_pass_filter"
+      ],
+      "paper": "FITS: Modeling Time Series with 10k Parameters (ICLR 2024)",
+      "description": "Low-pass complex frequency interpolation with explicit inverse FFT length and horizon slicing",
+      "complexity": "O(B * C * (L log L + K_in * K_out + (L+T) log(L+T))) with retained frequency bins K",
+      "automl_default": true,
+      "legacy_integration_level": "paper_aligned",
+      "catalog_v2": {
+        "implementation_fidelity": "paper_aligned",
         "implementation_scope": "full",
         "execution_profile": "standard",
         "maturity": "unassessed",
@@ -1382,6 +1419,43 @@
       "paper": "Spatial-Temporal Fusion Graph Neural Networks for Traffic Flow Forecasting (AAAI 2021)",
       "description": "Fusion of spatial and temporal learned graphs with gated graph-temporal interaction blocks",
       "complexity": "O(B * L * N^2) with fused spatial and temporal graph propagation",
+      "automl_default": true,
+      "legacy_integration_level": "framework_oriented",
+      "catalog_v2": {
+        "implementation_fidelity": "framework_oriented",
+        "implementation_scope": "full",
+        "execution_profile": "standard",
+        "maturity": "unassessed",
+        "benchmark_evidence": "unassessed",
+        "evidence_record": null
+      },
+      "api_contract": {
+        "forward": true,
+        "predict": true,
+        "loss_step": false,
+        "fit_step": false,
+        "config": true,
+        "from_config": true,
+        "param_count": true,
+        "nn_module": true,
+        "task_loss": false
+      },
+      "migration_status": "ready"
+    },
+    {
+      "domain": "forecasting",
+      "name": "STGCN",
+      "class_path": "torch_like.models.forecasting.stgcn.STGCN",
+      "family": "graph_spatiotemporal",
+      "layer": "Graph spatiotemporal forecasting",
+      "supports": [
+        "fixed_graph",
+        "spectral_graph_convolution",
+        "temporal_convolution"
+      ],
+      "paper": "Spatio-Temporal Graph Convolutional Networks: A Deep Learning Framework for Traffic Forecasting (IJCAI 2018)",
+      "description": "Supplied-graph Chebyshev convolution between temporal convolutions, with a direct horizon head",
+      "complexity": "O(N^3) graph setup; dense O(B * L * K * N^2 * D) per block plus projections; not sparse O(|E|)",
       "automl_default": true,
       "legacy_integration_level": "framework_oriented",
       "catalog_v2": {
