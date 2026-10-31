@@ -203,6 +203,47 @@ def load_model(
             cls = _import_class(str(manifest["class_path"]))
         model = cls(**config)
         state = _torch_load_state(root / _WEIGHTS, map_location)
+        # load_state_dict copies values into existing parameters, silently
+        # downcasting float64 checkpoints when the constructor defaults to
+        # float32. Match a uniform checkpoint *parameter* dtype first; do not
+        # infer it from buffers, which can intentionally have other dtypes.
+        parameter_dtypes = {
+            state[name].dtype
+            for name, _ in model.named_parameters()
+            if name in state
+            and isinstance(state[name], torch.Tensor)
+            and (state[name].is_floating_point() or state[name].is_complex())
+        }
+        buffers = [
+            (module, name, buffer, f"{prefix}.{name}" if prefix else name)
+            for prefix, module in model.named_modules()
+            for name, buffer in module.named_buffers(recurse=False, remove_duplicate=False)
+        ]
+        if len(parameter_dtypes) == 1:
+            dtype = next(iter(parameter_dtypes))
+            parameters_to_cast = any(
+                parameter.dtype != dtype
+                for parameter in model.parameters()
+                if parameter.is_floating_point() or parameter.is_complex()
+            )
+            if parameters_to_cast:
+                # Module.to(dtype=...) would also recast complex or high-
+                # precision buffers, including buffers absent from the saved
+                # state. Temporarily shelve them during parameter conversion.
+                for module, name, _, _ in buffers:
+                    setattr(module, name, None)
+                try:
+                    model.to(dtype=dtype)
+                finally:
+                    for module, name, buffer, _ in buffers:
+                        setattr(module, name, buffer)
+        # Each persistent buffer can have its own checkpoint dtype (BatchNorm
+        # statistics, complex phases, etc.). Nonpersistent buffers retain the
+        # constructor dtype and value; the state dict has no entry for them.
+        for module, name, buffer, key in buffers:
+            stored = state.get(key)
+            if isinstance(stored, torch.Tensor) and stored.dtype != buffer.dtype:
+                setattr(module, name, buffer.to(dtype=stored.dtype))
         model.load_state_dict(state, strict=strict)
         if map_location is not None and callable(getattr(model, "to", None)):
             model.to(map_location)

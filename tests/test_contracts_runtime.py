@@ -7,7 +7,19 @@ import numpy as np
 import torch
 
 import torch_like as tl
+from torch_like.models.base import BaseModel
 from torch_like.runtime import UnsupportedOperationError
+
+
+class _MixedBufferCheckpointModel(BaseModel):
+    """Test-only model with independently typed persistent/nonpersistent buffers."""
+
+    def __init__(self):
+        super().__init__()
+        self.weight = torch.nn.Parameter(torch.tensor([1.5], dtype=torch.float32))
+        self.register_buffer("precise", torch.tensor([1.0 + 2**-40], dtype=torch.float64))
+        self.register_buffer("phase", torch.tensor([1 + 2j], dtype=torch.complex64))
+        self.register_buffer("ephemeral", torch.tensor([3 + 4j], dtype=torch.complex128), persistent=False)
 
 
 class ModelContractTests(unittest.TestCase):
@@ -134,6 +146,42 @@ class SerializationTests(unittest.TestCase):
             tl.save_model(model, path)
             loaded = tl.load_model(path)
         self.assertEqual(loaded.config()["layers"], (1, 1, 1, 1))
+
+    def test_double_checkpoint_preserves_parameters_and_integer_buffers(self):
+        model = tl.ResNet(
+            in_channels=3,
+            num_classes=3,
+            image_size=32,
+            d_model=4,
+            layers=(1, 1, 1, 1),
+        ).double()
+        saved_state = model.state_dict()
+        self.assertTrue(any(t.dtype == torch.int64 for t in saved_state.values()))
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "resnet-double"
+            tl.save_model(model, path)
+            restored = tl.load_model(path)
+        self.assertTrue(all(param.dtype == torch.float64 for param in restored.parameters()))
+        for name, saved in saved_state.items():
+            actual = restored.state_dict()[name]
+            self.assertEqual(actual.dtype, saved.dtype, name)
+            torch.testing.assert_close(actual, saved, rtol=0, atol=0)
+
+    def test_loader_preserves_mixed_floating_complex_and_nonpersistent_buffers(self):
+        for dtype in (torch.float32, torch.float64):
+            with self.subTest(parameter_dtype=dtype):
+                model = _MixedBufferCheckpointModel()
+                model.weight = torch.nn.Parameter(model.weight.detach().to(dtype=dtype))
+                with tempfile.TemporaryDirectory() as tmp:
+                    path = Path(tmp) / "mixed-buffers"
+                    tl.save_model(model, path)
+                    restored = tl.load_model(path)
+                self.assertEqual(restored.weight.dtype, dtype)
+                for name in ("precise", "phase", "ephemeral"):
+                    original = getattr(model, name)
+                    actual = getattr(restored, name)
+                    self.assertEqual(actual.dtype, original.dtype, name)
+                    torch.testing.assert_close(actual, original, rtol=0, atol=0)
 
     def test_sklearn_round_trip(self):
         estimator = tl.create("RandomForestRegressor", backend="sklearn", n_estimators=5, random_state=0)

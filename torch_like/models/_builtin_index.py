@@ -3,6 +3,11 @@
 BUILTIN_MODEL_INDEX = {
     "FITS": ("forecasting", "torch_like.models.forecasting.fits", "FITS"),
     "STGCN": ("forecasting", "torch_like.models.forecasting.stgcn", "STGCN"),
+    "NonstationaryTransformer": (
+        "forecasting",
+        "torch_like.models.forecasting.nonstationary_transformer",
+        "NonstationaryTransformer",
+    ),
     "ModernTCN": ("forecasting", "torch_like.models.forecasting.moderntcn", "ModernTCN"),
     "AST": ("forecasting", "torch_like.models.forecasting.ast", "AST"),
     "Informer": ("forecasting", "torch_like.models.forecasting.informer", "Informer"),

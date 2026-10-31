@@ -6,18 +6,18 @@
   "target_catalog_schema_version": 2,
   "summary": {
     "domain_count": 13,
-    "model_count": 167,
-    "migration_ready_count": 167,
+    "model_count": 168,
+    "migration_ready_count": 168,
     "migration_unmapped_count": 0,
-    "maturity_unassessed_count": 148,
-    "benchmark_evidence_unassessed_count": 148,
+    "maturity_unassessed_count": 149,
+    "benchmark_evidence_unassessed_count": 149,
     "benchmarked_model_count": 19,
     "evidence_record_count": 4
   },
   "domains": [
     {
       "domain": "forecasting",
-      "model_count": 45
+      "model_count": 46
     },
     {
       "domain": "diagnosis",
@@ -107,7 +107,7 @@
     },
     {
       "value": "paper_aligned_portable_subset",
-      "model_count": 3
+      "model_count": 4
     },
     {
       "value": "paper_aligned_reference",
@@ -115,14 +115,14 @@
     }
   ],
   "api_contract_counts": {
-    "forward": 167,
-    "predict": 142,
+    "forward": 168,
+    "predict": 143,
     "loss_step": 73,
     "fit_step": 15,
-    "config": 167,
-    "from_config": 167,
-    "param_count": 167,
-    "nn_module": 167,
+    "config": 168,
+    "from_config": 168,
+    "param_count": 168,
+    "nn_module": 168,
     "task_loss": 88
   },
   "evidence_records": {
@@ -1176,6 +1176,44 @@
         "implementation_fidelity": "framework_oriented",
         "implementation_scope": "full",
         "execution_profile": "standard",
+        "maturity": "unassessed",
+        "benchmark_evidence": "unassessed",
+        "evidence_record": null
+      },
+      "api_contract": {
+        "forward": true,
+        "predict": true,
+        "loss_step": false,
+        "fit_step": false,
+        "config": true,
+        "from_config": true,
+        "param_count": true,
+        "nn_module": true,
+        "task_loss": false
+      },
+      "migration_status": "ready"
+    },
+    {
+      "domain": "forecasting",
+      "name": "NonstationaryTransformer",
+      "class_path": "torch_like.models.forecasting.nonstationary_transformer.NonstationaryTransformer",
+      "family": "transformer_attention",
+      "layer": "Transformer / attention",
+      "supports": [
+        "de_stationary_attention",
+        "learned_attention_factors",
+        "causal_decoder",
+        "time_features"
+      ],
+      "paper": "Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting (NeurIPS 2022)",
+      "description": "Observed-window normalization with learned tau/delta temporal attention and causal decoder",
+      "complexity": "Dense attention O(B * heads * (S^2 * E + (L+H)^2 * D + (L+H)*S*D) * d_head); not sparse",
+      "automl_default": true,
+      "legacy_integration_level": "paper_aligned_portable_subset",
+      "catalog_v2": {
+        "implementation_fidelity": "paper_aligned",
+        "implementation_scope": "subset",
+        "execution_profile": "portable",
         "maturity": "unassessed",
         "benchmark_evidence": "unassessed",
         "evidence_record": null

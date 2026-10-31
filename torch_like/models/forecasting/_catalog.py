@@ -36,6 +36,10 @@ from torch_like.models.forecasting.moderntcn import ModernTCN, ModernTCNConfig
 from torch_like.models.forecasting.mtgnn import MTGNN
 from torch_like.models.forecasting.nbeats import NBEATS
 from torch_like.models.forecasting.nhits import NHITS, NHITSConfig
+from torch_like.models.forecasting.nonstationary_transformer import (
+    NonstationaryTransformer,
+    NonstationaryTransformerConfig,
+)
 from torch_like.models.forecasting.patchtst import PatchTST
 from torch_like.models.forecasting.ppm import PPM
 from torch_like.models.forecasting.protran import ProTran
@@ -77,6 +81,16 @@ model_zoo = {
         "paper": "Spatio-Temporal Graph Convolutional Networks: A Deep Learning Framework for Traffic Forecasting (IJCAI 2018)",
         "description": "Supplied-graph Chebyshev convolution between temporal convolutions, with a direct horizon head",
         "complexity": "O(N^3) graph setup; dense O(B * L * K * N^2 * D) per block plus projections; not sparse O(|E|)",
+    },
+    "NonstationaryTransformer": {
+        "cls": NonstationaryTransformer,
+        "family": "transformer_attention",
+        "layer": "Transformer / attention",
+        "integration_level": "paper_aligned_portable_subset",
+        "supports": ["de_stationary_attention", "learned_attention_factors", "causal_decoder", "time_features"],
+        "paper": "Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting (NeurIPS 2022)",
+        "description": "Observed-window normalization with learned tau/delta temporal attention and causal decoder",
+        "complexity": "Dense attention O(B * heads * (S^2 * E + (L+H)^2 * D + (L+H)*S*D) * d_head); not sparse",
     },
     "ModernTCN": {
         "cls": ModernTCN,
@@ -520,6 +534,8 @@ __all__ = [
     "FITS",
     "STGCNConfig",
     "STGCN",
+    "NonstationaryTransformerConfig",
+    "NonstationaryTransformer",
     "AGCRNConfig",
     "AGCRN",
     "ProbabilisticForecastingConfig",

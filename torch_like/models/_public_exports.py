@@ -8,6 +8,11 @@ PUBLIC_EXPORTS = {
     "FITS": ("torch_like.models.forecasting.fits", "FITS"),
     "STGCNConfig": ("torch_like.models.forecasting.stgcn", "STGCNConfig"),
     "STGCN": ("torch_like.models.forecasting.stgcn", "STGCN"),
+    "NonstationaryTransformerConfig": (
+        "torch_like.models.forecasting.nonstationary_transformer",
+        "NonstationaryTransformerConfig",
+    ),
+    "NonstationaryTransformer": ("torch_like.models.forecasting.nonstationary_transformer", "NonstationaryTransformer"),
     "AGCRNConfig": ("torch_like.models.forecasting.agcrn", "AGCRNConfig"),
     "AGCRN": ("torch_like.models.forecasting.agcrn", "AGCRN"),
     "ProbabilisticForecastingConfig": ("torch_like.models.forecasting.common", "ProbabilisticForecastingConfig"),

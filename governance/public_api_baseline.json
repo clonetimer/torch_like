@@ -215,6 +215,8 @@
         "NHITSConfig",
         "NODE",
         "NODEConfig",
+        "NonstationaryTransformer",
+        "NonstationaryTransformerConfig",
         "OmniAnomaly",
         "OmniAnomalyConfig",
         "OutputSpec",
@@ -598,6 +600,8 @@
         "NHITSConfig",
         "NODE",
         "NODEConfig",
+        "NonstationaryTransformer",
+        "NonstationaryTransformerConfig",
         "OmniAnomaly",
         "OmniAnomalyConfig",
         "PNA",
@@ -16162,6 +16166,234 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 1.0
+        }
+      ]
+    },
+    "torch_like.NonstationaryTransformer": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.nonstationary_transformer.NonstationaryTransformer",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "factor_hidden",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "eps",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
+        }
+      ]
+    },
+    "torch_like.NonstationaryTransformerConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.nonstationary_transformer.NonstationaryTransformerConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "factor_hidden",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "eps",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
         }
       ]
     },
@@ -46008,6 +46240,234 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 1.0
+        }
+      ]
+    },
+    "torch_like.models.NonstationaryTransformer": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.nonstationary_transformer.NonstationaryTransformer",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "factor_hidden",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "eps",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
+        }
+      ]
+    },
+    "torch_like.models.NonstationaryTransformerConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.nonstationary_transformer.NonstationaryTransformerConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "factor_hidden",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "eps",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
         }
       ]
     },

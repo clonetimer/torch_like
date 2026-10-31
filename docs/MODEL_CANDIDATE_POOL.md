@@ -35,6 +35,7 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | EGNN (ICML 2021) | 2026-07-14 | 2027-01-14 | maintainers | sparse backend, benchmark, or API change |
 | FITS (ICLR 2024) | 2026-10-31 | 2027-01-31 | maintainers | independent benchmark, frequency contract, or official code/license change |
 | STGCN (IJCAI 2018) | 2026-10-31 | 2027-01-31 | maintainers | graph contract, independent comparison, or official code/license change |
+| Non-stationary Transformers (NeurIPS 2022) | 2026-10-31 | 2027-01-31 | maintainers | new independent controlled forecast evaluation, de-stationary attention/API, or official source/license change |
 | SAM 2.1 | 2026-10-19 | 2026-11-19 | maintainers | video protocol or independent latency evidence |
 | Uni-Mol v1 | 2026-10-19 | 2026-11-19 | maintainers | molecular protocol or checkpoint-policy change |
 | TabPFN v2 | 2026-10-19 | 2026-11-19 | maintainers | license, checkpoint, or independent benchmark change |
@@ -91,6 +92,7 @@ English: Both implementations subsequently passed model-level acceptance and are
 | EGNN (ICML 2021) | yes | yes | yes | yes | yes: coordinate-equivariant API absent | MIT | pass |
 | FITS (ICLR 2024) | yes | yes | yes | yes | yes: compact low-pass complex frequency interpolation absent | Apache-2.0 | pass |
 | STGCN (IJCAI 2018) | yes | yes | yes | yes | yes: fixed-graph Chebyshev temporal-convolution baseline absent | BSD-2-Clause | pass |
+| Non-stationary Transformers (NeurIPS 2022) | yes | yes | yes | yes | yes: learned per-sample attention scale and per-key bias absent | MIT | pass |
 | SAM 2.1 | yes | yes | yes | yes | yes | Apache-2.0 | pass |
 | Uni-Mol v1 | yes | yes | yes | yes | yes | MIT | pass |
 | TabPFN v2 | yes | yes | yes | yes | weak: value depends on pretrained prior | modified Apache/weight restrictions | pass with risk |
@@ -118,6 +120,7 @@ R=相关性，P=能力/性能，U=工程实用性，E=效率/成本，I=创新�
 | EGNN | 23 | 17 | 14 | 9 | 9 | 10 | 9 | 91 | A | 4 | 87.0 | core, implemented |
 | FITS | 24 | 16 | 15 | 10 | 7 | 8 | 9 | 89 | A | 4 | 85.0 | core, implemented |
 | STGCN | 23 | 14 | 14 | 9 | 7 | 10 | 9 | 86 | A | 4 | 82.0 | core, implemented |
+| Non-stationary Transformers | 24 | 16 | 14 | 7 | 8 | 9 | 9 | 87 | A | 6 | 81.0 | core, implemented |
 | SAM 2.1 | 23 | 18 | 13 | 7 | 9 | 10 | 9 | 89 | B | 5 | 75.1 | observation |
 | Fourier Neural Operator | 23 | 16 | 14 | 9 | 9 | 10 | 9 | 90 | B | 5 | 76.0 | observation |
 | Uni-Mol v1 | 22 | 17 | 12 | 7 | 9 | 8 | 8 | 83 | B | 6 | 68.7 | observation |
@@ -143,6 +146,7 @@ the cited primary and independent evidence remains mandatory.
 | EGNN | geometric graph gap | competitive molecular/dynamics evidence | reusable coordinate API | avoids higher-order irreps | E(n)-equivariant coordinate update | extensive downstream adoption | paper, MIT code, multiple independent extensions |
 | FITS | adds compact spectral extrapolation beyond current forecasters | competitive published results, with independent linear-model caveats | small self-contained forecasting operator | FFT plus a truncated complex linear map | explicit low-pass amplitude/phase interpolation, not a new universal function class | independent analysis and maintained TFB integration | Apache-2.0 reference plus independent implementation; local parity pending |
 | STGCN | supplied-graph convolutional baseline complements recurrent/adaptive models | established traffic results; newer independent methods often outperform it | reusable temporal/Chebyshev blocks with no pretrained assets | parallel temporal convolutions; dense graph cost must remain explicit | foundational graph-temporal composition, limited current novelty | repeated inclusion in Graph WaveNet and AutoCTS evaluations | BSD-2-Clause graph/training reference and independent comparisons; old TensorFlow portability limits |
+| Non-stationary Transformers | learned de-stationary temporal attention is absent from current forecasters | TFB and DERITS provide actual external evaluations, not universal wins | stand-alone native forecaster needs no pretrained assets | dense attention costs quadratic time and memory in window length | raw-window tau and per-key delta counter over-stationarized attention | widely studied within neural forecasting | pinned MIT reference and two author-independent experiments; local parity unassessed |
 | SAM 2.1 | video segmentation gap | strong official and domain results | prompt/memory API | substantial model cost | streaming video memory | broad adoption | paper/code plus domain evaluations |
 | Fourier Neural Operator | scientific operator gap | established PDE results, task dependent | reusable function-to-function layer | FFT global mixing | resolution-transfer operator view | mature NeuralOperator ecosystem | paper, two codebases, JMLR survey |
 | Uni-Mol v1 | molecular domain gap | strong but task-dependent | useful atom/pair states | chemistry preprocessing cost | 3D molecular pretraining | established scientific use | paper/code and independent benchmark |
@@ -232,6 +236,21 @@ the cited primary and independent evidence remains mandatory.
 - Acceptance: `tests/test_stgcn.py` covers config/state roundtrips, forward/optimizer/gradient behavior, explicit Chebyshev-polynomial and Laplacian oracles, graph dependence, node permutation, residual alignment, graph alias/underflow/rounding defense, future-input isolation, and graph/sequence boundaries.
 - Missing information: official numerical parity and controlled local traffic/sensor and CPU/CUDA benchmarks. Maturity and benchmark evidence remain `unassessed`; no production-readiness claim is made.
 - Registry: `STGCN`; integration level `framework_oriented`.
+
+### Non-stationary Transformers
+
+- Category: learned de-stationary temporal-attention point forecasting / 带学习式去平稳时间注意力的点预测。
+- Core value: Reintroduces distribution-specific temporal attention via a learned sample factor `tau` and an encoder-key-wise `delta` in a normalized encoder–decoder forecaster. 中文：补充现有普通自注意力和归一化预测头所缺少的去平稳注意力机制。
+- Evidence: [primary: Liu et al., NeurIPS 2022](https://papers.neurips.cc/paper_files/paper/2022/hash/4054556fcaa934b0bf76da52cf4f92cb-Abstract-Conference.html), [official: MIT author implementation pinned at c4ec406](https://github.com/thuml/Nonstationary_Transformers/tree/c4ec40675d11d50b3d9923657f408d0db6f90f56), [independent: Qiu et al., TFB PVLDB 2024, univariate Table 6 Stationary column](https://arxiv.org/html/2403.20150v2), and [independent: Fan et al., DERITS IJCAI 2024, Table 1 NSTransformer column](https://www.ijcai.org/proceedings/2024/0436.pdf). TFB's multivariate Tables 7–8 do **not** evaluate this baseline; DERITS uses distinct splits/metrics, and neither paper demonstrates `torch_like` accuracy or universal model superiority.
+- Peer comparison: unlike `Informer`, this candidate learns scale/bias corrections to time-key attention logits rather than applying ProbSparse selection; unlike `ITransformer`, it attends across time tokens in an encoder–decoder with raw-window de-stationary factors, not variable tokens. The mere use of observation-window normalization is also insufficient to reproduce the distinctive mechanism.
+- Score: value 87; evidence A; risk 6; final 81.
+- Decision: core, implemented.
+- Conclusion reason: all six gates have explicit sources and the full evidence-grade-A source structure is present; the policy score passes 80 by a small margin for a clearly distinct, portable temporal-attention mechanism. The score reflects audited literature and engineering scope, not any local dataset benchmark. 中文：完成数学机制、模型合同和公共接口的定向验收后登记 `implemented`；仍无实际数据集基准成熟度晋升。
+- Risk deduction: 2 for quadratic dense-attention memory/latency, 2 for scale/exponential behavior and non-stationary calibration, 1 for source/runtime embedding and attention-mask differences, 1 for independently reported accuracy variability under protocol changes.
+- Implementation boundary: a single native PyTorch `ns_Transformer`-style point forecaster with observed-only per-channel population-stat normalization, learned detached raw-window tau/delta projectors, encoder self and decoder cross attention using both factors, and causal decoder self attention using tau only. The portable subset may use local sinusoidal positions, learned time-marker projection, bounded log-tau, and direct `(B,H,C)` tensor output. No generic retrofit to all Transformer models, teacher forcing, pretrained weights, sparse complexity guarantee, official checkpoint or training parity is approved.
+- Acceptance: `tests/test_nonstationary_attention.py`, `tests/test_nonstationary_projectors.py`, `tests/test_nonstationary_transformer.py` and `tests/test_workbuddy_nonstationary_integration.py` cover tiny float64 attention oracles, factor projectors/detachment, key-bias and scaling sensitivity, causal masks, observed-only normalization/denormalization, future-target isolation, shape/dtype/gradient/config/save-load and public factory/lazy API. These tests establish a portable mathematical/API implementation, not reference training parity or real-data benchmark maturity.
+- Missing information: local numerical/reference parity, controlled dataset evaluation, CPU/CUDA latency and memory baselines, source training-recipe parity, and long-window numerical stability. Runtime maturity and benchmark evidence must remain `unassessed` until independently measured.
+- Registry: `NonstationaryTransformer`; integration level `paper_aligned_portable_subset`.
 
 ## Observation / 观察收录
 
