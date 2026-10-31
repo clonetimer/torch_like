@@ -8,6 +8,16 @@ English: `torch_like` is a local PyTorch-native model framework. Its goal is to 
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for long-term milestones and exit criteria, and [`docs/MODEL_CATALOG_AUDIT.md`](docs/MODEL_CATALOG_AUDIT.md) for the complete registry capability and maturity audit.
 
+## Workbuddy 文献算法接入 / Literature Model Intake
+
+中文：依据 36 份时间序列预测周报，首批补充 `FITS` 复频域插值与 `STGCN` 固定图时空卷积。两者遵循统一配置、预测、registry 和保存/加载接口，保持 `unassessed` 成熟度；单元测试与合成示例不等于论文指标复现。STGCN 必须显式提供对称非负邻接矩阵。现有精简 Stable 包白名单不变。
+
+English: The first batch from 36 forecasting literature reports adds `FITS` spectral interpolation and supplied-graph `STGCN`, with standard configuration, prediction, registry and persistence APIs. Both remain `unassessed`: contract tests and synthetic examples are not paper-score replications. STGCN requires an explicit symmetric nonnegative adjacency. The slim Stable allowlist is unchanged.
+
+- [文献映射与候选边界 / Literature mapping and scope](docs/WORKBUDDY_FORECASTING_INTAKE.md)
+- [首批接口、约束与验证 / First-batch APIs, constraints and verification](docs/WORKBUDDY_FORECASTING_R1.md)
+- Example / 示例: `python -m examples.demo_workbuddy_forecasting`
+
 ## 工业诊断与健康评估算法库的职责边界
 
 `torch_like.diagnostics` 面向调用方提供可独立使用的故障诊断、健康评估与退化/寿命算法。**数据来源真实性、清洗、故障标签、工况与训练/测试数据选择由用户自行负责**；本库不建设数据源审计、准入认证或强制物理来源清单。算法仅检查数值/形状以及与已拟合模型相匹配的通道、单位和采样率等必要输入约束。此前 R3/R4 的防泄漏评估和分域报告保留为可选工具，**不得作为直接 fit/score/predict 的必选步骤**。后续开发优先补齐健康指数、状态评估、故障诊断模型组合与 RUL 算法适配。详见 [R5 路线图](https://github.com/clonetimer/torch_like/issues/19)。

@@ -45,7 +45,7 @@ class CandidatePoolValidationTests(unittest.TestCase):
 
     def test_hard_gate_parser_reads_all_candidates(self):
         gates = parse_hard_gates(self.document)
-        self.assertEqual(len(gates), 16)
+        self.assertEqual(len(gates), 18)
         self.assertEqual(sum(gate.gate == "fail" for gate in gates), 2)
 
     def test_invalid_value_final_and_decision_are_reported_together(self):
@@ -149,9 +149,11 @@ class CandidatePoolValidationTests(unittest.TestCase):
         self.assertTrue(any("Mamba-2 / SSD: decision" in error for error in errors))
 
     def test_declared_minimum_candidate_count_is_enforced(self):
-        document = self.document.replace("- Minimum candidate count: 12.", "- Minimum candidate count: 17.", 1)
+        candidate_count = len(parse_hard_gates(self.document))
+        minimum = candidate_count + 1
+        document = self.document.replace("- Minimum candidate count: 12.", f"- Minimum candidate count: {minimum}.", 1)
         errors = self.validate_text(document)
-        self.assertIn("Hard-gate pool has 16 candidates, below declared minimum 17", errors)
+        self.assertIn(f"Hard-gate pool has {candidate_count} candidates, below declared minimum {minimum}", errors)
 
     def test_scope_metadata_is_required(self):
         document = self.document.replace("- Target domain:", "- Domain:", 1)

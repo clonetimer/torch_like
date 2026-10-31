@@ -2,13 +2,13 @@
 
 ## Scope / 范围
 
-本候选池用于控制 `torch_like` 的正式模型收录质量，而不是追求模型数量。评估范围覆盖当前注册表尚未充分覆盖的通用深度学习能力。当前评估日期为 2026-07-14；模型身份、许可证和可用状态均以对应版本为准。
+本候选池用于控制 `torch_like` 的正式模型收录质量，而不是追求模型数量。评估范围覆盖当前注册表尚未充分覆盖的通用深度学习能力。最近增量评估日期为 2026-10-31；各模型的实际复核日期以复审台账为准，身份、许可证和可用状态均以对应版本为准。
 
-This pool governs admission quality for `torch_like`; it is not a model-count target. The scope covers general deep-learning capabilities not already represented adequately in the current registry. Status is evaluated as of 2026-07-14 and is version-specific.
+This pool governs admission quality for `torch_like`; it is not a model-count target. The scope covers general deep-learning capabilities not already represented adequately in the current registry. The latest incremental evaluation is dated 2026-10-31; each candidate's actual review date is recorded below, and its status is version-specific.
 
 - Target domain: general deep-learning architecture gaps across the registered `torch_like` domains.
 - Minimum candidate count: 12.
-- Evaluation date: 2026-07-14.
+- Evaluation date: 2026-10-31.
 - Governance policy: `governance/model_admission_policy.json` version 1.0.
 
 ## Rules / 规则
@@ -33,6 +33,8 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | EnCodec 24/48 kHz | 2026-07-14 | 2027-01-14 | maintainers | codec benchmark, API, or license change |
 | Mamba-2 / SSD | 2026-10-19 | 2026-11-19 | maintainers | independent comparison or fused-kernel evidence |
 | EGNN (ICML 2021) | 2026-07-14 | 2027-01-14 | maintainers | sparse backend, benchmark, or API change |
+| FITS (ICLR 2024) | 2026-10-31 | 2027-01-31 | maintainers | independent benchmark, frequency contract, or official code/license change |
+| STGCN (IJCAI 2018) | 2026-10-31 | 2027-01-31 | maintainers | graph contract, independent comparison, or official code/license change |
 | SAM 2.1 | 2026-10-19 | 2026-11-19 | maintainers | video protocol or independent latency evidence |
 | Uni-Mol v1 | 2026-10-19 | 2026-11-19 | maintainers | molecular protocol or checkpoint-policy change |
 | TabPFN v2 | 2026-10-19 | 2026-11-19 | maintainers | license, checkpoint, or independent benchmark change |
@@ -64,6 +66,20 @@ The policy file is the machine-readable source of truth for scoring and state tr
 
 **Guardrails:** No newly dated source review grants a `core` promotion, new model admission, checkpoint license approval, benchmark evidence, or production readiness. Original detailed records remain authoritative until an independent technical review. The next review MUST confirm reproducibility/license status with direct evidence before any admission or promotion.
 
+## 2026-10-31 Forecasting Admission Review / 时序预测收录评审
+
+中文：本次从 `Workbuddy-TorchLike/report-2026-07-01.md` 的第 3 个正式条目发现 FITS，从 `report-2026-06-13.md` 的第 1 个正式条目发现 STGCN；先登记候选，再独立核验原论文、官方实现与许可证、同类模型差异及外部评价，最后按现有政策评分。6 月 13 日报告把 STGCN 指向了 `Davidham3/STSGCN`；本次以 IJCAI 2018 论文及 `VeritasYin/STGCN_IJCAI-18` 校正身份，STSGCN 不属于本次收录。既有模型的评分和结论不变。
+
+English: FITS was discovered in formal entry 3 of `Workbuddy-TorchLike/report-2026-07-01.md`, and STGCN in formal entry 1 of `report-2026-06-13.md`. Both were recorded as candidates before checking the primary papers, official implementations/licenses, capability gaps, and independent evaluations, then scored under the unchanged policy. The June 13 report incorrectly linked STGCN to `Davidham3/STSGCN`; this review resolves the identity to the IJCAI 2018 paper and `VeritasYin/STGCN_IJCAI-18`. STSGCN is not admitted here. Existing candidate decisions and scores are unchanged.
+
+中文：两项 `core` 结论仅批准进入实现队列。证据 A 表示原论文、官方来源和至少两个独立来源齐备，不表示本仓库已复现实验，也不授予 `benchmarked`、官方数值等价或生产就绪标签。只有导入、构造、前向、梯度、数学性质及边界测试验收后才能登记 `implemented`。
+
+English: These two `core` decisions authorize implementation work only. Literature evidence A means that the primary paper, official source, and at least two independent sources are present; it does not establish a framework-local benchmark, numerical equivalence to the reference, or production readiness. The `implemented` qualifier requires import, construction, forward, gradient, mathematical-property, and boundary-condition acceptance tests.
+
+中文：随后两项实现通过模型级验收，并在各自记录中登记 `implemented` 与真实 Registry 名称。该状态只表示实现与合同测试完成；成熟度和基准证据仍为 `unassessed`，未登记任何数据集性能晋升。
+
+English: Both implementations subsequently passed model-level acceptance and are recorded below as `implemented` with their actual registry names. That status covers implementation and contract tests only; maturity and benchmark evidence remain `unassessed`, with no dataset-performance promotion.
+
 ## Hard-Gate Summary / 硬门槛汇总
 
 | Model/version | Identity | Primary source | Relevant | Verifiable | Non-duplicate | License/availability | Gate |
@@ -73,6 +89,8 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | EnCodec 24/48 kHz | yes | yes | yes | yes | yes | MIT | pass |
 | Mamba-2 / SSD | yes | yes | yes | yes | yes: SSD is distinct from Mamba-1 | Apache-2.0 | pass |
 | EGNN (ICML 2021) | yes | yes | yes | yes | yes: coordinate-equivariant API absent | MIT | pass |
+| FITS (ICLR 2024) | yes | yes | yes | yes | yes: compact low-pass complex frequency interpolation absent | Apache-2.0 | pass |
+| STGCN (IJCAI 2018) | yes | yes | yes | yes | yes: fixed-graph Chebyshev temporal-convolution baseline absent | BSD-2-Clause | pass |
 | SAM 2.1 | yes | yes | yes | yes | yes | Apache-2.0 | pass |
 | Uni-Mol v1 | yes | yes | yes | yes | yes | MIT | pass |
 | TabPFN v2 | yes | yes | yes | yes | weak: value depends on pretrained prior | modified Apache/weight restrictions | pass with risk |
@@ -98,6 +116,8 @@ R=相关性，P=能力/性能，U=工程实用性，E=效率/成本，I=创新�
 | EnCodec | 24 | 16 | 15 | 8 | 8 | 9 | 9 | 89 | B | 0 | 80.1 | core, implemented |
 | Mamba-2 / SSD | 23 | 18 | 14 | 10 | 9 | 9 | 9 | 92 | B | 5 | 77.8 | observation, implemented |
 | EGNN | 23 | 17 | 14 | 9 | 9 | 10 | 9 | 91 | A | 4 | 87.0 | core, implemented |
+| FITS | 24 | 16 | 15 | 10 | 7 | 8 | 9 | 89 | A | 4 | 85.0 | core, implemented |
+| STGCN | 23 | 14 | 14 | 9 | 7 | 10 | 9 | 86 | A | 4 | 82.0 | core, implemented |
 | SAM 2.1 | 23 | 18 | 13 | 7 | 9 | 10 | 9 | 89 | B | 5 | 75.1 | observation |
 | Fourier Neural Operator | 23 | 16 | 14 | 9 | 9 | 10 | 9 | 90 | B | 5 | 76.0 | observation |
 | Uni-Mol v1 | 22 | 17 | 12 | 7 | 9 | 8 | 8 | 83 | B | 6 | 68.7 | observation |
@@ -121,6 +141,8 @@ the cited primary and independent evidence remains mandatory.
 | EnCodec | fills neural-codec gap | strong, no longer universal SOTA | reusable RVQ/codec API | low-bitrate inference | bandwidth-scalable codec | broad audio-token use | MIT code/models and later codecs |
 | Mamba-2 / SSD | distinct sequence operator | equal-data study supports competitiveness | full/chunk/recurrent API | linear scan and fixed state | SSM-attention duality | author and NVIDIA ecosystems | controlled study is partly author-affiliated; one independent portability study |
 | EGNN | geometric graph gap | competitive molecular/dynamics evidence | reusable coordinate API | avoids higher-order irreps | E(n)-equivariant coordinate update | extensive downstream adoption | paper, MIT code, multiple independent extensions |
+| FITS | adds compact spectral extrapolation beyond current forecasters | competitive published results, with independent linear-model caveats | small self-contained forecasting operator | FFT plus a truncated complex linear map | explicit low-pass amplitude/phase interpolation, not a new universal function class | independent analysis and maintained TFB integration | Apache-2.0 reference plus independent implementation; local parity pending |
+| STGCN | supplied-graph convolutional baseline complements recurrent/adaptive models | established traffic results; newer independent methods often outperform it | reusable temporal/Chebyshev blocks with no pretrained assets | parallel temporal convolutions; dense graph cost must remain explicit | foundational graph-temporal composition, limited current novelty | repeated inclusion in Graph WaveNet and AutoCTS evaluations | BSD-2-Clause graph/training reference and independent comparisons; old TensorFlow portability limits |
 | SAM 2.1 | video segmentation gap | strong official and domain results | prompt/memory API | substantial model cost | streaming video memory | broad adoption | paper/code plus domain evaluations |
 | Fourier Neural Operator | scientific operator gap | established PDE results, task dependent | reusable function-to-function layer | FFT global mixing | resolution-transfer operator view | mature NeuralOperator ecosystem | paper, two codebases, JMLR survey |
 | Uni-Mol v1 | molecular domain gap | strong but task-dependent | useful atom/pair states | chemistry preprocessing cost | 3D molecular pretraining | established scientific use | paper/code and independent benchmark |
@@ -180,6 +202,36 @@ the cited primary and independent evidence remains mandatory.
 - Conclusion reason: clears the core threshold, adds a non-duplicative geometric API, and passes local E(n)/permutation tests.
 - Missing information: sparse edge-index backend and framework-local molecular benchmark validation.
 - Registry: `EGNN`; integration level `paper_aligned_dense`.
+
+### FITS (ICLR 2024)
+
+- Category: compact frequency-domain time-series forecasting / 紧凑频域时序预测。
+- Core value: low-pass filtering followed by a complex-valued linear frequency interpolation provides an explicit amplitude/phase-aware forecasting baseline with shared or per-channel weights. 中文：补充可解释的低频截断与复数插值能力，而不是增加另一个通用 MLP 预测头。
+- Evidence: [primary: ICLR 2024 paper](https://proceedings.iclr.cc/paper_files/paper/2024/hash/701251e1db4a2e4dd2ef23f5265d5936-Abstract-Conference.html), [official: author implementation](https://github.com/VEWOXIC/FITS), [official: Apache-2.0 license](https://github.com/VEWOXIC/FITS/blob/main/LICENSE), [independent: Toner and Darlow, ICML 2024 analysis of linear forecasters](https://proceedings.mlr.press/v235/toner24a.html), and [independent: maintained TFB benchmark integration](https://github.com/decisionintelligence/TFB). TFB's maintained FITS baseline is the evidence here; this is not a claim that FITS was included in the original TFB paper's initial model roster.
+- Peer comparison: unlike `DLinear`, it imposes an explicit low-frequency complex interpolation and spectral cutoff rather than a trend/residual time-domain projection; unlike `FreTS`, it is a compact linear spectral interpolation baseline rather than a nonlinear frequency-domain MLP. Toner and Darlow caution that several linear forecasters have closely related function classes, so architectural simplicity is not evidence of universal accuracy superiority.
+- Score: value 89; evidence A; risk 4; final 85.
+- Decision: core, implemented.
+- Conclusion reason: passes all six hard gates and exceeds the core threshold while adding a small, independently studied spectral baseline. The dimension scores are review judgments, not benchmark measurements. 中文：通过硬门槛并补齐紧凑频域基线；文献证据等级与本仓库运行时成熟度分开管理。
+- Risk deduction: 2 for cutoff sensitivity and loss of high-frequency/nonperiodic information, 1 for overlap with other linear forecasting function classes, and 1 for reference-to-framework boundary differences such as forecast-only outputs and odd-length inverse FFT handling.
+- Implementation boundary: preserve mean/variance normalization, real FFT, low-pass selection, genuine complex-linear interpolation, zero padding, explicit inverse-FFT length, length-ratio amplitude correction, and denormalization. A framework forecast-only output should select the last prediction horizon from the reconstructed-plus-predicted sequence. No anomaly-detection protocol, pretrained checkpoint, official training-recipe equivalence, or local benchmark is admitted by this record.
+- Acceptance: `tests/test_fits.py` covers config/state roundtrips, forward/optimizer/gradient behavior, a direct complex-DFT oracle, odd/even FFT lengths, cutoff and constant-input behavior, channel independence, future-input isolation, and invalid-input boundaries. These are mathematical and API checks, not dataset benchmarks.
+- Missing information: official numerical/training-recipe parity, controlled local forecasting datasets, and CPU/CUDA cost measurements. Maturity and benchmark evidence remain `unassessed`.
+- Registry: `FITS`; integration level `paper_aligned`.
+
+### STGCN (IJCAI 2018)
+
+- Category: fixed-graph spatio-temporal convolutional forecasting / 固定图时空卷积预测。
+- Core value: a supplied graph, Chebyshev polynomial graph convolution, and temporal convolution blocks provide a reusable non-recurrent spatio-temporal baseline. 中文：补充明确依赖外部图结构的轻量基线，不学习或伪造传感器拓扑。
+- Evidence: [primary: IJCAI 2018 paper](https://www.ijcai.org/proceedings/2018/505), [official: author TensorFlow implementation](https://github.com/VeritasYin/STGCN_IJCAI-18), [official: BSD-2-Clause license](https://github.com/VeritasYin/STGCN_IJCAI-18/blob/master/LICENSE), [independent: Graph WaveNet, IJCAI 2019](https://www.ijcai.org/proceedings/2019/264), and [independent: AutoCTS, PVLDB 2022](https://www.vldb.org/pvldb/vol15/p971-wu.pdf). The two independent papers contain actual STGCN comparisons and are from distinct author groups.
+- Peer comparison: unlike recurrent `DCRNN`, it composes temporal and Chebyshev graph convolutions without a graph-GRU rollout core; unlike `GraphWaveNet`, its graph is supplied rather than adaptively learned; unlike attention-augmented `ASTGCN`, it offers a simpler fixed polynomial graph filter. Independent Graph WaveNet and AutoCTS results also show that STGCN is not a current universal accuracy leader.
+- Score: value 86; evidence A; risk 4; final 82.
+- Decision: core, implemented.
+- Conclusion reason: passes all six hard gates and contributes a well-documented supplied-graph baseline, with the capability/performance score deliberately below newer state-of-the-art candidates. 中文：收录依据是可验证的固定图卷积能力和基线价值，而非把经典方法包装为当前最优模型。
+- Risk deduction: 2 for reliance on a meaningful fixed graph and undirected-Laplacian assumptions, 1 for dense graph scaling, and 1 for portability differences from the old TensorFlow reference, including any direct multi-horizon output adaptation.
+- Implementation boundary: preserves the scaled normalized graph Laplacian, Chebyshev recurrence, channel-aligned residual temporal/graph blocks, and graph buffers. Symmetric nonnegative adjacency is required; positive edges that would underflow to zero are rejected, and the operator is derived from the same rounded graph stored in config. The official first-temporal GLU / graph ReLU / second-temporal ReLU sandwich is retained, but node-shared channel normalization and a direct multi-horizon head are framework adaptations. Graph propagation is dense and graph eigendecomposition has a one-time O(N^3) setup cost; sparse edge-linear cost and full reference parity are not claimed.
+- Acceptance: `tests/test_stgcn.py` covers config/state roundtrips, forward/optimizer/gradient behavior, explicit Chebyshev-polynomial and Laplacian oracles, graph dependence, node permutation, residual alignment, graph alias/underflow/rounding defense, future-input isolation, and graph/sequence boundaries.
+- Missing information: official numerical parity and controlled local traffic/sensor and CPU/CUDA benchmarks. Maturity and benchmark evidence remain `unassessed`; no production-readiness claim is made.
+- Registry: `STGCN`; integration level `framework_oriented`.
 
 ## Observation / 观察收录
 
@@ -241,7 +293,7 @@ the cited primary and independent evidence remains mandatory.
 
 ## Candidate Record / 候选记录
 
-No unscored candidate currently remains. New discoveries must enter here before formal scoring; they may not jump directly from a paper announcement into implementation.
+No unscored candidate currently remains in this formal pool. New discoveries must enter here before formal scoring; they may not jump directly from a paper announcement into implementation. Discovery ledger: on 2026-10-31, FITS and STGCN were first recorded from the two reports named in the admission review above, then promoted to the Core Inclusion section only after the source, hard-gate, independent-evidence, and score reviews were complete. Neither promotion itself marks an implementation complete.
 
 ## Rejected / 淘汰
 
@@ -327,9 +379,12 @@ No unscored candidate currently remains. New discoveries must enter here before 
 3. 证据最薄弱：Gated DeltaNet-2，当前主要依赖作者结果且许可证受限。
 4. 持续跟踪：FNO/神经算子、SAM 2.1、Uni-Mol；应先设计领域协议，再写模型代码。
 5. 潜在偏差：英文论文和开源 GitHub 生态被过度代表；硬件相关速度、训练数据重叠和作者自报结果可能抬高评分；未找到的独立复现不等于不存在。
+6. 2026-10-31 增量：FITS 与 STGCN 分别以 85 和 82 分获核心收录，随后完成模型级实现验收；不声称本仓库数据集基准已完成。 / Increment: FITS and STGCN receive core admission at 85 and 82 and subsequently pass model-level implementation acceptance; no completed framework dataset benchmark is claimed.
 
 ## Admission Order / 实施顺序
 
 1. Mamba-2: **implemented** with full-sequence, chunked, and recurrent-state contracts.
 2. EGNN: **implemented** with coordinate-equivariant message passing and E(n) transformation tests.
-3. Do not implement observation/rejected entries without a new evidence review and a domain protocol.
+3. FITS: **implemented** with complex-frequency interpolation, explicit inverse-FFT length, and forecast-horizon slicing.
+4. STGCN: **implemented** with supplied-graph Chebyshev/temporal convolutions, node-shared normalization, and a direct multi-horizon head.
+5. Do not implement observation/rejected entries without a new evidence review and a domain protocol.

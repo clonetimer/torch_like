@@ -1,6 +1,8 @@
 """Static built-in model index used for discovery without importing model implementations."""
 
 BUILTIN_MODEL_INDEX = {
+    "FITS": ("forecasting", "torch_like.models.forecasting.fits", "FITS"),
+    "STGCN": ("forecasting", "torch_like.models.forecasting.stgcn", "STGCN"),
     "ModernTCN": ("forecasting", "torch_like.models.forecasting.moderntcn", "ModernTCN"),
     "AST": ("forecasting", "torch_like.models.forecasting.ast", "AST"),
     "Informer": ("forecasting", "torch_like.models.forecasting.informer", "Informer"),
