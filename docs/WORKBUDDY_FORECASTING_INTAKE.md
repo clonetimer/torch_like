@@ -18,6 +18,8 @@ English: The inventory date is **2026-10-31**. The historical mapping below is p
 | Not mapped at the baseline / 基线未有映射 | 63 | Intake candidates, not 63 approved forecast backbones / 候选线索，并非 63 个已批准的预测骨干 |
 | Mapped after this batch / 集成本批后已有映射 | 35 | Baseline 33 plus newly implemented FITS and STGCN / 基线 33 项加本批新实现的 FITS、STGCN |
 | Remaining after this batch / 集成本批后尚无映射 | 61 | Still candidates, not promised implementations / 仍是候选线索，不是已承诺的实现 |
+| Mapped after R2 / R2 后已有映射 | 36 | R1 added FITS/STGCN, R2 adds Non-stationary Transformers / R1 两项加 R2 一项 |
+| Remaining after R2 / R2 后尚无映射 | 60 | Still requires separate admission and task-role review / 仍须逐项准入及任务归类 |
 | Honorable-mention occurrences / 附带提及次数 | 89 | Repetitions allowed; excluded from the 96 / 可重复，不计入 96 个主选项 |
 | Reports without a main selection / 无主选项的报告 | 3 | `report-2026-06-24.md`, `report-2026-10-24.md`, `report-2026-10-25.md` |
 
@@ -196,17 +198,17 @@ English: The same report contains conflicting descriptions of requiring no prede
 
 ## Prioritized Follow-up, Not Admission / 后续优先调研，不等于收录
 
-中文：以下顺序是基于机制缺口及可验证性的工程调研顺序，不是论文性能排名。三项当前均为 `U / unassessed`，仍须通过身份、一手来源、领域相关性、可验证评价、非重复和许可证/可用性六项硬门槛，再进入正式评分。下列论文与代码链接来自报告，列出不代表已完成当前可用性、许可证或性能核验。
+中文：以下顺序是基于机制缺口及可验证性的工程调研顺序，不是论文性能排名。**Non-stationary Transformers 已在 R2 单独完成正式准入和预测骨干实现**；FiLM、Pyraformer 仍须分别完成准入及实现边界评审。报告链接本身不代表已核实许可证或性能。
 
-English: The order below is an engineering research priority based on mechanism gaps and testability, not a ranking of paper performance. All three remain `U / unassessed`: identity, primary source, domain relevance, verifiable evaluation, non-duplication, and license/availability gates must precede formal scoring. Paper and code links below come from the reports; listing them does not certify current availability, licensing, or performance.
+English: The order below is an engineering research priority, not an accuracy ranking. **Non-stationary Transformers now has R2 core admission and a standalone forecasting implementation**; FiLM and Pyraformer still require their own admission and engineering-boundary decisions. Report links alone do not certify licenses or performance.
 
 ### 1. Non-stationary Transformers
 
 Source / 来源：`report-2026-06-25.md`; [paper / 论文](https://arxiv.org/abs/2205.14415); [report-linked code / 报告所列代码](https://github.com/thuml/Nonstationary_Transformers).
 
-中文：必须包含真正作用于注意力 logits 的可学习去平稳参数 `tau` 和 `delta`，不能只做输入标准化。先确认编码器/解码器、时间特征及掩码合同，定义参数形状、正值约束与广播轴；逐项测试 logits 公式、常量输入、归一化/反归一化以及无未来目标泄漏。依赖检查须确认可移植实现是否只需已有 PyTorch 能力，且不能把参考仓库的数据管道隐式带入核心库。
+中文：R2 已单独实现真正作用于注意力 logits 的学习式 `tau` 和 `delta`，并用数学对照、输入归一化、因果掩码、梯度及无未来目标泄漏测试验收。实现使用已有 PyTorch 能力，明确限定原始 `ns_Transformer` 风格的可移植子集；详见 [R2 记录](WORKBUDDY_FORECASTING_R2.md)。
 
-English: Preserve learned de-stationary `tau` and `delta` in attention logits, not just input standardization. First define encoder/decoder, temporal-feature, and mask contracts, together with parameter shapes, positivity constraints, and broadcasting axes. Test the logit equation, constant inputs, normalization/denormalization, and absence of future-target leakage. Dependency review must establish whether a portable implementation can use existing PyTorch capabilities without importing the reference repository's data pipeline into core.
+English: R2 implements learned `tau` and `delta` inside attention logits and tests them against mathematical oracles, observed-only normalization, causal masking, gradient flow and future-target isolation. It uses existing PyTorch capabilities and is explicitly limited to a portable `ns_Transformer`-style subset; see the [R2 record](WORKBUDDY_FORECASTING_R2.md).
 
 ### 2. FiLM
 
@@ -232,9 +234,9 @@ English: `report-2026-06-23.md` points to [JLDeng/ST-Norm](https://github.com/JL
 
 ## Task and Asset Boundaries / 任务与资产边界
 
-中文：基线的 63 个缺口（本批后尚余 61 项）并不都是适合直接注册为 `ForecastingModel` 的独立点预测骨干。必须先识别算法真正承担的任务、输入输出及训练/推理状态，再选择正确的组件或任务接口。
+中文：基线的 63 个缺口（R1 后尚余 61 项、R2 后尚余 60 项）并不都是适合直接注册为 `ForecastingModel` 的独立点预测骨干。必须先识别算法真正承担的任务、输入输出及训练/推理状态，再选择正确的组件或任务接口。
 
-English: The 63 baseline gaps (61 remaining after this batch) are not all independent point-forecast backbones suitable for direct `ForecastingModel` registration. Identify each algorithm's actual role, input/output contract, and training/inference state before choosing a component or task interface.
+English: The 63 baseline gaps (61 after R1; 60 after R2) are not all independent point-forecast backbones suitable for direct `ForecastingModel` registration. Identify each algorithm's actual role, input/output contract, and training/inference state before choosing a component or task interface.
 
 | Category / 类别 | Examples from reports / 报告示例 | Intake boundary / 接入边界 |
 |---|---|---|

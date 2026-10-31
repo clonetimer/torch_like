@@ -8,17 +8,17 @@ English: This file is generated deterministically from the live registry by `too
 
 - Registry version / 注册表版本: `0.9.0`
 - Domains / 领域数: 13
-- Models / 模型数: 167
-- Schema-v2 migration ready / 可迁移: 167
+- Models / 模型数: 168
+- Schema-v2 migration ready / 可迁移: 168
 - Unmapped integration levels / 未映射值: 0
-- Maturity unassessed / 成熟度未评估: 148
-- Benchmark evidence unassessed / 基准证据未评估: 148
+- Maturity unassessed / 成熟度未评估: 149
+- Benchmark evidence unassessed / 基准证据未评估: 149
 
 ## Domain Coverage / 领域覆盖
 
 | Domain / 领域 | Models / 模型数 |
 |---|---:|
-| `forecasting` | 45 |
+| `forecasting` | 46 |
 | `diagnosis` | 2 |
 | `detection` | 10 |
 | `graph` | 16 |
@@ -45,7 +45,7 @@ English: This file is generated deterministically from the live registry by `too
 | `paper_aligned_mlstm_reference` | 1 |
 | `paper_aligned_portable` | 1 |
 | `paper_aligned_portable_scan` | 2 |
-| `paper_aligned_portable_subset` | 3 |
+| `paper_aligned_portable_subset` | 4 |
 | `paper_aligned_reference` | 1 |
 
 ## API Signals / API 信号
@@ -56,14 +56,14 @@ English: These counts indicate callable class attributes only. They do not prove
 
 | Signal / 信号 | Models / 模型数 |
 |---|---:|
-| `forward` | 167 |
-| `predict` | 142 |
+| `forward` | 168 |
+| `predict` | 143 |
 | `loss_step` | 73 |
 | `fit_step` | 15 |
-| `config` | 167 |
-| `from_config` | 167 |
-| `param_count` | 167 |
-| `nn_module` | 167 |
+| `config` | 168 |
+| `from_config` | 168 |
+| `param_count` | 168 |
+| `nn_module` | 168 |
 | `task_loss` | 88 |
 
 ## Complete Inventory / 完整清单
@@ -98,6 +98,7 @@ English: These counts indicate callable class attributes only. They do not prove
 | `forecasting` | `ModernTCN` | `paper_aligned` | `full` | `standard` | `unassessed` | `unassessed` | true | large_kernel, patching, variable_mixing, revin | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `NBEATS` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | none | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `NHITS` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | hierarchical_interpolation, multi_rate_sampling, residual_backcast | forward, predict, config, from_config, param_count, nn_module | `ready` |
+| `forecasting` | `NonstationaryTransformer` | `paper_aligned` | `subset` | `portable` | `unassessed` | `unassessed` | true | de_stationary_attention, learned_attention_factors, causal_decoder, time_features | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `PPM` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | distribution, sampling, likelihood, parametric_prior | forward, predict, fit_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `forecasting` | `PatchTST` | `framework_oriented` | `full` | `standard` | `benchmarked` | `single_dataset` | true | none | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `ProTran` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | distribution, sampling, likelihood, latent_variable | forward, predict, fit_step, config, from_config, param_count, nn_module, task_loss | `ready` |
