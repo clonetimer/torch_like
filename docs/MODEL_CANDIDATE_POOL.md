@@ -36,6 +36,7 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | FITS (ICLR 2024) | 2026-10-31 | 2027-01-31 | maintainers | independent benchmark, frequency contract, or official code/license change |
 | STGCN (IJCAI 2018) | 2026-10-31 | 2027-01-31 | maintainers | graph contract, independent comparison, or official code/license change |
 | Non-stationary Transformers (NeurIPS 2022) | 2026-10-31 | 2027-01-31 | maintainers | new independent controlled forecast evaluation, de-stationary attention/API, or official source/license change |
+| FiLM (NeurIPS 2022) | 2026-10-31 | 2027-01-31 | maintainers | local reference parity, independent split/code audit, Legendre/FEL contract or official license change |
 | SAM 2.1 | 2026-10-19 | 2026-11-19 | maintainers | video protocol or independent latency evidence |
 | Uni-Mol v1 | 2026-10-19 | 2026-11-19 | maintainers | molecular protocol or checkpoint-policy change |
 | TabPFN v2 | 2026-10-19 | 2026-11-19 | maintainers | license, checkpoint, or independent benchmark change |
@@ -93,6 +94,7 @@ English: Both implementations subsequently passed model-level acceptance and are
 | FITS (ICLR 2024) | yes | yes | yes | yes | yes: compact low-pass complex frequency interpolation absent | Apache-2.0 | pass |
 | STGCN (IJCAI 2018) | yes | yes | yes | yes | yes: fixed-graph Chebyshev temporal-convolution baseline absent | BSD-2-Clause | pass |
 | Non-stationary Transformers (NeurIPS 2022) | yes | yes | yes | yes | yes: learned per-sample attention scale and per-key bias absent | MIT | pass |
+| FiLM (NeurIPS 2022) | yes | yes | yes | yes | yes: fixed Legendre memory with frequency filtering and reconstruction absent | MIT | pass |
 | SAM 2.1 | yes | yes | yes | yes | yes | Apache-2.0 | pass |
 | Uni-Mol v1 | yes | yes | yes | yes | yes | MIT | pass |
 | TabPFN v2 | yes | yes | yes | yes | weak: value depends on pretrained prior | modified Apache/weight restrictions | pass with risk |
@@ -121,6 +123,7 @@ R=相关性，P=能力/性能，U=工程实用性，E=效率/成本，I=创新�
 | FITS | 24 | 16 | 15 | 10 | 7 | 8 | 9 | 89 | A | 4 | 85.0 | core, implemented |
 | STGCN | 23 | 14 | 14 | 9 | 7 | 10 | 9 | 86 | A | 4 | 82.0 | core, implemented |
 | Non-stationary Transformers | 24 | 16 | 14 | 7 | 8 | 9 | 9 | 87 | A | 6 | 81.0 | core, implemented |
+| FiLM | 24 | 14 | 13 | 7 | 8 | 8 | 8 | 82 | A | 5 | 77.0 | observation, implemented |
 | SAM 2.1 | 23 | 18 | 13 | 7 | 9 | 10 | 9 | 89 | B | 5 | 75.1 | observation |
 | Fourier Neural Operator | 23 | 16 | 14 | 9 | 9 | 10 | 9 | 90 | B | 5 | 76.0 | observation |
 | Uni-Mol v1 | 22 | 17 | 12 | 7 | 9 | 8 | 8 | 83 | B | 6 | 68.7 | observation |
@@ -147,6 +150,7 @@ the cited primary and independent evidence remains mandatory.
 | FITS | adds compact spectral extrapolation beyond current forecasters | competitive published results, with independent linear-model caveats | small self-contained forecasting operator | FFT plus a truncated complex linear map | explicit low-pass amplitude/phase interpolation, not a new universal function class | independent analysis and maintained TFB integration | Apache-2.0 reference plus independent implementation; local parity pending |
 | STGCN | supplied-graph convolutional baseline complements recurrent/adaptive models | established traffic results; newer independent methods often outperform it | reusable temporal/Chebyshev blocks with no pretrained assets | parallel temporal convolutions; dense graph cost must remain explicit | foundational graph-temporal composition, limited current novelty | repeated inclusion in Graph WaveNet and AutoCTS evaluations | BSD-2-Clause graph/training reference and independent comparisons; old TensorFlow portability limits |
 | Non-stationary Transformers | learned de-stationary temporal attention is absent from current forecasters | TFB and DERITS provide actual external evaluations, not universal wins | stand-alone native forecaster needs no pretrained assets | dense attention costs quadratic time and memory in window length | raw-window tau and per-key delta counter over-stationarized attention | widely studied within neural forecasting | pinned MIT reference and two author-independent experiments; local parity unassessed |
+| FiLM | distinct fixed polynomial memory absent from current forecasters | actual independent experiments, task-dependent competitiveness rather than broad wins | reusable standalone components but more complex than linear forecasters | FFT filtering helps but dense sequential memory costs O(T*N^2) | combines fixed polynomial memory and spectral denoising | independent benchmark and augmentation research use | pinned MIT source and two experimental sources; FrAug code/split audit and local parity unresolved |
 | SAM 2.1 | video segmentation gap | strong official and domain results | prompt/memory API | substantial model cost | streaming video memory | broad adoption | paper/code plus domain evaluations |
 | Fourier Neural Operator | scientific operator gap | established PDE results, task dependent | reusable function-to-function layer | FFT global mixing | resolution-transfer operator view | mature NeuralOperator ecosystem | paper, two codebases, JMLR survey |
 | Uni-Mol v1 | molecular domain gap | strong but task-dependent | useful atom/pair states | chemistry preprocessing cost | 3D molecular pretraining | established scientific use | paper/code and independent benchmark |
@@ -253,6 +257,22 @@ the cited primary and independent evidence remains mandatory.
 - Registry: `NonstationaryTransformer`; integration level `paper_aligned_portable_subset`.
 
 ## Observation / 观察收录
+
+### FiLM (NeurIPS 2022)
+
+- Category: frequency-enhanced fixed Legendre-memory forecasting.
+- Discovery: formal entry 1 in `Workbuddy-TorchLike/report-2026-06-26.md`, recorded and reviewed on 2026-10-31 before implementation. The report mixes horizon averages with single-horizon metrics; its ranking is not adopted.
+- Core value: retain observed history in a fixed polynomial-memory trajectory, filter/mix its coefficient frequencies, reconstruct and fuse multiple scales. Neither FITS's direct spectral interpolation nor DLinear's trend/seasonal temporal projection supplies this mechanism.
+- Evidence: [primary: FiLM NeurIPS 2022 paper, v4](https://arxiv.org/abs/2205.08897v4), [official: MIT author source pinned at 2794355](https://github.com/tianzhou2011/FiLM/tree/2794355ff6258743a29715263414283782910521), [official: pinned MIT license](https://github.com/tianzhou2011/FiLM/blob/2794355ff6258743a29715263414283782910521/LICENSE), [independent: TFB PVLDB 2024, Tables 6–8](https://arxiv.org/html/2403.20150v2), and [independent: Chen et al., FrAug v1, section 4.1 and Tables 6–7](https://arxiv.org/pdf/2302.09292). TFB and FrAug have no FiLM-author overlap and report actual experiments, not just citations. FrAug compares unaugmented and augmented runs, not a neutral universal forecaster ranking.
+- Evidence interpretation: A satisfies policy 1.0's primary/official/two-independent-source requirement. It does not mean two inspected clean held-out implementations. FrAug mentions cross-validation for augmentation hyperparameters but its code link was inaccessible and full split/training details remain unaudited. The previously identified dBG electricity experiment with test-selected early stopping is **not counted**.
+- Peer comparison: `FITS` is a compact low-pass spectral extrapolator without polynomial state; `DLinear` is a simpler decomposed temporal linear baseline; `PatchTST` learns patch attention. In TFB's same-protocol Traffic/96 MSE, FiLM 0.411, DLinear 0.410 and PatchTST 0.379; Electricity/96 gives 0.154, 0.140 and 0.133 respectively. These are external values, not results for this port, and do not support universal superiority.
+- Score: value 82; evidence A; risk 5; final 77.0.
+- Decision: observation, implemented.
+- Conclusion reason: distinct mechanism and adequate literature provenance, with task-dependent performance, dense recurrence cost and unresolved reproducibility/local parity. No upward score adjustment to cross the core threshold.
+- Implementation boundary: [portable design](superpowers/specs/2026-10-31-film-design.md), native bilinear LPU + dense low-frequency FEL + multiscale reconstruction. No official checkpoint, training-pipeline, low-rank, random-mode or benchmark-equivalence claim.
+- Implementation acceptance: mathematical discretization/recurrence/grid/phase fixtures, gradient checks, multiscale coefficient-index oracle, observed-only normalization, finite short/odd/even horizons, configuration and dtype boundaries; see [R3 scope and verification](WORKBUDDY_FORECASTING_R3.md). This qualifier does not promote observation admission to core.
+- Missing information: code-level FrAug split audit, local reference parity, dataset performance, CPU/CUDA memory/latency and high-order/long-window stability. Runtime maturity and benchmark evidence must remain `unassessed`.
+- Registry: `FiLM`; integration level `paper_aligned_portable_subset`.
 
 ### Mamba-2 / Structured State Space Duality
 

@@ -8,17 +8,17 @@ English: This file is generated deterministically from the live registry by `too
 
 - Registry version / 注册表版本: `0.9.0`
 - Domains / 领域数: 13
-- Models / 模型数: 168
-- Schema-v2 migration ready / 可迁移: 168
+- Models / 模型数: 169
+- Schema-v2 migration ready / 可迁移: 169
 - Unmapped integration levels / 未映射值: 0
-- Maturity unassessed / 成熟度未评估: 149
-- Benchmark evidence unassessed / 基准证据未评估: 149
+- Maturity unassessed / 成熟度未评估: 150
+- Benchmark evidence unassessed / 基准证据未评估: 150
 
 ## Domain Coverage / 领域覆盖
 
 | Domain / 领域 | Models / 模型数 |
 |---|---:|
-| `forecasting` | 46 |
+| `forecasting` | 47 |
 | `diagnosis` | 2 |
 | `detection` | 10 |
 | `graph` | 16 |
@@ -45,7 +45,7 @@ English: This file is generated deterministically from the live registry by `too
 | `paper_aligned_mlstm_reference` | 1 |
 | `paper_aligned_portable` | 1 |
 | `paper_aligned_portable_scan` | 2 |
-| `paper_aligned_portable_subset` | 4 |
+| `paper_aligned_portable_subset` | 5 |
 | `paper_aligned_reference` | 1 |
 
 ## API Signals / API 信号
@@ -56,14 +56,14 @@ English: These counts indicate callable class attributes only. They do not prove
 
 | Signal / 信号 | Models / 模型数 |
 |---|---:|
-| `forward` | 168 |
-| `predict` | 143 |
+| `forward` | 169 |
+| `predict` | 144 |
 | `loss_step` | 73 |
 | `fit_step` | 15 |
-| `config` | 168 |
-| `from_config` | 168 |
-| `param_count` | 168 |
-| `nn_module` | 168 |
+| `config` | 169 |
+| `from_config` | 169 |
+| `param_count` | 169 |
+| `nn_module` | 169 |
 | `task_loss` | 88 |
 
 ## Complete Inventory / 完整清单
@@ -85,6 +85,7 @@ English: These counts indicate callable class attributes only. They do not prove
 | `forecasting` | `FCGAGA` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `FEDformer` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, decomposition | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `FITS` | `paper_aligned` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, channel_independent, low_pass_filter | forward, predict, config, from_config, param_count, nn_module | `ready` |
+| `forecasting` | `FiLM` | `paper_aligned` | `subset` | `portable` | `unassessed` | `unassessed` | true | legendre_memory, frequency_domain, channel_independent, multiscale | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `FreTS` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, complex_mlp, channel_mixing | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `GTS` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode, graph_structure_learning | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `GraphWaveNet` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode | forward, predict, config, from_config, param_count, nn_module | `ready` |

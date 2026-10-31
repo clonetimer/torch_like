@@ -110,6 +110,8 @@
         "FITSConfig",
         "FTTransformer",
         "FTTransformerConfig",
+        "FiLM",
+        "FiLMConfig",
         "FieldSpec",
         "ForecastingBatch",
         "ForecastingConfig",
@@ -496,6 +498,8 @@
         "FITSConfig",
         "FTTransformer",
         "FTTransformerConfig",
+        "FiLM",
+        "FiLMConfig",
         "ForecastingBatch",
         "ForecastingConfig",
         "ForecastingModel",
@@ -8614,6 +8618,278 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 256
+        }
+      ]
+    },
+    "torch_like.FiLM": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.film.FiLM",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 512
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2048
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "memory_order",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "modes",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        },
+        {
+          "name": "scales",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1,
+            2,
+            4
+          ]
+        },
+        {
+          "name": "use_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "eps",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
+        }
+      ]
+    },
+    "torch_like.FiLMConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.film.FiLMConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 512
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2048
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "memory_order",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "modes",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        },
+        {
+          "name": "scales",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1,
+            2,
+            4
+          ]
+        },
+        {
+          "name": "use_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "eps",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
         }
       ]
     },
@@ -38786,6 +39062,278 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 256
+        }
+      ]
+    },
+    "torch_like.models.FiLM": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.film.FiLM",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 512
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2048
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "memory_order",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "modes",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        },
+        {
+          "name": "scales",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1,
+            2,
+            4
+          ]
+        },
+        {
+          "name": "use_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "eps",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
+        }
+      ]
+    },
+    "torch_like.models.FiLMConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.film.FiLMConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 512
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2048
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "memory_order",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "modes",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        },
+        {
+          "name": "scales",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1,
+            2,
+            4
+          ]
+        },
+        {
+          "name": "use_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "eps",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
         }
       ]
     },

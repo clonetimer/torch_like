@@ -6,18 +6,18 @@
   "target_catalog_schema_version": 2,
   "summary": {
     "domain_count": 13,
-    "model_count": 168,
-    "migration_ready_count": 168,
+    "model_count": 169,
+    "migration_ready_count": 169,
     "migration_unmapped_count": 0,
-    "maturity_unassessed_count": 149,
-    "benchmark_evidence_unassessed_count": 149,
+    "maturity_unassessed_count": 150,
+    "benchmark_evidence_unassessed_count": 150,
     "benchmarked_model_count": 19,
     "evidence_record_count": 4
   },
   "domains": [
     {
       "domain": "forecasting",
-      "model_count": 46
+      "model_count": 47
     },
     {
       "domain": "diagnosis",
@@ -107,7 +107,7 @@
     },
     {
       "value": "paper_aligned_portable_subset",
-      "model_count": 4
+      "model_count": 5
     },
     {
       "value": "paper_aligned_reference",
@@ -115,14 +115,14 @@
     }
   ],
   "api_contract_counts": {
-    "forward": 168,
-    "predict": 143,
+    "forward": 169,
+    "predict": 144,
     "loss_step": 73,
     "fit_step": 15,
-    "config": 168,
-    "from_config": 168,
-    "param_count": 168,
-    "nn_module": 168,
+    "config": 169,
+    "from_config": 169,
+    "param_count": 169,
+    "nn_module": 169,
     "task_loss": 88
   },
   "evidence_records": {
@@ -723,6 +723,44 @@
         "implementation_fidelity": "paper_aligned",
         "implementation_scope": "full",
         "execution_profile": "standard",
+        "maturity": "unassessed",
+        "benchmark_evidence": "unassessed",
+        "evidence_record": null
+      },
+      "api_contract": {
+        "forward": true,
+        "predict": true,
+        "loss_step": false,
+        "fit_step": false,
+        "config": true,
+        "from_config": true,
+        "param_count": true,
+        "nn_module": true,
+        "task_loss": false
+      },
+      "migration_status": "ready"
+    },
+    {
+      "domain": "forecasting",
+      "name": "FiLM",
+      "class_path": "torch_like.models.forecasting.film.FiLM",
+      "family": "frequency_legendre_memory",
+      "layer": "Frequency-domain forecasting",
+      "supports": [
+        "legendre_memory",
+        "frequency_domain",
+        "channel_independent",
+        "multiscale"
+      ],
+      "paper": "FiLM: Frequency Improved Legendre Memory Model for Long-term Time Series Forecasting (NeurIPS 2022)",
+      "description": "Fixed bilinear Legendre memory, low-frequency coefficient mixing and multiscale reconstruction",
+      "complexity": "Per scale O(B*C*(T*N^2 + N*T*log(T) + M*N^2)), O(B*C*N*T) history; dense sequential recurrence",
+      "automl_default": true,
+      "legacy_integration_level": "paper_aligned_portable_subset",
+      "catalog_v2": {
+        "implementation_fidelity": "paper_aligned",
+        "implementation_scope": "subset",
+        "execution_profile": "portable",
         "maturity": "unassessed",
         "benchmark_evidence": "unassessed",
         "evidence_record": null

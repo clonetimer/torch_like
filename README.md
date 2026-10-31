@@ -16,7 +16,13 @@ English: The first batch from 36 forecasting literature reports adds `FITS` spec
 
 - [文献映射与候选边界 / Literature mapping and scope](docs/WORKBUDDY_FORECASTING_INTAKE.md)
 - [首批接口、约束与验证 / First-batch APIs, constraints and verification](docs/WORKBUDDY_FORECASTING_R1.md)
+- [第二批 NonstationaryTransformer / R2](docs/WORKBUDDY_FORECASTING_R2.md)
+- [第三批 FiLM 与剩余 59 项 / R3 FiLM and 59 remaining candidates](docs/WORKBUDDY_FORECASTING_R3.md)
 - Example / 示例: `python -m examples.demo_workbuddy_forecasting`
+
+中文：R2 已新增 `NonstationaryTransformer`；R3 新增 `FiLM` 的 Legendre 记忆与频率增强可移植子集。FiLM 以 77 分进入观察池，不升为核心收录。两者仍为 `unassessed`；R3 后报告名称映射为 37/96，剩余 59 项不是全部已承诺实现。
+
+English: R2 adds `NonstationaryTransformer`; R3 adds a portable Legendre-memory and frequency-enhanced `FiLM`. FiLM scores77 and stays in observation, not core. Both remain `unassessed`; post-R3 mapping is37/96, and the remaining59 names are not a promised implementation backlog.
 
 ## 工业诊断与健康评估算法库的职责边界
 
