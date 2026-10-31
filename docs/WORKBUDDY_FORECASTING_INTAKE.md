@@ -20,6 +20,8 @@ English: The inventory date is **2026-10-31**. The historical mapping below is p
 | Remaining after this batch / 集成本批后尚无映射 | 61 | Still candidates, not promised implementations / 仍是候选线索，不是已承诺的实现 |
 | Mapped after R2 / R2 后已有映射 | 36 | R1 added FITS/STGCN, R2 adds Non-stationary Transformers / R1 两项加 R2 一项 |
 | Remaining after R2 / R2 后尚无映射 | 60 | Still requires separate admission and task-role review / 仍须逐项准入及任务归类 |
+| Mapped after R3 / R3 后已有映射 | 37 | Adds observation-tier FiLM; no benchmark promotion / 新增观察池 FiLM，不代表基准晋升 |
+| Remaining after R3 / R3 后尚无映射 | 59 | Complete names and next Pyraformer scope in [R3](WORKBUDDY_FORECASTING_R3.md) / 完整名单及下一项范围见 R3 |
 | Honorable-mention occurrences / 附带提及次数 | 89 | Repetitions allowed; excluded from the 96 / 可重复，不计入 96 个主选项 |
 | Reports without a main selection / 无主选项的报告 | 3 | `report-2026-06-24.md`, `report-2026-10-24.md`, `report-2026-10-25.md` |
 
@@ -198,9 +200,9 @@ English: The same report contains conflicting descriptions of requiring no prede
 
 ## Prioritized Follow-up, Not Admission / 后续优先调研，不等于收录
 
-中文：以下顺序是基于机制缺口及可验证性的工程调研顺序，不是论文性能排名。**Non-stationary Transformers 已在 R2 单独完成正式准入和预测骨干实现**；FiLM、Pyraformer 仍须分别完成准入及实现边界评审。报告链接本身不代表已核实许可证或性能。
+中文：以下顺序是基于机制缺口及可验证性的工程调研顺序，不是论文性能排名。**Non-stationary Transformers 已在 R2 完成核心准入和预测骨干实现，FiLM 已在 R3 完成观察准入和实现**；Pyraformer 已完成只读源码范围核查，仍须正式评分及实现。报告链接本身不代表已核实许可证或性能。
 
-English: The order below is an engineering research priority, not an accuracy ranking. **Non-stationary Transformers now has R2 core admission and a standalone forecasting implementation**; FiLM and Pyraformer still require their own admission and engineering-boundary decisions. Report links alone do not certify licenses or performance.
+English: The order below is an engineering research priority, not an accuracy ranking. **Non-stationary Transformers has R2 core admission and implementation; FiLM has R3 observation admission and implementation**. Pyraformer's read-only source scope is established, but formal scoring and implementation remain. Report links alone do not certify licenses or performance.
 
 ### 1. Non-stationary Transformers
 
@@ -211,6 +213,8 @@ Source / 来源：`report-2026-06-25.md`; [paper / 论文](https://arxiv.org/abs
 English: R2 implements learned `tau` and `delta` inside attention logits and tests them against mathematical oracles, observed-only normalization, causal masking, gradient flow and future-target isolation. It uses existing PyTorch capabilities and is explicitly limited to a portable `ns_Transformer`-style subset; see the [R2 record](WORKBUDDY_FORECASTING_R2.md).
 
 ### 2. FiLM
+
+R3 update / R3 更新：已完成观察池准入（A，77 分）及原生可移植实现，保留 `unassessed` 成熟度。新增第二份独立实验 FrAug，但其代码/划分审计尚未完成，不能称为两份完全复核的干净复现。下列原始工程核查要求保留；最新实现边界与完整剩余名单见 [R3 记录](WORKBUDDY_FORECASTING_R3.md)。Observation admission (A,77) and native portable implementation are complete; runtime maturity stays unassessed. FrAug supplies a second actual independent experiment, with code/split audit unresolved; see R3 for current scope.
 
 Source / 来源：`report-2026-06-26.md`; [paper / 论文](https://arxiv.org/abs/2205.08897); [report-linked code / 报告所列代码](https://github.com/tianzhou2011/FiLM).
 

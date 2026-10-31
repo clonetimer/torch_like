@@ -22,6 +22,7 @@ from torch_like.models.forecasting.dlinear import DLinear, DLinearConfig
 from torch_like.models.forecasting.dmstgcn import DMSTGCN
 from torch_like.models.forecasting.fcgaga import FCGAGA
 from torch_like.models.forecasting.fedformer import FEDformer
+from torch_like.models.forecasting.film import FiLM, FiLMConfig
 from torch_like.models.forecasting.fits import FITS, FITSConfig
 from torch_like.models.forecasting.frets import FreTS, FreTSConfig
 from torch_like.models.forecasting.graphwavenet import GraphWaveNet
@@ -62,6 +63,16 @@ from torch_like.models.registry import register_model_catalog
 from torch_like.models.rul import RULBatch, RULConfig, RULModel
 
 model_zoo = {
+    "FiLM": {
+        "cls": FiLM,
+        "family": "frequency_legendre_memory",
+        "layer": "Frequency-domain forecasting",
+        "integration_level": "paper_aligned_portable_subset",
+        "supports": ["legendre_memory", "frequency_domain", "channel_independent", "multiscale"],
+        "paper": "FiLM: Frequency Improved Legendre Memory Model for Long-term Time Series Forecasting (NeurIPS 2022)",
+        "description": "Fixed bilinear Legendre memory, low-frequency coefficient mixing and multiscale reconstruction",
+        "complexity": "Per scale O(B*C*(T*N^2 + N*T*log(T) + M*N^2)), O(B*C*N*T) history; dense sequential recurrence",
+    },
     "FITS": {
         "cls": FITS,
         "family": "frequency_domain_linear",
@@ -532,6 +543,8 @@ __all__ = [
     "ForecastingModel",
     "FITSConfig",
     "FITS",
+    "FiLMConfig",
+    "FiLM",
     "STGCNConfig",
     "STGCN",
     "NonstationaryTransformerConfig",

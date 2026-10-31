@@ -10,6 +10,8 @@ DOMAIN_EXPORTS = {
         "ForecastingModel": ("torch_like.models.forecasting.common", "ForecastingModel"),
         "FITSConfig": ("torch_like.models.forecasting.fits", "FITSConfig"),
         "FITS": ("torch_like.models.forecasting.fits", "FITS"),
+        "FiLMConfig": ("torch_like.models.forecasting.film", "FiLMConfig"),
+        "FiLM": ("torch_like.models.forecasting.film", "FiLM"),
         "STGCNConfig": ("torch_like.models.forecasting.stgcn", "STGCNConfig"),
         "STGCN": ("torch_like.models.forecasting.stgcn", "STGCN"),
         "NonstationaryTransformerConfig": (
@@ -387,6 +389,8 @@ DOMAIN_ALL = {
         "ForecastingModel",
         "FITSConfig",
         "FITS",
+        "FiLMConfig",
+        "FiLM",
         "STGCNConfig",
         "STGCN",
         "NonstationaryTransformerConfig",
