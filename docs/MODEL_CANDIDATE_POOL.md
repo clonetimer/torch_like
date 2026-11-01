@@ -37,6 +37,7 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | STGCN (IJCAI 2018) | 2026-10-31 | 2027-01-31 | maintainers | graph contract, independent comparison, or official code/license change |
 | Non-stationary Transformers (NeurIPS 2022) | 2026-10-31 | 2027-01-31 | maintainers | new independent controlled forecast evaluation, de-stationary attention/API, or official source/license change |
 | FiLM (NeurIPS 2022) | 2026-10-31 | 2027-01-31 | maintainers | local reference parity, independent split/code audit, Legendre/FEL contract or official license change |
+| Pyraformer (ICLR 2022) | 2026-10-31 | 2027-01-31 | maintainers | independent protocol/provenance audit, sparse graph or BN contract, local benchmark or official license change |
 | SAM 2.1 | 2026-10-19 | 2026-11-19 | maintainers | video protocol or independent latency evidence |
 | Uni-Mol v1 | 2026-10-19 | 2026-11-19 | maintainers | molecular protocol or checkpoint-policy change |
 | TabPFN v2 | 2026-10-19 | 2026-11-19 | maintainers | license, checkpoint, or independent benchmark change |
@@ -95,6 +96,7 @@ English: Both implementations subsequently passed model-level acceptance and are
 | STGCN (IJCAI 2018) | yes | yes | yes | yes | yes: fixed-graph Chebyshev temporal-convolution baseline absent | BSD-2-Clause | pass |
 | Non-stationary Transformers (NeurIPS 2022) | yes | yes | yes | yes | yes: learned per-sample attention scale and per-key bias absent | MIT | pass |
 | FiLM (NeurIPS 2022) | yes | yes | yes | yes | yes: fixed Legendre memory with frequency filtering and reconstruction absent | MIT | pass |
+| Pyraformer (ICLR 2022) | yes | yes | yes | yes | yes: explicit inter-scale tree and intra-scale neighbor attention absent | Apache-2.0 | pass |
 | SAM 2.1 | yes | yes | yes | yes | yes | Apache-2.0 | pass |
 | Uni-Mol v1 | yes | yes | yes | yes | yes | MIT | pass |
 | TabPFN v2 | yes | yes | yes | yes | weak: value depends on pretrained prior | modified Apache/weight restrictions | pass with risk |
@@ -124,6 +126,7 @@ R=相关性，P=能力/性能，U=工程实用性，E=效率/成本，I=创新�
 | STGCN | 23 | 14 | 14 | 9 | 7 | 10 | 9 | 86 | A | 4 | 82.0 | core, implemented |
 | Non-stationary Transformers | 24 | 16 | 14 | 7 | 8 | 9 | 9 | 87 | A | 6 | 81.0 | core, implemented |
 | FiLM | 24 | 14 | 13 | 7 | 8 | 8 | 8 | 82 | A | 5 | 77.0 | observation, implemented |
+| Pyraformer | 23 | 11 | 12 | 7 | 8 | 8 | 7 | 76 | A | 7 | 69.0 | observation, implemented |
 | SAM 2.1 | 23 | 18 | 13 | 7 | 9 | 10 | 9 | 89 | B | 5 | 75.1 | observation |
 | Fourier Neural Operator | 23 | 16 | 14 | 9 | 9 | 10 | 9 | 90 | B | 5 | 76.0 | observation |
 | Uni-Mol v1 | 22 | 17 | 12 | 7 | 9 | 8 | 8 | 83 | B | 6 | 68.7 | observation |
@@ -151,6 +154,7 @@ the cited primary and independent evidence remains mandatory.
 | STGCN | supplied-graph convolutional baseline complements recurrent/adaptive models | established traffic results; newer independent methods often outperform it | reusable temporal/Chebyshev blocks with no pretrained assets | parallel temporal convolutions; dense graph cost must remain explicit | foundational graph-temporal composition, limited current novelty | repeated inclusion in Graph WaveNet and AutoCTS evaluations | BSD-2-Clause graph/training reference and independent comparisons; old TensorFlow portability limits |
 | Non-stationary Transformers | learned de-stationary temporal attention is absent from current forecasters | TFB and DERITS provide actual external evaluations, not universal wins | stand-alone native forecaster needs no pretrained assets | dense attention costs quadratic time and memory in window length | raw-window tau and per-key delta counter over-stationarized attention | widely studied within neural forecasting | pinned MIT reference and two author-independent experiments; local parity unassessed |
 | FiLM | distinct fixed polynomial memory absent from current forecasters | actual independent experiments, task-dependent competitiveness rather than broad wins | reusable standalone components but more complex than linear forecasters | FFT filtering helps but dense sequential memory costs O(T*N^2) | combines fixed polynomial memory and spectral denoising | independent benchmark and augmentation research use | pinned MIT source and two experimental sources; FrAug code/split audit and local parity unresolved |
+| Pyraformer | distinct multiresolution sparse attention despite broad forecasting coverage | weak external forecasting results limit performance value | native random-init operator, nontrivial graph and boundary contracts | sparse interactions scale favorably, total head and measured speed remain configuration-dependent | explicit parent/child plus same-scale graph attention | independent studies and public Time-Series-Library use, not proof of superiority | pinned Apache source; test-selected original checkpoints, adapted protocols and local parity unresolved |
 | SAM 2.1 | video segmentation gap | strong official and domain results | prompt/memory API | substantial model cost | streaming video memory | broad adoption | paper/code plus domain evaluations |
 | Fourier Neural Operator | scientific operator gap | established PDE results, task dependent | reusable function-to-function layer | FFT global mixing | resolution-transfer operator view | mature NeuralOperator ecosystem | paper, two codebases, JMLR survey |
 | Uni-Mol v1 | molecular domain gap | strong but task-dependent | useful atom/pair states | chemistry preprocessing cost | 3D molecular pretraining | established scientific use | paper/code and independent benchmark |
@@ -257,6 +261,24 @@ the cited primary and independent evidence remains mandatory.
 - Registry: `NonstationaryTransformer`; integration level `paper_aligned_portable_subset`.
 
 ## Observation / 观察收录
+
+### Pyraformer (ICLR 2022)
+
+- Category: multiresolution sparse-attention forecasting.
+- Discovery: formal entry in `Workbuddy-TorchLike/report-2026-06-25.md`; reviewed 2026-10-31 before implementation.
+- Core value: a reusable parent/child pyramid with within-level local attention, distinct from distillation or generic dense attention.
+- Evidence: [primary: ICLR 2022 paper](https://openreview.net/pdf?id=0EXmFzUn5I), [primary: institutional publication record](https://repositum.tuwien.at/handle/20.500.12708/135874), [official: author source pinned at 84af4db](https://github.com/ant-research/Pyraformer/tree/84af4dbd93b7b96975b5034f0dde412005260123), [official: Apache-2.0 license](https://github.com/ant-research/Pyraformer/blob/84af4dbd93b7b96975b5034f0dde412005260123/LICENSE), [independent: Zeng et al. AAAI 2023 v3, Table 2 and Appendix B.2](https://arxiv.org/pdf/2205.13504v3), [independent: TimesNet ICLR 2023 v3, M4 Tables 3/14 and Appendix A](https://arxiv.org/pdf/2210.02186v3).
+- Identity: Shizhan Liu, Hang Yu, Cong Liao, Jianguo Li, Weiyao Lin, Alex X. Liu and Schahram Dustdar; neither external study has Pyraformer-author overlap.
+- Evidence interpretation: A under literal policy 1.0 counts two actual external experiments, not two identical-pipeline replications. Zeng trains the official source with default hyperparameters. TimesNet's separate M4 experiment uses an adapted backbone, shared embedding/projection, temporal-MLP initialization and stationarization; it states three repeats. Its long-term ETTm1 values match Zeng's and are **not counted as independent retraining**. PatchTST/MTST inherited values are not extra evidence. Requiring an unmodified long-range pipeline would instead give B and **61.4/rejected**, with unchanged dimension scores.
+- Peer comparison: `Informer` uses ProbSparse attention/distillation, not explicit inter-scale graph edges; `Autoformer` uses decomposition/autocorrelation; `DLinear` is a simpler baseline limiting Pyraformer's performance justification. Zeng's Electricity/96 MSE is 0.386 for Pyraformer versus DLinear 0.140 (unequal lookback96/336) and Autoformer0.201. TimesNet's adapted M4 OWA is 1.480 versus DLinear1.051 and Autoformer0.939. These external results do not describe this port.
+- Score: value 76; evidence A; risk 7; final 69.0.
+- Decision: observation, implemented.
+- Conclusion reason: the graph operator fills a real gap, but weak external results and protocol limitations preclude core admission; no dimension is increased to cross a threshold.
+- Risk deduction: 3 for original test-selected checkpoints, 2 for adapted/provenance-limited external protocols, 2 for absent local numerical and benchmark parity. These deductions are explicit engineering judgments.
+- Implementation boundary: [R4 design](superpowers/specs/2026-10-31-pyraformer-design.md), native bottleneck CSCM, four-level indexed sparse attention and direct FC head. No TVM, attention decoder, probabilistic head, dataset IDs, weights or original test-set checkpoint-selection pipeline.
+- Implementation acceptance: literal ragged topology, independent dense attention/encoder/full forecast and parameter gradients, explicit CSCM/BN oracle, non-square runtime tensor inspection, future-value isolation and input/config checks. See [R4 scope and verification](WORKBUDDY_FORECASTING_R4.md); the qualifier does not promote observation to core.
+- Missing information: clean split/source parity, controlled dataset results, measured CPU/CUDA latency/memory and numerical extremes. Runtime maturity and benchmark evidence must remain `unassessed`.
+- Registry: `Pyraformer`; integration level `paper_aligned_portable_subset`.
 
 ### FiLM (NeurIPS 2022)
 

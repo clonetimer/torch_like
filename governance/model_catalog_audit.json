@@ -6,18 +6,18 @@
   "target_catalog_schema_version": 2,
   "summary": {
     "domain_count": 13,
-    "model_count": 169,
-    "migration_ready_count": 169,
+    "model_count": 170,
+    "migration_ready_count": 170,
     "migration_unmapped_count": 0,
-    "maturity_unassessed_count": 150,
-    "benchmark_evidence_unassessed_count": 150,
+    "maturity_unassessed_count": 151,
+    "benchmark_evidence_unassessed_count": 151,
     "benchmarked_model_count": 19,
     "evidence_record_count": 4
   },
   "domains": [
     {
       "domain": "forecasting",
-      "model_count": 47
+      "model_count": 48
     },
     {
       "domain": "diagnosis",
@@ -107,7 +107,7 @@
     },
     {
       "value": "paper_aligned_portable_subset",
-      "model_count": 5
+      "model_count": 6
     },
     {
       "value": "paper_aligned_reference",
@@ -115,14 +115,14 @@
     }
   ],
   "api_contract_counts": {
-    "forward": 169,
-    "predict": 144,
+    "forward": 170,
+    "predict": 145,
     "loss_step": 73,
     "fit_step": 15,
-    "config": 169,
-    "from_config": 169,
-    "param_count": 169,
-    "nn_module": 169,
+    "config": 170,
+    "from_config": 170,
+    "param_count": 170,
+    "nn_module": 170,
     "task_loss": 88
   },
   "evidence_records": {
@@ -1375,6 +1375,44 @@
         "param_count": true,
         "nn_module": true,
         "task_loss": true
+      },
+      "migration_status": "ready"
+    },
+    {
+      "domain": "forecasting",
+      "name": "Pyraformer",
+      "class_path": "torch_like.models.forecasting.pyraformer.Pyraformer",
+      "family": "pyramidal_sparse_attention",
+      "layer": "Transformer / attention forecasting",
+      "supports": [
+        "sparse_attention",
+        "multiscale",
+        "bottleneck_construction",
+        "direct_forecast"
+      ],
+      "paper": "Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting (ICLR 2022)",
+      "description": "Four-level bottleneck pyramid with indexed neighbor attention and a direct last-ancestor FC head",
+      "complexity": "Attention O(B*S*K*D), gather storage O(B*S*K*D); projections/FFN O(B*S*(D^2+D*F)); head O(B*D*H*C)",
+      "automl_default": true,
+      "legacy_integration_level": "paper_aligned_portable_subset",
+      "catalog_v2": {
+        "implementation_fidelity": "paper_aligned",
+        "implementation_scope": "subset",
+        "execution_profile": "portable",
+        "maturity": "unassessed",
+        "benchmark_evidence": "unassessed",
+        "evidence_record": null
+      },
+      "api_contract": {
+        "forward": true,
+        "predict": true,
+        "loss_step": false,
+        "fit_step": false,
+        "config": true,
+        "from_config": true,
+        "param_count": true,
+        "nn_module": true,
+        "task_loss": false
       },
       "migration_status": "ready"
     },

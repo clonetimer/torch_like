@@ -22,6 +22,8 @@ English: The inventory date is **2026-10-31**. The historical mapping below is p
 | Remaining after R2 / R2 后尚无映射 | 60 | Still requires separate admission and task-role review / 仍须逐项准入及任务归类 |
 | Mapped after R3 / R3 后已有映射 | 37 | Adds observation-tier FiLM; no benchmark promotion / 新增观察池 FiLM，不代表基准晋升 |
 | Remaining after R3 / R3 后尚无映射 | 59 | Complete names and next Pyraformer scope in [R3](WORKBUDDY_FORECASTING_R3.md) / 完整名单及下一项范围见 R3 |
+| Mapped after R4 / R4 后已有映射 | 38 | Adds observation-tier Pyraformer, not benchmark promotion / 新增观察池 Pyraformer，不代表基准晋升 |
+| Remaining after R4 / R4 后尚无映射 | 58 | Complete list and implementation boundaries in [R4](WORKBUDDY_FORECASTING_R4.md) / 完整名单及实现边界见 R4 |
 | Honorable-mention occurrences / 附带提及次数 | 89 | Repetitions allowed; excluded from the 96 / 可重复，不计入 96 个主选项 |
 | Reports without a main selection / 无主选项的报告 | 3 | `report-2026-06-24.md`, `report-2026-10-24.md`, `report-2026-10-25.md` |
 
@@ -200,9 +202,9 @@ English: The same report contains conflicting descriptions of requiring no prede
 
 ## Prioritized Follow-up, Not Admission / 后续优先调研，不等于收录
 
-中文：以下顺序是基于机制缺口及可验证性的工程调研顺序，不是论文性能排名。**Non-stationary Transformers 已在 R2 完成核心准入和预测骨干实现，FiLM 已在 R3 完成观察准入和实现**；Pyraformer 已完成只读源码范围核查，仍须正式评分及实现。报告链接本身不代表已核实许可证或性能。
+中文：以下顺序是基于机制缺口及可验证性的工程调研顺序，不是论文性能排名。**Non-stationary Transformers 已在 R2 完成核心准入和预测骨干实现，FiLM 已在 R3、Pyraformer 已在 R4 完成观察准入和实现**。最新剩余58项见 R4；报告链接本身不代表已核实许可证或性能。
 
-English: The order below is an engineering research priority, not an accuracy ranking. **Non-stationary Transformers has R2 core admission and implementation; FiLM has R3 observation admission and implementation**. Pyraformer's read-only source scope is established, but formal scoring and implementation remain. Report links alone do not certify licenses or performance.
+English: The order below is an engineering research priority, not an accuracy ranking. **Non-stationary Transformers has R2 core admission; FiLM has R3 and Pyraformer R4 observation admission and implementation**. See R4 for the remaining58 names. Report links alone do not certify licenses or performance.
 
 ### 1. Non-stationary Transformers
 
@@ -223,6 +225,8 @@ Source / 来源：`report-2026-06-26.md`; [paper / 论文](https://arxiv.org/abs
 English: Review Legendre memory projection, state-space discretization, frequency enhancement, and reconstruction equations before implementation. Mathematical tests must cover the discrete operator, direct small-sequence references, length and scale behavior, frequency truncation, and dtype/device movement of state and coefficients. Explicitly assess additional dependencies such as SciPy and whether constants can be precomputed as serializable buffers. Ordinary attention or an FFT linear layer is not a substitute for the defining mechanism.
 
 ### 3. Pyraformer
+
+R4 update / R4 更新：69分观察准入、原生索引稀疏实现和直接 FC 头已完成；不采用原代码的测试集选模流程。证据 A 计入 TimesNet 的 M4 改造骨干实验，不重复计算与 Zeng 相同的长时序结果；若要求原流程完全复现，B/61.4 则低于准入线。运行时保持 `unassessed`，详见 [R4](WORKBUDDY_FORECASTING_R4.md)。Observation69, native indexed sparse attention and FC head are implemented; no test-selected training pipeline or benchmark promotion. Evidence sensitivity is explicit in R4.
 
 Source / 来源：`report-2026-06-25.md`; [paper / 论文](https://openreview.net/forum?id=0EXmFzUn5I); [report-linked code / 报告所列代码](https://github.com/ant-research/Pyraformer).
 
