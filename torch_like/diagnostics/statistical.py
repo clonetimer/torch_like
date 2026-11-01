@@ -180,7 +180,7 @@ def register_statistical_detectors(registry: Any = None) -> None:
             positive("min_std", 1e-8),
         ),
         "CUSUMDetector": (
-            positive("k", 0.5),
+            DiagnosticParameterSpec("k", "number", default=0.5, minimum=0.0),
             positive("h", 5.0),
             positive("min_std", 1e-8),
         ),
