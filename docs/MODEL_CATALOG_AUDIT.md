@@ -8,17 +8,17 @@ English: This file is generated deterministically from the live registry by `too
 
 - Registry version / 注册表版本: `0.9.0`
 - Domains / 领域数: 13
-- Models / 模型数: 170
-- Schema-v2 migration ready / 可迁移: 170
+- Models / 模型数: 171
+- Schema-v2 migration ready / 可迁移: 171
 - Unmapped integration levels / 未映射值: 0
-- Maturity unassessed / 成熟度未评估: 151
-- Benchmark evidence unassessed / 基准证据未评估: 151
+- Maturity unassessed / 成熟度未评估: 152
+- Benchmark evidence unassessed / 基准证据未评估: 152
 
 ## Domain Coverage / 领域覆盖
 
 | Domain / 领域 | Models / 模型数 |
 |---|---:|
-| `forecasting` | 48 |
+| `forecasting` | 49 |
 | `diagnosis` | 2 |
 | `detection` | 10 |
 | `graph` | 16 |
@@ -45,7 +45,7 @@ English: This file is generated deterministically from the live registry by `too
 | `paper_aligned_mlstm_reference` | 1 |
 | `paper_aligned_portable` | 1 |
 | `paper_aligned_portable_scan` | 2 |
-| `paper_aligned_portable_subset` | 6 |
+| `paper_aligned_portable_subset` | 7 |
 | `paper_aligned_reference` | 1 |
 
 ## API Signals / API 信号
@@ -56,14 +56,14 @@ English: These counts indicate callable class attributes only. They do not prove
 
 | Signal / 信号 | Models / 模型数 |
 |---|---:|
-| `forward` | 170 |
-| `predict` | 145 |
+| `forward` | 171 |
+| `predict` | 146 |
 | `loss_step` | 73 |
 | `fit_step` | 15 |
-| `config` | 170 |
-| `from_config` | 170 |
-| `param_count` | 170 |
-| `nn_module` | 170 |
+| `config` | 171 |
+| `from_config` | 171 |
+| `param_count` | 171 |
+| `nn_module` | 171 |
 | `task_loss` | 88 |
 
 ## Complete Inventory / 完整清单
@@ -87,6 +87,7 @@ English: These counts indicate callable class attributes only. They do not prove
 | `forecasting` | `FITS` | `paper_aligned` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, channel_independent, low_pass_filter | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `FiLM` | `paper_aligned` | `subset` | `portable` | `unassessed` | `unassessed` | true | legendre_memory, frequency_domain, channel_independent, multiscale | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `FreTS` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, complex_mlp, channel_mixing | forward, predict, config, from_config, param_count, nn_module | `ready` |
+| `forecasting` | `GMAN` | `paper_aligned` | `subset` | `portable` | `unassessed` | `unassessed` | true | fixed_spatial_embedding, future_calendar, spatiotemporal_attention, transform_attention | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `GTS` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode, graph_structure_learning | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `GraphWaveNet` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `ITransformer` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | none | forward, predict, config, from_config, param_count, nn_module | `ready` |

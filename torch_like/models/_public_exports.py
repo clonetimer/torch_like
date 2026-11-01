@@ -8,6 +8,8 @@ PUBLIC_EXPORTS = {
     "FITS": ("torch_like.models.forecasting.fits", "FITS"),
     "FiLMConfig": ("torch_like.models.forecasting.film", "FiLMConfig"),
     "FiLM": ("torch_like.models.forecasting.film", "FiLM"),
+    "GMANConfig": ("torch_like.models.forecasting.gman", "GMANConfig"),
+    "GMAN": ("torch_like.models.forecasting.gman", "GMAN"),
     "PyraformerConfig": ("torch_like.models.forecasting.pyraformer", "PyraformerConfig"),
     "Pyraformer": ("torch_like.models.forecasting.pyraformer", "Pyraformer"),
     "STGCNConfig": ("torch_like.models.forecasting.stgcn", "STGCNConfig"),

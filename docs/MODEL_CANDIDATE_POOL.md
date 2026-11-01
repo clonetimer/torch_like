@@ -38,6 +38,7 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | Non-stationary Transformers (NeurIPS 2022) | 2026-10-31 | 2027-01-31 | maintainers | new independent controlled forecast evaluation, de-stationary attention/API, or official source/license change |
 | FiLM (NeurIPS 2022) | 2026-10-31 | 2027-01-31 | maintainers | local reference parity, independent split/code audit, Legendre/FEL contract or official license change |
 | Pyraformer (ICLR 2022) | 2026-10-31 | 2027-01-31 | maintainers | independent protocol/provenance audit, sparse graph or BN contract, local benchmark or official license change |
+| GMAN (AAAI 2020) | 2026-11-01 | 2027-02-01 | maintainers | baseline-run provenance, spatial-embedding/calendar contract, BN/source-variant parity or official license change |
 | SAM 2.1 | 2026-10-19 | 2026-11-19 | maintainers | video protocol or independent latency evidence |
 | Uni-Mol v1 | 2026-10-19 | 2026-11-19 | maintainers | molecular protocol or checkpoint-policy change |
 | TabPFN v2 | 2026-10-19 | 2026-11-19 | maintainers | license, checkpoint, or independent benchmark change |
@@ -97,6 +98,7 @@ English: Both implementations subsequently passed model-level acceptance and are
 | Non-stationary Transformers (NeurIPS 2022) | yes | yes | yes | yes | yes: learned per-sample attention scale and per-key bias absent | MIT | pass |
 | FiLM (NeurIPS 2022) | yes | yes | yes | yes | yes: fixed Legendre memory with frequency filtering and reconstruction absent | MIT | pass |
 | Pyraformer (ICLR 2022) | yes | yes | yes | yes | yes: explicit inter-scale tree and intra-scale neighbor attention absent | Apache-2.0 | pass |
+| GMAN (AAAI 2020) | yes | yes | yes | yes | yes: embedding-conditioned spatial/temporal fusion and history-to-future transform attention absent | Apache-2.0 | pass |
 | SAM 2.1 | yes | yes | yes | yes | yes | Apache-2.0 | pass |
 | Uni-Mol v1 | yes | yes | yes | yes | yes | MIT | pass |
 | TabPFN v2 | yes | yes | yes | yes | weak: value depends on pretrained prior | modified Apache/weight restrictions | pass with risk |
@@ -127,6 +129,7 @@ R=相关性，P=能力/性能，U=工程实用性，E=效率/成本，I=创新�
 | Non-stationary Transformers | 24 | 16 | 14 | 7 | 8 | 9 | 9 | 87 | A | 6 | 81.0 | core, implemented |
 | FiLM | 24 | 14 | 13 | 7 | 8 | 8 | 8 | 82 | A | 5 | 77.0 | observation, implemented |
 | Pyraformer | 23 | 11 | 12 | 7 | 8 | 8 | 7 | 76 | A | 7 | 69.0 | observation, implemented |
+| GMAN | 23 | 13 | 12 | 5 | 8 | 8 | 7 | 76 | A | 6 | 70.0 | observation, implemented |
 | SAM 2.1 | 23 | 18 | 13 | 7 | 9 | 10 | 9 | 89 | B | 5 | 75.1 | observation |
 | Fourier Neural Operator | 23 | 16 | 14 | 9 | 9 | 10 | 9 | 90 | B | 5 | 76.0 | observation |
 | Uni-Mol v1 | 22 | 17 | 12 | 7 | 9 | 8 | 8 | 83 | B | 6 | 68.7 | observation |
@@ -155,6 +158,7 @@ the cited primary and independent evidence remains mandatory.
 | Non-stationary Transformers | learned de-stationary temporal attention is absent from current forecasters | TFB and DERITS provide actual external evaluations, not universal wins | stand-alone native forecaster needs no pretrained assets | dense attention costs quadratic time and memory in window length | raw-window tau and per-key delta counter over-stationarized attention | widely studied within neural forecasting | pinned MIT reference and two author-independent experiments; local parity unassessed |
 | FiLM | distinct fixed polynomial memory absent from current forecasters | actual independent experiments, task-dependent competitiveness rather than broad wins | reusable standalone components but more complex than linear forecasters | FFT filtering helps but dense sequential memory costs O(T*N^2) | combines fixed polynomial memory and spectral denoising | independent benchmark and augmentation research use | pinned MIT source and two experimental sources; FrAug code/split audit and local parity unresolved |
 | Pyraformer | distinct multiresolution sparse attention despite broad forecasting coverage | weak external forecasting results limit performance value | native random-init operator, nontrivial graph and boundary contracts | sparse interactions scale favorably, total head and measured speed remain configuration-dependent | explicit parent/child plus same-scale graph attention | independent studies and public Time-Series-Library use, not proof of superiority | pinned Apache source; test-selected original checkpoints, adapted protocols and local parity unresolved |
+| GMAN | distinct spatial/temporal gated attention with calendar-driven history-to-future bridge | externally evaluated foundational baseline, newer methods improve many difficult regimes | reusable random-init operator, but supplied embeddings and raw calendar constrain inputs | dense node/time attention and expensive external compute measurements | multi-attention fusion and transform bridge, not current universal novelty | repeated external evaluation and officially linked third-party port | pinned Apache reference and two experimental papers; legacy TF, variants and unpublished baseline provenance limit replication |
 | SAM 2.1 | video segmentation gap | strong official and domain results | prompt/memory API | substantial model cost | streaming video memory | broad adoption | paper/code plus domain evaluations |
 | Fourier Neural Operator | scientific operator gap | established PDE results, task dependent | reusable function-to-function layer | FFT global mixing | resolution-transfer operator view | mature NeuralOperator ecosystem | paper, two codebases, JMLR survey |
 | Uni-Mol v1 | molecular domain gap | strong but task-dependent | useful atom/pair states | chemistry preprocessing cost | 3D molecular pretraining | established scientific use | paper/code and independent benchmark |
@@ -261,6 +265,24 @@ the cited primary and independent evidence remains mandatory.
 - Registry: `NonstationaryTransformer`; integration level `paper_aligned_portable_subset`.
 
 ## Observation / 观察收录
+
+### GMAN (AAAI 2020)
+
+- Category: graph-informed dense spatio-temporal attention forecasting.
+- Discovery: formal entry in `Workbuddy-TorchLike/report-2026-06-13.md`; reviewed 2026-11-01 before implementation.
+- Core value: embedding-conditioned spatial/temporal attention, gated residual fusion and a calendar-query history-to-future transform bridge, not generic graph convolution.
+- Evidence: [primary: Zheng et al., AAAI2020 paper](https://arxiv.org/abs/1911.08415v2), [official: author reference pinned45ed232](https://github.com/zhengchuanpan/GMAN/tree/45ed232f4ee6a7ee9dd248d07f4952b697ecf320), [official: Apache-2.0 license](https://github.com/zhengchuanpan/GMAN/blob/45ed232f4ee6a7ee9dd248d07f4952b697ecf320/LICENSE), [independent: TESTAM ICLR2024 Appendix B/Table3 and Appendix C/Table4](https://arxiv.org/html/2403.02600v1), [independent: CASAformer2025 speed-regime experiments](https://doi.org/10.1016/j.commtr.2025.100174).
+- Identity: Chuanpan Zheng, Xiaoliang Fan, Cheng Wang and Jianzhong Qi. TESTAM's Lee/Ko and CASAformer's Zhang/Zhou/Jianping Wang/Kouvelas/Makridis are separate authors; Jianping Wang is not Cheng Wang.
+- Evidence interpretation: A counts two independent papers reporting new experiments. TESTAM's main table explicitly reuses published scores and is not counted; only its new compute/case studies count, once. CASAformer's publisher-indexed text and speed-bin tables provide a second evaluation, not a complete inspected manuscript or baseline pipeline. Neither released repository supplies an auditable GMAN runner/checkpoint/log chain. Stronger requirements for executable external reproductions would give B and **62.4/rejected** without changing any score.
+- Peer comparison: `STGCN` uses supplied-graph polynomial convolution; `GraphWaveNet` combines graph propagation and temporal convolution; `ASTGCN` here is an inspired attention/convolution model without GMAN's transform bridge. TESTAM Table3 reports GMAN312.1s/epoch and33.7s inference versus Graph-WaveNet48.07s and3.69s in that experiment; these are not this port's timing or universal speed ratios.
+- Score: value 76; evidence A; risk 6; final 70.0.
+- Decision: observation, implemented.
+- Conclusion reason: distinct architectural value and adequate paper-level external evidence, offset by dense cost, supplied-input burden and incomplete reproduction provenance. No dimension is raised to cross a threshold.
+- Risk deduction: 2 for legacy/source-variant portability, 2 for embedding provenance/node alignment, 2 for external baseline revision/checkpoint/protocol gaps; engineering judgments, not measured probabilities.
+- Implementation boundary: [R5 design](superpowers/specs/2026-11-01-gman-design.md); required fixed spatial embedding and integer weekday/slot calendar; explicit PeMS/METR architectural choices; native population BN with documented running-state adaptation. No node2vec, assets, pretrained weights or training-pipeline import.
+- Implementation acceptance: independent attention/embedding/fusion/full-forecast and parameter-gradient oracles, population-BN state, calendar and fixed-input validation, node permutation, future-traffic isolation, float32/64 optimizer and exact public persistence; see [R5 boundaries](WORKBUDDY_FORECASTING_R5.md). This does not promote observation to core.
+- Missing information: exact external baseline revisions/splits/embedding assets, TF reference and checkpoint parity, controlled local dataset results and CPU/CUDA latency/memory. Runtime maturity and benchmark evidence must remain `unassessed`.
+- Registry: `GMAN`; integration level `paper_aligned_portable_subset`.
 
 ### Pyraformer (ICLR 2022)
 

@@ -6,18 +6,18 @@
   "target_catalog_schema_version": 2,
   "summary": {
     "domain_count": 13,
-    "model_count": 170,
-    "migration_ready_count": 170,
+    "model_count": 171,
+    "migration_ready_count": 171,
     "migration_unmapped_count": 0,
-    "maturity_unassessed_count": 151,
-    "benchmark_evidence_unassessed_count": 151,
+    "maturity_unassessed_count": 152,
+    "benchmark_evidence_unassessed_count": 152,
     "benchmarked_model_count": 19,
     "evidence_record_count": 4
   },
   "domains": [
     {
       "domain": "forecasting",
-      "model_count": 48
+      "model_count": 49
     },
     {
       "domain": "diagnosis",
@@ -107,7 +107,7 @@
     },
     {
       "value": "paper_aligned_portable_subset",
-      "model_count": 6
+      "model_count": 7
     },
     {
       "value": "paper_aligned_reference",
@@ -115,14 +115,14 @@
     }
   ],
   "api_contract_counts": {
-    "forward": 170,
-    "predict": 145,
+    "forward": 171,
+    "predict": 146,
     "loss_step": 73,
     "fit_step": 15,
-    "config": 170,
-    "from_config": 170,
-    "param_count": 170,
-    "nn_module": 170,
+    "config": 171,
+    "from_config": 171,
+    "param_count": 171,
+    "nn_module": 171,
     "task_loss": 88
   },
   "evidence_records": {
@@ -798,6 +798,44 @@
         "implementation_fidelity": "framework_oriented",
         "implementation_scope": "full",
         "execution_profile": "standard",
+        "maturity": "unassessed",
+        "benchmark_evidence": "unassessed",
+        "evidence_record": null
+      },
+      "api_contract": {
+        "forward": true,
+        "predict": true,
+        "loss_step": false,
+        "fit_step": false,
+        "config": true,
+        "from_config": true,
+        "param_count": true,
+        "nn_module": true,
+        "task_loss": false
+      },
+      "migration_status": "ready"
+    },
+    {
+      "domain": "forecasting",
+      "name": "GMAN",
+      "class_path": "torch_like.models.forecasting.gman.GMAN",
+      "family": "graph_multi_attention",
+      "layer": "Graph spatiotemporal forecasting",
+      "supports": [
+        "fixed_spatial_embedding",
+        "future_calendar",
+        "spatiotemporal_attention",
+        "transform_attention"
+      ],
+      "paper": "GMAN: A Graph Multi-Attention Network for Traffic Prediction (AAAI 2020)",
+      "description": "Supplied node embeddings and integer calendar condition dense attention, gated fusion and a history-to-future bridge",
+      "complexity": "Per ST block O(B*D*(S*N^2+N*S^2)+B*S*N*D^2); bridge O(B*N*P*Q*D) plus projections; dense, not sparse",
+      "automl_default": true,
+      "legacy_integration_level": "paper_aligned_portable_subset",
+      "catalog_v2": {
+        "implementation_fidelity": "paper_aligned",
+        "implementation_scope": "subset",
+        "execution_profile": "portable",
         "maturity": "unassessed",
         "benchmark_evidence": "unassessed",
         "evidence_record": null

@@ -25,6 +25,7 @@ from torch_like.models.forecasting.fedformer import FEDformer
 from torch_like.models.forecasting.film import FiLM, FiLMConfig
 from torch_like.models.forecasting.fits import FITS, FITSConfig
 from torch_like.models.forecasting.frets import FreTS, FreTSConfig
+from torch_like.models.forecasting.gman import GMAN, GMANConfig
 from torch_like.models.forecasting.graphwavenet import GraphWaveNet
 from torch_like.models.forecasting.gts import GTS
 from torch_like.models.forecasting.informer import Informer
@@ -64,6 +65,16 @@ from torch_like.models.registry import register_model_catalog
 from torch_like.models.rul import RULBatch, RULConfig, RULModel
 
 model_zoo = {
+    "GMAN": {
+        "cls": GMAN,
+        "family": "graph_multi_attention",
+        "layer": "Graph spatiotemporal forecasting",
+        "integration_level": "paper_aligned_portable_subset",
+        "supports": ["fixed_spatial_embedding", "future_calendar", "spatiotemporal_attention", "transform_attention"],
+        "paper": "GMAN: A Graph Multi-Attention Network for Traffic Prediction (AAAI 2020)",
+        "description": "Supplied node embeddings and integer calendar condition dense attention, gated fusion and a history-to-future bridge",
+        "complexity": "Per ST block O(B*D*(S*N^2+N*S^2)+B*S*N*D^2); bridge O(B*N*P*Q*D) plus projections; dense, not sparse",
+    },
     "Pyraformer": {
         "cls": Pyraformer,
         "family": "pyramidal_sparse_attention",
@@ -556,6 +567,8 @@ __all__ = [
     "FITS",
     "FiLMConfig",
     "FiLM",
+    "GMANConfig",
+    "GMAN",
     "PyraformerConfig",
     "Pyraformer",
     "STGCNConfig",
