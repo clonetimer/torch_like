@@ -18,6 +18,7 @@ from torch_like.models.forecasting.d2stgnn import D2STGNN, D2STGNNConfig
 from torch_like.models.forecasting.dag import DAG
 from torch_like.models.forecasting.dcrnn import DCRNN
 from torch_like.models.forecasting.deepar import DeepAR
+from torch_like.models.forecasting.deepstate import DeepState, DeepStateBatch, DeepStateConfig
 from torch_like.models.forecasting.dlinear import DLinear, DLinearConfig
 from torch_like.models.forecasting.dmstgcn import DMSTGCN
 from torch_like.models.forecasting.fcgaga import FCGAGA
@@ -65,6 +66,16 @@ from torch_like.models.registry import register_model_catalog
 from torch_like.models.rul import RULBatch, RULConfig, RULModel
 
 model_zoo = {
+    "DeepState": {
+        "cls": DeepState,
+        "family": "structural_state_space",
+        "layer": "Probabilistic forecasting",
+        "integration_level": "paper_aligned_portable_subset",
+        "supports": ["distribution", "joint_sampling", "likelihood", "observed_mask", "explicit_seasonality"],
+        "paper": "Deep State Space Models for Time Series Forecasting (NeurIPS 2018)",
+        "description": "Covariate-driven residual LSTM with analytic level/trend/seasonal Gaussian filtering and correlated trajectories",
+        "complexity": "Dense float64 Gaussian algebra O(B*T*S^3), covariance storage O(B*S^2), plus O(B*T*L*D^2) recurrent work; S=state width",
+    },
     "GMAN": {
         "cls": GMAN,
         "family": "graph_multi_attention",
@@ -632,6 +643,9 @@ __all__ = [
     "STFGNN",
     "STGODE",
     "DeepAR",
+    "DeepStateConfig",
+    "DeepStateBatch",
+    "DeepState",
     "TimeGrad",
     "ProTran",
     "PPM",

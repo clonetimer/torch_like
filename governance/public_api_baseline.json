@@ -79,6 +79,9 @@
         "DeepFMConfig",
         "DeepLabV3",
         "DeepLabV3Config",
+        "DeepState",
+        "DeepStateBatch",
+        "DeepStateConfig",
         "DeiT",
         "DeiTConfig",
         "DenseNet",
@@ -472,6 +475,9 @@
         "DeepFMConfig",
         "DeepLabV3",
         "DeepLabV3Config",
+        "DeepState",
+        "DeepStateBatch",
+        "DeepStateConfig",
         "DeiT",
         "DeiTConfig",
         "DenseNet",
@@ -6630,6 +6636,444 @@
             12,
             18
           ]
+        }
+      ]
+    },
+    "torch_like.DeepState": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.deepstate.DeepState",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 40
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "distribution",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gaussian"
+        },
+        {
+          "name": "num_samples",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "time_feature_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "seasonal_periods",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "add_trend",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "cardinalities",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "embedding_dimensions",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "scaling",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "minimum_scale",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-10
+        },
+        {
+          "name": "noise_std_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            1.0
+          ]
+        },
+        {
+          "name": "innovation_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            0.01
+          ]
+        },
+        {
+          "name": "prior_cov_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            1.0
+          ]
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.DeepStateBatch": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.deepstate.DeepStateBatch",
+      "signature": [
+        {
+          "name": "x_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "x_mark_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_mark_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "y_true",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_target_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_exog_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_target_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_exog_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "enc_self_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "dec_self_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "dec_enc_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "observed_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "observed_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "seasonal_indices_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "seasonal_indices_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "feat_static_cat",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.DeepStateConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.deepstate.DeepStateConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 40
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "distribution",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gaussian"
+        },
+        {
+          "name": "num_samples",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "time_feature_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "seasonal_periods",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "add_trend",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "cardinalities",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "embedding_dimensions",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "scaling",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "minimum_scale",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-10
+        },
+        {
+          "name": "noise_std_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            1.0
+          ]
+        },
+        {
+          "name": "innovation_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            0.01
+          ]
+        },
+        {
+          "name": "prior_cov_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            1.0
+          ]
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
         }
       ]
     },
@@ -37646,6 +38090,444 @@
             12,
             18
           ]
+        }
+      ]
+    },
+    "torch_like.models.DeepState": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.deepstate.DeepState",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 40
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "distribution",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gaussian"
+        },
+        {
+          "name": "num_samples",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "time_feature_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "seasonal_periods",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "add_trend",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "cardinalities",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "embedding_dimensions",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "scaling",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "minimum_scale",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-10
+        },
+        {
+          "name": "noise_std_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            1.0
+          ]
+        },
+        {
+          "name": "innovation_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            0.01
+          ]
+        },
+        {
+          "name": "prior_cov_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            1.0
+          ]
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.models.DeepStateBatch": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.deepstate.DeepStateBatch",
+      "signature": [
+        {
+          "name": "x_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "x_mark_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_mark_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "y_true",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_target_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_exog_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_target_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "x_exog_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "enc_self_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "dec_self_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "dec_enc_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "observed_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "observed_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "seasonal_indices_enc",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "seasonal_indices_dec",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "feat_static_cat",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.models.DeepStateConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.deepstate.DeepStateConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 40
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "distribution",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gaussian"
+        },
+        {
+          "name": "num_samples",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "time_feature_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "seasonal_periods",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "add_trend",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "cardinalities",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "embedding_dimensions",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": []
+        },
+        {
+          "name": "scaling",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "minimum_scale",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-10
+        },
+        {
+          "name": "noise_std_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            1.0
+          ]
+        },
+        {
+          "name": "innovation_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            0.01
+          ]
+        },
+        {
+          "name": "prior_cov_bounds",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            1e-06,
+            1.0
+          ]
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
         }
       ]
     },

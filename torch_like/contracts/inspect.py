@@ -32,6 +32,57 @@ def _f(name: str, required: bool, semantic: str, dtype: str | None = "tensor", r
 
 
 _TEMPLATES: dict[str, _TaskTemplate] = {
+    "DeepState": _TaskTemplate(
+        TaskSpec(
+            TaskKind.PROBABILISTIC_FORECASTING,
+            InputSpec(
+                "torch_like.models.forecasting.DeepStateBatch",
+                (
+                    _f("x_enc", True, "historical univariate values [batch,seq_len,1]", rank=3),
+                    _f("x_mark_enc", False, "required when time_feature_dim>0: known context covariates", rank=3),
+                    _f("x_dec", False, "optional decoder placeholder; all values ignored", rank=3),
+                    _f("x_mark_dec", False, "known future covariates; use final pred_len rows", rank=3),
+                    _f(
+                        "observed_enc",
+                        False,
+                        "explicit observed-history mask; omitted means all observed",
+                        dtype="bool tensor",
+                        rank=3,
+                    ),
+                    _f("observed_dec", False, "observed future training-label mask", dtype="bool tensor", rank=3),
+                    _f(
+                        "seasonal_indices_enc",
+                        False,
+                        "required for configured seasonal periods: explicit phase indices",
+                        dtype="integer tensor",
+                        rank=3,
+                    ),
+                    _f(
+                        "seasonal_indices_dec",
+                        False,
+                        "required future phase indices; use final pred_len rows",
+                        dtype="integer tensor",
+                        rank=3,
+                    ),
+                    _f(
+                        "feat_static_cat",
+                        False,
+                        "required for configured cardinalities: static category IDs",
+                        dtype="integer tensor",
+                        rank=2,
+                    ),
+                    _f("y_true", False, "future labels used only for conditional training likelihood", rank=3),
+                ),
+            ),
+            OutputSpec("tensor", "conditional marginal mean", "(batch,pred_len,1)"),
+            target_field="y_true",
+            notes=(
+                "Each tensor position advances one state step; caller supplies all calendar semantics.",
+                "Distribution scale is marginal standard deviation; sample retains temporal dependence.",
+            ),
+        ),
+        ("predict",),
+    ),
     "ForecastingModel": _TaskTemplate(
         TaskSpec(
             TaskKind.TIME_SERIES_FORECASTING,

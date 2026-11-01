@@ -1,0 +1,15 @@
+torch_like — DeepState reference attribution
+
+The native DeepState implementation in
+torch_like/models/forecasting/deepstate.py and deepstate_layers.py adapts the
+DeepState, ISSM and linear dynamical-system mathematics and interfaces from
+GluonTS, revision d60556ca71167a3ec1ea807b491dd982d1de2112, under Apache-2.0.
+Reference source: https://github.com/awslabs/gluonts/tree/d60556ca71167a3ec1ea807b491dd982d1de2112
+
+Upstream NOTICE:
+Gluon Time Series
+Copyright 2018-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+Modifications include native PyTorch execution, explicit covariate/calendar and
+mask contracts, per-series scaling, conditional future training likelihood,
+float64 Gaussian accumulation, validation and torch_like integration.

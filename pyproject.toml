@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "PyTorch-native multi-domain model library with consistent task APIs and registry-based construction"
 readme = { file = "README.md", content-type = "text/markdown" }
 license = "Apache-2.0"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.10"
 keywords = ["pytorch", "deep-learning", "model-library", "time-series", "graph-neural-networks"]
 classifiers = [
