@@ -1,0 +1,1562 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-01",
+  "baseline": {
+    "report_count": 36,
+    "unique_report_names": 96,
+    "mapped_names": 39,
+    "unmapped_names": 57,
+    "catalog_total": 171,
+    "forecasting_total": 49,
+    "public_api_records": 928
+  },
+  "scope": "Engineering value and task-role triage of the remaining R5 inventory only. No formal evidence grade, admission score, implementation approval, new registry entry, benchmark reproduction, pretrained asset download or Stable promotion.",
+  "items": [
+    {
+      "name": "Z-GCNETs",
+      "report_date": "2026-06-11",
+      "canonical_title": "Z-GCNETs: Time Zigzags at Graph Convolutional Networks for Time Series Forecasting",
+      "task_role": "Topology-enhanced graph forecasting with precomputed zigzag persistence images",
+      "decision": "hold",
+      "reason_category": "topological_feature_contract_and_dependency_cost",
+      "comparison_models": [
+        "STGCN",
+        "STGODE"
+      ],
+      "incremental_value": "Adds evolving topological summaries beyond local graph convolution or continuous graph dynamics; this is not another ordinary adjacency filter.",
+      "rationale": "The graph backbone is only one part of the method. Faithful forecasting depends on zigzag persistence features, their time-window provenance and node/time alignment. Official preprocessing uses Gudhi, Dionysus, Ripser and Persim; silently substituting generic graph features would lose the contribution.",
+      "reopen_when": "A caller-owned topology-feature contract, leakage-safe offline generation and bounded dependency-free model core are specified and shown useful against existing graph peers.",
+      "primary_url": "https://proceedings.mlr.press/v139/chen21o.html",
+      "code_url": "https://github.com/Z-GCNETs/Z-GCNETs",
+      "source_revision": "e55e12466eba3f98562b9992319172422c4d09e6",
+      "code_license_status": "verified",
+      "code_license": "MIT root code license inspected; dataset and generated topology assets need separate provenance.",
+      "license_evidence_url": "https://github.com/Z-GCNETs/Z-GCNETs/blob/e55e12466eba3f98562b9992319172422c4d09e6/LICENSE",
+      "followup_priority": "medium",
+      "notes": [
+        "Pinned root and model README require precomputed zigzag-persistence images for train/validation/test.",
+        "A topology pipeline is not supplied by the current dense forecasting batch.",
+        "No local author-benchmark reproduction or topology runtime measurement."
+      ]
+    },
+    {
+      "name": "STSGCN",
+      "report_date": "2026-06-13",
+      "canonical_title": "Spatial-Temporal Synchronous Graph Convolutional Networks: A New Framework for Spatial-Temporal Network Data Forecasting",
+      "task_role": "Supervised localized synchronous space-time graph forecaster",
+      "decision": "hold",
+      "reason_category": "source_permission_unknown",
+      "comparison_models": [
+        "STGCN",
+        "STFGNN"
+      ],
+      "incremental_value": "Joint graph convolution over neighboring time slices differs from separated temporal/spatial operators, though the existing fusion-graph family already covers related goals.",
+      "rationale": "Primary identity and official implementation are available, but the complete pinned source tree exposes no LICENSE, COPYING or NOTICE. Public code is not a permission grant. No implementation or score is assigned while this gate remains unknown.",
+      "reopen_when": "An explicit applicable author source license or independently cleared implementation becomes available, then demonstrate meaningful incremental utility against STGCN and STFGNN.",
+      "primary_url": "https://ojs.aaai.org/index.php/AAAI/article/view/5438",
+      "code_url": "https://github.com/Davidham3/STSGCN",
+      "source_revision": "3f825f6421afb84fb69ef560179bf799fbf4481c",
+      "code_license_status": "unknown",
+      "code_license": "Unknown; no explicit grant found in the complete inspected tree.",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "R5 source/permission hold retained, not converted into low-value rejection.",
+        "STSGCN and STGCN are different paper identities."
+      ]
+    },
+    {
+      "name": "DA-RNN",
+      "report_date": "2026-06-14",
+      "canonical_title": "A Dual-Stage Attention-Based Recurrent Neural Network for Time Series Prediction",
+      "task_role": "Historical-driving-series input attention plus recurrent temporal-attention prediction",
+      "decision": "hold",
+      "reason_category": "community_source_permission_and_target_contract",
+      "comparison_models": [
+        "TFT",
+        "TimeXer"
+      ],
+      "incremental_value": "Provides a compact dual input/temporal attention formulation for exogenous driving sequences, unlike TFT's richer variable selection or TimeXer's patch-based exogenous fusion.",
+      "rationale": "The report explicitly links a community implementation, not the original authors' release. Its complete pinned tree has no explicit license. A faithful interface must distinguish past driving variables from target history and not assume future drivers are known.",
+      "reopen_when": "Resolve implementation provenance/permission and the target-versus-exogenous single/multihorizon contract; then test whether it fills a practical gap beyond current exogenous models.",
+      "primary_url": "https://www.ijcai.org/Proceedings/2017/366",
+      "code_url": "https://github.com/KurochkinAlexey/DA-RNN",
+      "source_revision": "4ddcf22a7964b239712d2cf218db28a081347665",
+      "code_license_status": "unknown",
+      "code_license": "Unknown for the report-linked community code; no LICENSE/COPYING/NOTICE found.",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Do not label KurochkinAlexey/DA-RNN an official author repository.",
+        "Other TensorFlow/PyTorch community ports are not automatically cleared substitutes."
+      ]
+    },
+    {
+      "name": "DeepGLO",
+      "report_date": "2026-06-14",
+      "canonical_title": "Think Globally, Act Locally: A Deep Neural Network Approach to High-Dimensional Time Series Forecasting",
+      "task_role": "Global temporal matrix factorization regularized by a TCN plus local TCN forecasting",
+      "decision": "hold",
+      "reason_category": "global_fitting_lifecycle_not_window_forward",
+      "comparison_models": [
+        "FCGAGA",
+        "DeepAR"
+      ],
+      "incremental_value": "Explicit global low-rank temporal factors plus local convolutional correction complement graph-factor and recurrent global forecasting approaches.",
+      "rationale": "The global latent factors are tied to a fitted collection of series and time positions, with alternating optimization and later forecasting. Treating this as an ordinary independently sampled sliding-window forward would omit the method's main global component.",
+      "reopen_when": "Define a global fit/forecast lifecycle, collection identity, rolling-origin refitting and persisted factor state without changing the common model/runner boundary implicitly.",
+      "primary_url": "https://papers.neurips.cc/paper_files/paper/2019/hash/3a0844cee4fcf57de0c71e9ad3035478-Abstract.html",
+      "code_url": "https://github.com/rajatsen91/deepglo",
+      "source_revision": "525578d4bd50a9d71abbf8b51f0ce9987f449db8",
+      "code_license_status": "verified",
+      "code_license": "BSD-3-Clause text verified in license.txt; GitHub metadata NOASSERTION is not the actual license conclusion.",
+      "license_evidence_url": "https://github.com/rajatsen91/deepglo/blob/525578d4bd50a9d71abbf8b51f0ce9987f449db8/license.txt",
+      "followup_priority": "medium",
+      "notes": [
+        "Official environment assumes CUDA and includes scientific/data packages; a native port is not a turnkey wrapper.",
+        "This is a real forecasting model; current task-contract mismatch is not low scientific value."
+      ]
+    },
+    {
+      "name": "DeepState",
+      "report_date": "2026-06-16",
+      "canonical_title": "Deep State Space Models for Time Series Forecasting",
+      "task_role": "RNN-conditioned linear Gaussian state-space probabilistic forecasting with Kalman inference",
+      "decision": "review_next",
+      "reason_category": "distinct_probabilistic_state_space_capability",
+      "comparison_models": [
+        "DeepAR",
+        "ProTran"
+      ],
+      "incremental_value": "Adds explicit seasonal/level/trend state-space structure and analytical filtering/likelihood under globally shared recurrent parameterization, rather than autoregressive output sampling or a variational latent Transformer.",
+      "rationale": "This is a genuine missing probabilistic mechanism with mature licensed reference code and no required pretrained weights. The MXNet implementation still needs a full native contract for seasonal indicators, known covariates, missing observations, posterior conditioning and joint-path sampling.",
+      "reopen_when": "Complete formal six-gate admission and honest scoring, audit independent experiment provenance, and design/tests for Kalman covariance stability, observed masks, covariate timing, correlated samples and persistence before implementation.",
+      "primary_url": "https://papers.neurips.cc/paper_files/paper/2018/hash/5cf68969fb67aa6082363a6d4e6468e2-Abstract.html",
+      "code_url": "https://github.com/awslabs/gluonts",
+      "source_revision": "d60556ca71167a3ec1ea807b491dd982d1de2112",
+      "code_license_status": "verified",
+      "code_license": "Apache-2.0 LICENSE and NOTICE inspected; source remains an MXNet reference, not a native torch_like implementation.",
+      "license_evidence_url": "https://github.com/awslabs/gluonts/blob/d60556ca71167a3ec1ea807b491dd982d1de2112/LICENSE",
+      "followup_priority": "high",
+      "notes": [
+        "Pinned src/gluonts/mx/model/deepstate/_network.py conditions the RNN on time/static features; observed targets update the LDS posterior, not ordinary target autoregression.",
+        "Original paper Table2/3 does not support a universal-best claim; the small-data advantage is regime-dependent.",
+        "Cross-sectional State-Space Forecasting with Partial Pooling (https://sangrey.io/cross_sectional_forecasting_with_partial_pooling.pdf) reports new DeepState experiments but shares the original authors' institution; full independence/protocol grading remains open.",
+        "N-BEATS AppendixC.5 uses published DeepState values and cannot count as an independent rerun.",
+        "No formal evidence grade, score, implementation approval or benchmark promotion is assigned here."
+      ]
+    },
+    {
+      "name": "STRIPE",
+      "report_date": "2026-06-16",
+      "canonical_title": "Probabilistic Time Series Forecasting with Shape and Temporal Diversity",
+      "task_role": "Diversity-oriented probabilistic forecasting framework with shape/time DPP sampling objectives",
+      "decision": "hold",
+      "reason_category": "permission_and_probabilistic_training_protocol",
+      "comparison_models": [
+        "TimeGrad",
+        "ProTran"
+      ],
+      "incremental_value": "Targets diversity across plausible future shapes and timing, whereas diffusion or variational latent probabilistic forecasts do not automatically optimize these explicit structured diversity objectives.",
+      "rationale": "Its forecast quality/diversity depends on the generator and structured DPP/shape-time learning or selection protocol, not merely a renamed deterministic head. Official pinned source has no explicit license grant; output distribution, sampling and training interfaces still need specification.",
+      "reopen_when": "Resolve source permission and define the complete generator/diversity objective and sampling contract with proper scoring and diversity evaluation; do not equate diverse samples with calibrated uncertainty.",
+      "primary_url": "https://proceedings.neurips.cc/paper/2020/hash/2f2b265625d76a6704b08093c652fd79-Abstract.html",
+      "code_url": "https://github.com/vincent-leguen/STRIPE",
+      "source_revision": "356cd5dfc93abfb35b5e4dbd5619cc0a2d4c4754",
+      "code_license_status": "unknown",
+      "code_license": "Unknown; complete pinned tree has no LICENSE/COPYING/NOTICE.",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Canonical title omits the report's extra word Structured.",
+        "No neural or probabilistic wrapper is implemented in this review."
+      ]
+    },
+    {
+      "name": "ST-MetaNet",
+      "report_date": "2026-06-17",
+      "canonical_title": "Urban Traffic Prediction from Spatio-Temporal Data Using Deep Meta Learning",
+      "task_role": "Geographical-attribute-conditioned meta graph-attention and recurrent traffic forecaster",
+      "decision": "skip_low_value",
+      "reason_category": "specialized_metadata_cost_low_general_increment",
+      "comparison_models": [
+        "AGCRN",
+        "GMAN"
+      ],
+      "incremental_value": "Generates location-specific graph/recurrent behavior from geographical node/edge attributes, unlike learned node-adaptive convolution or supplied-embedding graph attention.",
+      "rationale": "The capability is real, but current graph coverage is already broad and there is no concrete geographic-metadata use case. Porting old MXNet/DGL machinery plus a rich node/edge-attribute contract has lower present general-library payoff than filling missing probabilistic capabilities.",
+      "reopen_when": "A real traffic application supplies geographical node/edge metadata and demonstrates a useful gap against AGCRN/GMAN under a matched protocol; then revisit the native meta-parameter mechanism.",
+      "primary_url": "https://www.kdd.org/kdd2019/accepted-papers/view/urban-traffic-prediction-from-spatio-temporal-data-using-deep-meta-learning",
+      "code_url": "https://github.com/panzheyi/ST-MetaNet",
+      "source_revision": "b0c2cab1890241a8c4b8d6e4101ca951c748fa9b",
+      "code_license_status": "verified",
+      "code_license": "MIT, copyright2019ZheyiPan; official source LICENSE text inspected.",
+      "license_evidence_url": "https://github.com/panzheyi/ST-MetaNet/blob/b0c2cab1890241a8c4b8d6e4101ca951c748fa9b/LICENSE",
+      "followup_priority": "low",
+      "notes": [
+        "Report-linked lucktroy/ST-MetaNet is a fork; parent panzheyi/ST-MetaNet was separately resolved and pinned.",
+        "Official flow example uses 989-dimensional node features and32-dimensional edge features; these numbers are an example, not universal mandatory dimensions.",
+        "Skip is a present scope/maintenance judgment, not proof of inferiority or duplication."
+      ]
+    },
+    {
+      "name": "TRMF",
+      "report_date": "2026-06-18",
+      "canonical_title": "Temporal Regularized Matrix Factorization for High-Dimensional Time Series Prediction",
+      "task_role": "Classical global temporal matrix factorization with fitted autoregressive latent dynamics",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "global_classical_fit_not_native_neural_backbone",
+      "comparison_models": [
+        "FCGAGA",
+        "DLinear"
+      ],
+      "incremental_value": "Handles global low-rank structure and missing entries with temporal regularization; neither existing peer is an interchangeable implementation of this optimization algorithm.",
+      "rationale": "TRMF is a valid forecasting algorithm, but it needs collection-level factor fitting/alternating optimization, not an nn.Module window forecaster. The repository's classical namespace discovers real sklearn estimators; it is not an implicit authorization to add a new classical fitting system.",
+      "reopen_when": "Classical/global-fit forecasting is explicitly scoped with collection identity, optimization/state serialization and leakage-safe refitting; separately verify exact implementation provenance and license.",
+      "primary_url": "https://papers.neurips.cc/paper_files/paper/2016/hash/85422afb467e9456013a2a51d4dff702-Abstract.html",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "No original implementation license verified in this audit; report/community pointers are not assumed author clearance.",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Author homepage code lead could not be retrieved; this is an audit limitation, not proof that original code does not exist.",
+        "Out of the current neural-backbone queue does not mean not a model."
+      ]
+    },
+    {
+      "name": "DSARF",
+      "report_date": "2026-06-19",
+      "canonical_title": "Deep Switching Auto-Regressive Factorization: Application to Time Series Forecasting",
+      "task_role": "Switching deep latent autoregressive factorization with a Markovian regime prior",
+      "decision": "hold",
+      "reason_category": "permission_and_latent_regime_inference_contract",
+      "comparison_models": [
+        "ProTran",
+        "Koopa"
+      ],
+      "incremental_value": "Adds discrete recurring regimes and switching nonlinear latent dynamics beyond a continuous variational latent forecast or a learned linear-dynamics framework.",
+      "rationale": "A meaningful switching-state capability exists, but the official complete source tree has no explicit license. Variational posterior state, lag selection, sequence-level fit and forecast/sample semantics need more than a dense one-shot prediction wrapper.",
+      "reopen_when": "Obtain clear source permission and specify faithful regime inference, lagged latent likelihood, sequence fitting and uncertainty tests; evaluate a genuinely multimodal or switching use case.",
+      "primary_url": "https://ojs.aaai.org/index.php/AAAI/article/view/16907",
+      "code_url": "https://github.com/ostadabbas/DSARF",
+      "source_revision": "fd782f0221fb5742f1d7283bad078156f668add5",
+      "code_license_status": "unknown",
+      "code_license": "Unknown; complete pinned source tree has no LICENSE/COPYING/NOTICE.",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Report narrative/table inconsistencies and dataset-count wording are not copied as universal superiority.",
+        "No separate state-estimation or switching-training subsystem is added."
+      ]
+    },
+    {
+      "name": "ST-Norm",
+      "report_date": "2026-06-23",
+      "canonical_title": "ST-Norm: Spatial and Temporal Normalization for Multi-variate Time Series Forecasting",
+      "task_role": "Spatial/temporal normalization modules applied to existing forecasting backbones",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "normalization_component_not_new_backbone",
+      "comparison_models": [
+        "GraphWaveNet",
+        "NonstationaryTransformer"
+      ],
+      "incremental_value": "Explicitly separates temporal high-frequency and spatial local components; this differs from the existing graph backbone and de-stationary attention but can be composed as normalization machinery.",
+      "rationale": "The primary contribution is two reusable normalization modules that can augment WaveNet/Transformer-style forecasters. A new backbone registration would conflate the component with its host model. Source permission is additionally unknown in the complete pinned tree.",
+      "reopen_when": "A reusable normalization-layer integration is explicitly scoped and licensed reference permission is resolved; test axes, training/eval statistics and comparison to existing normalization without inventing a new model identity.",
+      "primary_url": "https://doi.org/10.1145/3447548.3467330",
+      "code_url": "https://github.com/JLDeng/ST-Norm",
+      "source_revision": "ae228bd93e33355f6b84deec43e447b0b062dad4",
+      "code_license_status": "unknown",
+      "code_license": "Unknown; no LICENSE/COPYING/NOTICE found in the complete pinned tree.",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Earlier license hold remains a second blocker for any component reuse.",
+        "The paper explicitly presents modules that integrate into canonical architectures; this is not a low-quality judgment."
+      ]
+    },
+    {
+      "name": "CoST",
+      "report_date": "2026-06-26",
+      "canonical_title": "CoST: Contrastive Learning of Disentangled Seasonal-Trend Representations for Time Series Forecasting",
+      "task_role": "Self-supervised seasonal/trend representation learning followed by downstream regression",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "two_stage_representation_training_protocol",
+      "comparison_models": [
+        "Autoformer",
+        "FEDformer"
+      ],
+      "incremental_value": "Disentangles seasonal/trend representations using time/frequency contrastive objectives rather than only decomposing a supervised forecasting backbone.",
+      "rationale": "The actual workflow learns representations first and fits a downstream regressor. Calling an encoder plus arbitrary forecast head CoST would omit the contrastive and downstream-fit contribution; the library should not silently absorb an SSL training platform.",
+      "reopen_when": "Representation-pretraining and downstream-estimator composition is explicitly requested, with training-only representation fitting, saved encoder/regressor ownership and temporal leakage tests.",
+      "primary_url": "https://arxiv.org/abs/2202.01575",
+      "code_url": "https://github.com/salesforce/CoST",
+      "source_revision": "7bb5271c2b66cd5a1d634c27f5df308f190b50ec",
+      "code_license_status": "verified",
+      "code_license": "BSD-3-Clause LICENSE.txt inspected; official repository is archived.",
+      "license_evidence_url": "https://github.com/salesforce/CoST/blob/7bb5271c2b66cd5a1d634c27f5df308f190b50ec/LICENSE.txt",
+      "followup_priority": "low",
+      "notes": [
+        "Canonical paper describes the two-stage contrastive representation plus regression workflow.",
+        "No extra backbone count is created for a training paradigm."
+      ]
+    },
+    {
+      "name": "Time-LLM",
+      "report_date": "2026-07-02",
+      "canonical_title": "Time-LLM: Time Series Forecasting by Reprogramming Large Language Models",
+      "task_role": "Frozen pretrained language-model reprogramming framework for forecasting",
+      "decision": "skip_low_value",
+      "reason_category": "pretrained_dependency_scope_mismatch",
+      "comparison_models": [
+        "PatchTST",
+        "ITransformer"
+      ],
+      "incremental_value": "Text-prototype alignment and prompt-prefix conditioning transfer a pretrained language-model prior beyond the existing numeric attention architectures.",
+      "rationale": "Low engineering value for the current reusable-native, no-mandatory-external-weights scope: the frozen external LLM is central, and removing it changes the contribution. Official runtime adds Transformers, PEFT, Accelerate and DeepSpeed concerns.",
+      "reopen_when": "A pretrained multimodal or language-model adapter product is explicitly requested and its weights, terms, runtime and incremental utility are audited.",
+      "primary_url": "https://arxiv.org/abs/2310.01728",
+      "code_url": "https://github.com/KimMeen/Time-LLM",
+      "source_revision": null,
+      "code_license_status": "declared",
+      "code_license": "Apache-2.0 repository declaration; external LLM terms separate",
+      "license_evidence_url": "https://github.com/KimMeen/Time-LLM/blob/main/LICENSE",
+      "followup_priority": "low",
+      "notes": [
+        "Identity matched to the actual July report and primary paper.",
+        "No local benchmark or immutable source audit.",
+        "Low value is scope-relative, not a judgment that the paper has no scientific value."
+      ]
+    },
+    {
+      "name": "TEMPO",
+      "report_date": "2026-07-02",
+      "canonical_title": "TEMPO: Prompt-based Generative Pre-trained Transformer for Time Series Forecasting",
+      "task_role": "Decomposition and prompt-based pretrained forecasting framework",
+      "decision": "skip_low_value",
+      "reason_category": "pretrained_dependency_scope_mismatch",
+      "comparison_models": [
+        "Autoformer",
+        "TimeMixer"
+      ],
+      "incremental_value": "Prompts support cross-domain distribution adaptation on top of trend, seasonal and residual decomposition.",
+      "rationale": "Its pretrained cross-domain contribution does not fit the current native-only spend; a decomposition-only rewrite overlaps existing peers and loses TEMPO's distinguishing premise.",
+      "reopen_when": "Pretrained domain adaptation is explicitly needed and a real pretraining and weight-loading contract is authorized.",
+      "primary_url": "https://arxiv.org/abs/2310.04948",
+      "code_url": "https://github.com/DC-research/TEMPO",
+      "source_revision": null,
+      "code_license_status": "verified",
+      "code_license": "MIT, code license text inspected; pretrained assets not audited",
+      "license_evidence_url": "https://github.com/DC-research/TEMPO/blob/main/LICENSE",
+      "followup_priority": "low",
+      "notes": [
+        "Optional ChatGPT-generated contextual dataset is not an obligatory live inference service.",
+        "No local zero-shot or accuracy evidence.",
+        "Code pointer inspected on main, not a pinned revision."
+      ]
+    },
+    {
+      "name": "MOIRAI",
+      "report_date": "2026-07-02",
+      "canonical_title": "Unified Training of Universal Time Series Forecasting Transformers",
+      "task_role": "Masked universal probabilistic forecasting architecture and pretraining system",
+      "decision": "hold",
+      "reason_category": "valuable_capability_large_contract_scope",
+      "comparison_models": [
+        "PatchTST",
+        "DeepAR"
+      ],
+      "incremental_value": "Any-variate attention, multiple patch sizes and mixture-distribution outputs extend fixed task-specific patching and recurrent probabilistic forecasting.",
+      "rationale": "Real capability gaps exist, but packed and masked variate contracts, heterogeneous patching, distribution outputs and from-scratch semantics are a substantial integration. Official GluonTS and pretrained inference is not an acceptable implicit dependency expansion.",
+      "reopen_when": "A native variable-cardinality probabilistic forecasting use case is specified, with exact original-Moirai source and a bounded training and inference contract.",
+      "primary_url": "https://arxiv.org/abs/2402.02592",
+      "code_url": "https://github.com/SalesforceAIResearch/uni2ts",
+      "source_revision": null,
+      "code_license_status": "verified",
+      "code_license": "Apache-2.0 code license text inspected; checkpoint and dataset terms not audited",
+      "license_evidence_url": "https://github.com/SalesforceAIResearch/uni2ts/blob/main/LICENSE.txt",
+      "followup_priority": "medium",
+      "notes": [
+        "July report identifies original 2024 Moirai, not Moirai-MoE or Moirai 2.0.",
+        "Current repository covers several variants.",
+        "No local universal or zero-shot ability established."
+      ]
+    },
+    {
+      "name": "Time-MoE",
+      "report_date": "2026-07-03",
+      "canonical_title": "Time-MoE: Billion-Scale Time Series Foundation Models with Mixture of Experts",
+      "task_role": "Sparse autoregressive foundation architecture and large-scale pretraining system",
+      "decision": "skip_low_value",
+      "reason_category": "pretraining_cost_outweighs_current_increment",
+      "comparison_models": [
+        "ITransformer",
+        "DLinear"
+      ],
+      "incremental_value": "Sparse expert activation and autoregressive multi-resolution heads offer capacity scaling beyond current task-specific attention and linear models.",
+      "rationale": "Low incremental engineering value at the present budget: routing, expert balancing and pretraining investment dominate the benefit. A small random-init MoE would not substantiate the reported foundation-model or scaling-law capability.",
+      "reopen_when": "A funded native sparse-MoE and pretraining use case demonstrates useful gains against existing models at matched compute and data budgets.",
+      "primary_url": "https://arxiv.org/abs/2409.16040",
+      "code_url": "https://github.com/Time-MoE/Time-MoE",
+      "source_revision": null,
+      "code_license_status": "declared",
+      "code_license": "Apache-2.0 expressly declared by official repository; asset terms separate",
+      "license_evidence_url": "https://github.com/Time-MoE/Time-MoE/blob/main/LICENSE",
+      "followup_priority": "low",
+      "notes": [
+        "Official repository lists covariate support as future work.",
+        "Exclusion is engineering-scope-relative, not a finding of architectural duplication.",
+        "No local scale, cost or accuracy measurements."
+      ]
+    },
+    {
+      "name": "Timer-XL",
+      "report_date": "2026-07-03",
+      "canonical_title": "Timer-XL: Long-Context Transformers for Unified Time Series Forecasting",
+      "task_role": "Causal multivariate next-token forecasting architecture for task-specific training or pretraining",
+      "decision": "hold",
+      "reason_category": "autoregressive_contract_and_source_boundary",
+      "comparison_models": [
+        "PatchTST",
+        "TimeXer"
+      ],
+      "incremental_value": "Unified causal generation over long multivariate and covariate-informed contexts differs from direct fixed-horizon patching and exogenous-attention forecasting.",
+      "rationale": "Potential native architectural value is genuine, but authentic TimeAttention, position and variate equivalence, rollout semantics and target-isolation testing are substantial work. The report repository is a release entry point, not the whole implementation source.",
+      "reopen_when": "Long-context rolling generation is an explicit unmet requirement and exact Timer-XL model code, term boundaries and leakage-safe rollout tests are pinned.",
+      "primary_url": "https://arxiv.org/abs/2410.04803",
+      "code_url": "https://github.com/thuml/Timer-XL",
+      "source_revision": null,
+      "code_license_status": "declared",
+      "code_license": "Timer-XL release declares Apache-2.0; linked OpenLTM implementation declares MIT",
+      "license_evidence_url": "https://github.com/thuml/Timer-XL/blob/main/LICENSE",
+      "followup_priority": "medium",
+      "notes": [
+        "Actual model and training development links to https://github.com/thuml/OpenLTM.",
+        "A random-init architecture is possible; published zero-shot ability still requires pretraining.",
+        "No local long-context cost evidence."
+      ]
+    },
+    {
+      "name": "TimeFilter",
+      "report_date": "2026-07-03",
+      "canonical_title": "TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting",
+      "task_role": "Learned patch-level dependency graph and filtration forecasting architecture",
+      "decision": "hold",
+      "reason_category": "source_license_unknown",
+      "comparison_models": [
+        "PatchTST",
+        "MTGNN"
+      ],
+      "incremental_value": "Selective cross-variate dependence per temporal patch extends channel-independent patching and coarser learned channel graphs.",
+      "rationale": "Technically worthwhile, but the official root and README inspected expose no code license grant. Graph construction, filter routing, auxiliary losses and patch-times-variate graph costs also require review.",
+      "reopen_when": "Author-issued source permission and an immutable source pin are verified, then graph cost and incremental utility are measured against both peers.",
+      "primary_url": "https://proceedings.mlr.press/v267/hu25ac.html",
+      "code_url": "https://github.com/TROUBADOUR000/TimeFilter",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; report's CC BY 4.0 assertion is not verified code permission",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Unknown permission is a hold, not a low-value finding.",
+        "A paper license does not license an independently hosted implementation.",
+        "A TSLib implementation needs its own provenance and terms audit."
+      ]
+    },
+    {
+      "name": "SEMPO",
+      "report_date": "2026-07-04",
+      "canonical_title": "SEMPO: Lightweight Foundation Models for Time Series Forecasting",
+      "task_role": "Energy-aware spectral decomposition and mixture-of-prompts pretrained Transformer",
+      "decision": "hold",
+      "reason_category": "pretraining_and_prompt_domain_contract",
+      "comparison_models": [
+        "FITS",
+        "FEDformer"
+      ],
+      "incremental_value": "Explicit informative low-energy spectral modeling and dataset-specific prompt routing differ from low-pass interpolation and conventional frequency decomposition.",
+      "rationale": "Small parameter count does not establish useful random-init universal forecasting. Multi-domain pretraining, prompt ownership and adaptation semantics must be defined before a native subset can be judged worthwhile.",
+      "reopen_when": "A bounded from-scratch architecture and prompt-domain contract shows useful matched-budget benefit over existing spectral models without mandatory pretrained assets.",
+      "primary_url": "https://arxiv.org/abs/2510.19710",
+      "code_url": "https://github.com/mala-lab/SEMPO",
+      "source_revision": null,
+      "code_license_status": "declared",
+      "code_license": "Apache-2.0 repository declaration; checkpoint and dataset terms not audited",
+      "license_evidence_url": "https://github.com/mala-lab/SEMPO/blob/main/LICENSE",
+      "followup_priority": "medium",
+      "notes": [
+        "No local zero-shot or few-shot evidence.",
+        "Report parameter and data counts are author claims, not framework measurements.",
+        "No immutable source pin audited."
+      ]
+    },
+    {
+      "name": "xLSTM-Mixer",
+      "report_date": "2026-07-04",
+      "canonical_title": "xLSTM-Mixer: Multivariate Time Series Forecasting by Mixing via Scalar Memories",
+      "task_role": "Supervised scalar-memory recurrent mixing architecture",
+      "decision": "hold",
+      "reason_category": "native_cell_portability_and_cost",
+      "comparison_models": [
+        "TSMixer",
+        "TimeMixer"
+      ],
+      "incremental_value": "Stable gated scalar-memory refinement, joint temporal-variate recurrent mixing and dual-view reconciliation extend existing MLP mixing.",
+      "rationale": "Authentic exponential sLSTM gates and states require native numerical and gradient parity. Upstream uses xlstm 1.0.3 and Lightning; its CUDA sLSTM path requires compute capability at least 8.0. Published efficiency cannot be assumed for a portable rewrite.",
+      "reopen_when": "A dependency-neutral CPU-native cell matches the authentic recurrence and yields worthwhile gains over both existing mixers.",
+      "primary_url": "https://arxiv.org/abs/2410.16928",
+      "code_url": "https://github.com/mauricekraus/xLSTM-Mixer",
+      "source_revision": null,
+      "code_license_status": "verified",
+      "code_license": "MIT code license text inspected; transitive xlstm components require separate audit",
+      "license_evidence_url": "https://github.com/mauricekraus/xLSTM-Mixer/blob/main/LICENSE",
+      "followup_priority": "medium",
+      "notes": [
+        "CUDA requirement is for the upstream CUDA sLSTM path, not proof that CPU implementation is impossible.",
+        "Native efficiency and checkpoint parity remain unknown."
+      ]
+    },
+    {
+      "name": "SKOLR",
+      "report_date": "2026-07-04",
+      "canonical_title": "SKOLR: Structured Koopman Operator Linear RNN for Time-Series Forecasting",
+      "task_role": "Supervised FFT-gated spectral branches, measurement MLPs and structured linear-RNN forecasting architecture",
+      "decision": "hold",
+      "reason_category": "unproven_incremental_benefit_and_source_reproducibility_risk",
+      "comparison_models": [
+        "Koopa",
+        "FiLM"
+      ],
+      "incremental_value": "Learned soft spectral selection and explicit branch-specific linear recurrence differ from current framework-oriented Koopa's GRU and operator and FiLM's fixed Legendre memory.",
+      "rationale": "Downgraded from initial review_next to hold after deeper evidence. A bounded native architectural difference remains, but useful benefit over current peers is unproven; independent TimeES runs report SKOLR worse than Koopa in all 16 ETT settings. The official runner imports absent modules and forces CUDA, its parallel variant contains breakpoints, and root MIT does not override NC helper headers. These burdens no longer justify immediate admission work.",
+      "reopen_when": "Pinned core and license audit, native recurrence and spectral parity, stability and gradient tests, and independently run controlled experimental comparisons satisfy governance evidence requirements.",
+      "primary_url": "https://arxiv.org/abs/2506.14113",
+      "code_url": "https://github.com/networkslab/SKOLR",
+      "source_revision": "859783c349060f3fc87c9222864d83e9d1747f9d",
+      "code_license_status": "mixed",
+      "code_license": "Pinned root MIT for native core; utils/losses.py, utils/m4_summary.py and data_provider/m4.py retain explicit Element AI CC BY-NC 4.0 and patent-reservation headers",
+      "license_evidence_url": "https://github.com/networkslab/SKOLR/blob/859783c349060f3fc87c9222864d83e9d1747f9d/LICENSE",
+      "followup_priority": "medium",
+      "notes": [
+        "Initial review_next priority superseded by deeper source and independent experimental evidence; no formal score or implementation approval.",
+        "Pinned core is layers/KoopBlock.py, blob 4d5823543d2878dad4711fded20a7ca595a22427; scripts select KoopBlock, not a model called SKOLR.",
+        "Appendix C.2 claims branch parallelism, while scripted KoopBlock core uses branch and time loops; KoopBlock_P is unfinished.",
+        "Report results use horizons 48,96,144,192 and lookback twice horizon; do not compare directly with standard long horizons.",
+        "Independent experiments: https://arxiv.org/html/2609.32384v2 Appendix C.5 Table 9; vendorized core, experiment adapter and five-seed ETTh1 script audited at wwy155/TimeES commit cdb476741c3b32f76c9474d7351a524b68bee7bf. Exact result logs and full-grid tuning provenance not established.",
+        "Independent TimeES ETTh1 script uses global mask and CI=false, unlike official ETTh2 CI=true/channel-mask script; not an exact original-protocol replication.",
+        "Separate independent energy experiment: https://www.mdpi.com/1996-1073/19/18/4289; claimed same-condition runs on Spain and Panama, source ZIP present but not inspected.",
+        "Avoid all NC M4/loss helpers and do not vendor the broken training harness."
+      ]
+    },
+    {
+      "name": "Dynamic-TMoE",
+      "report_date": "2026-07-05",
+      "canonical_title": "Dynamic TMoE: A Drift-Aware Dynamic Mixture of Experts Framework for Non-Stationary Time Series Forecasting",
+      "task_role": "Evolving-expert training framework with MMD drift detection and temporal-memory routing",
+      "decision": "hold",
+      "reason_category": "dynamic_training_lifecycle_and_unknown_license",
+      "comparison_models": [
+        "NonstationaryTransformer",
+        "Koopa"
+      ],
+      "incremental_value": "Drift-triggered heterogeneous expert creation and pruning plus recurrent routing memory differ from de-stationary attention and fixed Koopman dynamics.",
+      "rationale": "Dynamic module topology implicates optimizer state, serialization, scheduling and distributed training; a fixed generic expert pool would omit the main contribution. No source license grant was observed in official root or README.",
+      "reopen_when": "Licensed pinned source and an expressly authorized reproducible dynamic-training lifecycle design are available.",
+      "primary_url": "https://arxiv.org/abs/2605.20678",
+      "code_url": "https://github.com/andone-07/Dynamic-TMoE",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; official repository inspected on master has no observed root grant",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Paper states architecture evolution occurs during learning, without test-time parameter updates.",
+        "Not an ordinary fixed-backbone integration.",
+        "Existing workflows must remain unchanged."
+      ]
+    },
+    {
+      "name": "SiGMA",
+      "report_date": "2026-07-05",
+      "canonical_title": "Generalizing Multi-Scale Time-Series Modeling with a Single Operator",
+      "task_role": "Single Generalized Multi-scale Architecture: learnable discrete-Gaussian scaling and forecast MLP",
+      "decision": "hold",
+      "reason_category": "native_special_function_feasibility",
+      "comparison_models": [
+        "TimeMixer",
+        "MICN"
+      ],
+      "incremental_value": "Continuous distance-aware learned scaling extends fixed pooling levels and discrete multiscale convolution choices.",
+      "rationale": "Actual LDG kernel uses scaled integer-order modified Bessel functions; paper implementation uses SciPy and dense reference is quadratic in context length. A normal Gaussian filter would not be a faithful substitute.",
+      "reopen_when": "Stable differentiable native-Torch kernel and gradient parity is demonstrated without dependency expansion, with useful matched-budget benefit over both peers.",
+      "primary_url": "https://arxiv.org/abs/2605.31129",
+      "code_url": "https://github.com/cheonwoolee/SiGMA",
+      "source_revision": null,
+      "code_license_status": "verified",
+      "code_license": "MIT code license text inspected on main",
+      "license_evidence_url": "https://github.com/cheonwoolee/SiGMA/blob/main/LICENSE",
+      "followup_priority": "medium",
+      "notes": [
+        "Paper appendix explicitly names SciPy for the Bessel implementation.",
+        "Dense, truncated-convolution and FFT multiplication are distinct cost regimes.",
+        "No native performance or numerical parity evidence."
+      ]
+    },
+    {
+      "name": "LatentTSF",
+      "report_date": "2026-07-05",
+      "canonical_title": "From Observations to States: Latent Time Series Forecasting",
+      "task_role": "Autoencoder and latent-objective training and composition paradigm around existing forecasters",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "training_composition_not_standalone_backbone",
+      "comparison_models": [
+        "ITransformer",
+        "PatchTST"
+      ],
+      "incremental_value": "Moves forecasting and alignment objectives into a learned latent space while retaining existing models as forecaster backbones.",
+      "rationale": "Useful training-composition research, but should not be relabeled as a separate forecast backbone. Requires encoder and decoder ownership, objective integration and target-isolation semantics.",
+      "reopen_when": "Reusable latent representation and objective composition is explicitly requested and exact reused-file licenses and training protocol are audited.",
+      "primary_url": "https://arxiv.org/abs/2602.00297",
+      "code_url": "https://github.com/Muyiiiii/LatentTSF",
+      "source_revision": null,
+      "code_license_status": "mixed",
+      "code_license": "MIT with explicit CC BY-NC 4.0 exceptions for utils/losses.py, utils/m4_summary.py and data_provider/m4.py",
+      "license_evidence_url": "https://github.com/Muyiiiii/LatentTSF/blob/main/LICENSE",
+      "followup_priority": "low",
+      "notes": [
+        "The actual license text enumerates non-commercial third-party exceptions.",
+        "Task-role reroute is not a scientific low-value finding.",
+        "No local latent-quality or accuracy evidence."
+      ]
+    },
+    {
+      "name": "KUP-BI",
+      "report_date": "2026-07-06",
+      "canonical_title": "Beyond Extrapolation: Knowledge Utilization Paradigm with Bidirectional Inspiration for Time Series Forecasting",
+      "task_role": "Train-only historical continuation retrieval and feature-gating plug-in",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "retrieval_composition_not_standalone_backbone",
+      "comparison_models": [
+        "DLinear",
+        "PatchTST"
+      ],
+      "incremental_value": "Adds nonparametric continuation knowledge to both existing forecasters rather than replacing their architecture.",
+      "rationale": "Needs a fitted train-only retrieval index, cache serialization, split and post-target leakage tests, search cost and state ownership. This is a retrieval-composition contract, not merely another tensor-to-tensor backbone.",
+      "reopen_when": "A retrieval-augmented forecaster interface is expressly scoped and provenance, leakage controls, fitted-state serialization and license-holder identity are verified.",
+      "primary_url": "https://arxiv.org/abs/2605.19249",
+      "code_url": "https://github.com/yihannnnn/KUP-BI",
+      "source_revision": null,
+      "code_license_status": "verified",
+      "code_license": "MIT text inspected, but copyright holder remains placeholder XXX XX",
+      "license_evidence_url": "https://github.com/yihannnnn/KUP-BI/blob/main/LICENSE",
+      "followup_priority": "low",
+      "notes": [
+        "Standard license wording is not a completed provenance clearance when the holder is unidentified.",
+        "No external service is necessary, but persistent fitted retrieval state is intrinsic.",
+        "Reported performance is not local evidence."
+      ]
+    },
+    {
+      "name": "PULSE",
+      "report_date": "2026-07-07",
+      "canonical_title": "PULSE: Generative Phase Evolution for Non-Stationary Time Series Forecasting",
+      "task_role": "Phase-anchor and router enhancement framework with Statistic-Aware Mixup training augmentation",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "enhancement_and_augmentation_not_standalone_backbone",
+      "comparison_models": [
+        "NonstationaryTransformer",
+        "DLinear"
+      ],
+      "incremental_value": "Evolves future phase anchors before residual denormalization and augments lightweight predictors under volatility shifts.",
+      "rationale": "Official descriptions identify a plug-and-play framework; replacing its training augmentation with a generic MLP wrapper risks omitting the contribution. Source license grant is unknown.",
+      "reopen_when": "Phase-conditioning and training augmentation integration is explicitly desired and licensed pinned source plus a faithful training protocol are established.",
+      "primary_url": "https://arxiv.org/abs/2605.16793",
+      "code_url": "https://github.com/Gemost/PULSE",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; no official root or README grant observed",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Generative phase evolution is not automatically a probabilistic sample or density forecast contract.",
+        "Role reroute and license hold are independent issues.",
+        "No local shift-robustness evidence."
+      ]
+    },
+    {
+      "name": "L-Drive",
+      "report_date": "2026-07-07",
+      "canonical_title": "L-Drive: Beyond a Single Mapping—Latent Context Drives Time Series Forecasting",
+      "task_role": "Change-aware latent-context forecasting framework with increment gating and relative patch bases",
+      "decision": "hold",
+      "reason_category": "unknown_license_and_unproven_incremental_benefit",
+      "comparison_models": [
+        "NonstationaryTransformer",
+        "Koopa"
+      ],
+      "incremental_value": "Change and increment-conditioned latent context differ from de-stationary attention factors and explicit Koopman dynamics.",
+      "rationale": "Potentially manageable gating and GRU mechanics, but current source release lacks observed README, root license and requirements. Narrower incremental use case relative to current nonstationary peers does not justify immediate implementation.",
+      "reopen_when": "Licensed pinned source and a clear intrinsic model contract are available, with a controlled turning-point and shift comparison demonstrating a useful gap.",
+      "primary_url": "https://arxiv.org/abs/2605.17730",
+      "code_url": "https://github.com/ShijunChen01/L-Drive",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; official root inspected has no observed license grant",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Unknown evidence is not an automatic low-value rejection.",
+        "No local turning-point or latency measurements.",
+        "Title punctuation differs slightly between arXiv and repository without an identity mismatch."
+      ]
+    },
+    {
+      "name": "SEER",
+      "report_date": "2026-07-07",
+      "canonical_title": "SEER: Transformer-based Robust Time Series Forecasting via Automated Patch Enhancement and Replacement",
+      "task_role": "Supervised patch-quality-aware forecasting architecture with MoE embeddings and learned replacement attention",
+      "decision": "review_next",
+      "reason_category": "conditional_native_robustness_capability_gap",
+      "comparison_models": [
+        "PatchTST",
+        "ITransformer"
+      ],
+      "incremental_value": "Learned harmful-patch filtering and replacement add explicit token quality control beyond using all patches or channel tokens uniformly.",
+      "rationale": "A conditional second research candidate if robustness is a concrete goal. Native patching, gating and attention appear bounded, but exact replacement causality, routing, losses and selection must survive integration.",
+      "reopen_when": "Pinned core and provenance audit plus controlled corruption experiments demonstrate useful robustness beyond both peers with a bounded native implementation contract.",
+      "primary_url": "https://arxiv.org/abs/2602.00589",
+      "code_url": "https://github.com/decisionintelligence/SEER",
+      "source_revision": null,
+      "code_license_status": "verified",
+      "code_license": "MIT text inspected; copyright 2024 Huawei Technologies Co., Ltd",
+      "license_evidence_url": "https://github.com/decisionintelligence/SEER/blob/main/LICENSE",
+      "followup_priority": "medium",
+      "notes": [
+        "Review_next is not formal admission, implementation approval or an assigned score.",
+        "Robustness claims do not establish arbitrary NaN or missing-mask input support.",
+        "No independently replicated or local robustness result established."
+      ]
+    },
+    {
+      "name": "TStruct",
+      "report_date": "2026-10-19",
+      "canonical_title": "TStruct: Learning Shared Temporal Structures for Long-Term Time-Series Forecasting",
+      "task_role": "Native direct regular-grid forecasting architecture",
+      "decision": "hold",
+      "reason_category": "independent_evidence_and_contract",
+      "comparison_models": [
+        "PatchTST",
+        "TSMixer"
+      ],
+      "incremental_value": "Shared patch-relation bases with sample/channel routing and a low-rank channel adaptation head replace unconstrained temporal mixing.",
+      "rationale": "Promising compact architecture; exact source and MIT permission now verified. Independent rerun evidence and full input/normalization contract audit remain incomplete.",
+      "reopen_when": "Audit independent comparisons and patch/head mathematics, then apply unchanged admission gates without inventing scores.",
+      "primary_url": "https://arxiv.org/abs/2610.17864",
+      "code_url": "https://github.com/yangzeli/TStruct",
+      "source_revision": "01fd47c6f635402e8fc8c9f0cdedd773e6926b0a",
+      "code_license_status": "verified",
+      "code_license": "MIT",
+      "license_evidence_url": "https://github.com/yangzeli/TStruct/blob/01fd47c6f635402e8fc8c9f0cdedd773e6926b0a/LICENSE",
+      "followup_priority": "high",
+      "notes": [
+        "Earlier report-claimed license uncertainty resolved through pinned GitHub source.",
+        "Dense patch matrices retain quadratic patch-count mixing.",
+        "Review priority is not implementation approval.",
+        "No independently rerun external comparison was identified in this audit; official experiments and paper summaries are not independent evidence.",
+        "Pinned head combines shared low-rank factors separately, so cross-basis products occur; preserve source semantics rather than substituting a mixture of complete adapters.",
+        "With only primary and official evidence, C ceiling is 75 before risks, never core80."
+      ]
+    },
+    {
+      "name": "OliO",
+      "report_date": "2026-10-19",
+      "canonical_title": "OliO: ODE-based Linear Transition Operator for Self-Supervised Time Series Forecasting",
+      "task_role": "Self-supervised pretraining method",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "training_method_not_backbone",
+      "comparison_models": [
+        "PatchTST",
+        "ITransformer"
+      ],
+      "incremental_value": "Lag-aware bidirectional latent alignment using a nilpotent ODE transition can train either existing backbone.",
+      "rationale": "Projection and transition modules are discarded after pretraining, leaving the original forecast architecture unchanged.",
+      "reopen_when": "An explicitly scoped SSL training-utility request with protocol and source audit.",
+      "primary_url": "https://arxiv.org/abs/2610.23345",
+      "code_url": "https://github.com/eai-lab/OliO",
+      "source_revision": null,
+      "code_license_status": "verified",
+      "code_license": "MIT",
+      "license_evidence_url": "https://github.com/eai-lab/OliO",
+      "followup_priority": "low",
+      "notes": [
+        "Not a judgment of low scientific value.",
+        "No new forecast wrapper registration."
+      ]
+    },
+    {
+      "name": "CTIA-ODE",
+      "report_date": "2026-10-19",
+      "canonical_title": "CTIA-ODE: Continuous-Time Inter-Variable Attention for Long-Term Time Series Forecasting",
+      "task_role": "Continuous-time endogenous/exogenous forecaster",
+      "decision": "hold",
+      "reason_category": "source_permission_and_solver_contract",
+      "comparison_models": [
+        "TimeXer",
+        "STGODE"
+      ],
+      "incremental_value": "Queries static exogenous context along a continuously evolving endogenous trajectory, unlike discrete exogenous fusion or traffic graph ODEs.",
+      "rationale": "Anonymous source is inaccessible here; solver tolerance, NFE, gradient method, timestamps and future-known boundaries require audit.",
+      "reopen_when": "Public licensed source and a faithful explicit continuous-time task/solver design.",
+      "primary_url": "https://arxiv.org/abs/2610.19831",
+      "code_url": "https://anonymous.4open.science/r/CTIA-ODE-15A6/",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Current tool inaccessibility does not independently verify report's historical HTTP401.",
+        "No low-value determination."
+      ]
+    },
+    {
+      "name": "Paloma",
+      "report_date": "2026-10-20",
+      "canonical_title": "Paloma: Phase-Conditioned Residual Modulation for Time Series Forecasting",
+      "task_role": "Standalone periodic forecaster and reusable modulation modules",
+      "decision": "review_next",
+      "reason_category": "lightweight_native_architecture",
+      "comparison_models": [
+        "DLinear",
+        "FITS"
+      ],
+      "incremental_value": "Learned cycle templates plus phase-conditioned feature rotations and amplitude affine modulation model structured periodic residuals.",
+      "rationale": "Pinned official standalone model is pure PyTorch and Apache-2.0; explicit cycle-index contract and independent evidence still need review.",
+      "reopen_when": "Complete independent-evidence and mechanism/API review before any implementation authorization.",
+      "primary_url": "https://arxiv.org/abs/2610.25392",
+      "code_url": "https://github.com/TSTS13/Paloma",
+      "source_revision": "def3dfc612bd6554be8f2ed7d5174848d6a37119",
+      "code_license_status": "verified",
+      "code_license": "Apache-2.0",
+      "license_evidence_url": "https://github.com/TSTS13/Paloma/blob/def3dfc612bd6554be8f2ed7d5174848d6a37119/LICENSE",
+      "followup_priority": "high",
+      "notes": [
+        "Caller must supply cycle phase; no invented calendar defaults.",
+        "Source has unused query_proj and individual option; parity decisions must be explicit.",
+        "Review-next is not admission, score, or implementation approval.",
+        "No independently rerun external comparison was identified in this audit; official five-seed claims do not create independent evidence.",
+        "Pinned loader passes first-forecast phase but model gathers seq_len cyclic templates from that phase; do not silently reinterpret it as history-start phase.",
+        "Source normalization uses default sample variance and attached statistics; seq_len1 and gradient semantics need explicit native policy.",
+        "With only primary and official evidence, C ceiling is 75 before risks, never core80."
+      ]
+    },
+    {
+      "name": "PathFM",
+      "report_date": "2026-10-20",
+      "canonical_title": "PathFM: Fast Generative Forecasting of Multivariate Trajectories",
+      "task_role": "Pretrained probabilistic joint-path forecaster",
+      "decision": "hold",
+      "reason_category": "unreleased_assets_and_foundation_scope",
+      "comparison_models": [
+        "TimeGrad",
+        "ProTran"
+      ],
+      "incremental_value": "Flow-matching joint trajectories with distilled one/two-step sampling and shared history attention cache target path-dependent quantities.",
+      "rationale": "No official code/weights verified; pretraining, distillation and sample-cache semantics are substantial work beyond a generic Transformer wrapper.",
+      "reopen_when": "Exact licensed release and assets plus an explicit joint-path use case and evaluation contract.",
+      "primary_url": "https://arxiv.org/abs/2610.22358",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "No automatic external weight download.",
+        "Lack of release is not evidence of low architectural value."
+      ]
+    },
+    {
+      "name": "TimeES",
+      "report_date": "2026-10-21",
+      "canonical_title": "TimeES: Probabilistic and Deterministic Time Series Forecasting via Evolutionary Spectra",
+      "task_role": "Spectral point and probabilistic forecaster",
+      "decision": "hold",
+      "reason_category": "permission_and_fitted_spectral_state",
+      "comparison_models": [
+        "FITS",
+        "TimeGrad"
+      ],
+      "incremental_value": "Learns evolving spectral amplitudes and horizon-shared random spectral variables instead of fixed interpolation or iterative diffusion.",
+      "rationale": "Light linear backbone is attractive, but official root exposes no license and training-selected frequency support needs saved leakage-safe state.",
+      "reopen_when": "Clear source permission, pinned code and deterministic/probabilistic spectral-state and loss audit.",
+      "primary_url": "https://arxiv.org/abs/2609.32384",
+      "code_url": "https://github.com/wwy155/TimeES",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "high",
+      "notes": [
+        "Repository README retains older General Time Series Forecasting title.",
+        "O(NK) is a spectral-representation claim, not whole-model complexity."
+      ]
+    },
+    {
+      "name": "TempoPFN",
+      "report_date": "2026-10-21",
+      "canonical_title": "TempoPFN: Synthetic Pre-training of Linear RNNs for Zero-shot Time Series Forecasting",
+      "task_role": "Univariate pretrained foundation forecaster",
+      "decision": "hold",
+      "reason_category": "gpu_kernels_and_pretrained_asset_scope",
+      "comparison_models": [
+        "DeepAR",
+        "PatchTST"
+      ],
+      "incremental_value": "Synthetic-pretrained GatedDeltaProduct and state-weaving provide zero-shot recurrent forecasting without patch/window summarization.",
+      "rationale": "Official 38M release is Apache-2.0 but requires CUDA, Triton3.2 and flash-linear-attention; source native portability and asset terms are unaudited.",
+      "reopen_when": "Explicit optional-kernel and asset policy with faithful native recurrence, rather than automatic pretrained wrapper.",
+      "primary_url": "https://arxiv.org/abs/2510.25502",
+      "code_url": "https://github.com/automl/TempoPFN",
+      "source_revision": null,
+      "code_license_status": "verified",
+      "code_license": "Apache-2.0",
+      "license_evidence_url": "https://github.com/automl/TempoPFN",
+      "followup_priority": "low",
+      "notes": [
+        "Official current README and NeurIPS2026 listing verify acceptance despite stale EurIPS2025 snippets.",
+        "Tested A100/H100; first-shape Triton compilation.",
+        "Univariate task; no fabricated native multivariate support."
+      ]
+    },
+    {
+      "name": "Timer-M1",
+      "report_date": "2026-10-21",
+      "canonical_title": "Timer-M1: A Multivariate Time Series Foundation Model via Learning Primitives",
+      "task_role": "Role-aware multivariate pretrained foundation forecaster",
+      "decision": "hold",
+      "reason_category": "exact_release_and_assets_unknown",
+      "comparison_models": [
+        "ITransformer",
+        "TimeXer"
+      ],
+      "incremental_value": "Primitive-based episodic pretraining and gated two-dimensional attention distinguish target, past-only and future-known channels.",
+      "rationale": "No Timer-M1-specific released source or assets verified; earlier Timer repositories do not establish this variant's availability or permission.",
+      "reopen_when": "Exact official M1 code/assets and role-aware task contract become available and are audited.",
+      "primary_url": "https://arxiv.org/abs/2610.11734",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Team release habits are not source evidence.",
+        "No automatic external weights."
+      ]
+    },
+    {
+      "name": "CVTA",
+      "report_date": "2026-10-22",
+      "canonical_title": "CVTA: Cross-Variable Temporal Attention for Multivariate Irregular Time Series Prediction",
+      "task_role": "Short-term asynchronous continuous-time forecaster",
+      "decision": "hold",
+      "reason_category": "irregular_task_contract_and_source",
+      "comparison_models": [
+        "ITransformer",
+        "TFT"
+      ],
+      "incremental_value": "Variable-conditioned latent spaces and elapsed-time recent-observation state support irregular short-term cross-variable prediction.",
+      "rationale": "No official source found; dense ForecastingBatch does not encode full observation/update/query semantics.",
+      "reopen_when": "An explicit irregular-observation task contract plus licensed source or fully audited independent implementation.",
+      "primary_url": "https://arxiv.org/abs/2610.25584",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Do not repeat report's universal SOTA prose or mixed-scale benchmark numbers.",
+        "Standalone model and auxiliary meta-decision mode are distinct."
+      ]
+    },
+    {
+      "name": "SAGT",
+      "report_date": "2026-10-22",
+      "canonical_title": "Spectral Adaptive Graph Transformer for Efficient and Scalable Traffic Forecasting",
+      "task_role": "Traffic graph forecaster",
+      "decision": "hold",
+      "reason_category": "permission_and_sparse_scaling_audit",
+      "comparison_models": [
+        "GMAN",
+        "STGCN"
+      ],
+      "incremental_value": "State-conditioned low-rank directed global mixing plus sparse local diffusion replace dense all-node attention or static Laplacian convolution.",
+      "rationale": "Official reference source exists but license unknown; sparse adjacency implementation and temporal-attention costs remain unaudited.",
+      "reopen_when": "License and pinned variant verified, then actual sparse operator/memory benefit and calendar graph contract audited.",
+      "primary_url": "https://arxiv.org/abs/2610.25140",
+      "code_url": "https://github.com/Ahghaffari/sagt",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Official input is B,T,N,3 with measurement and calendar channels.",
+        "Spatial linearity is not whole-model or dense-adjacency linearity."
+      ]
+    },
+    {
+      "name": "TimeFT",
+      "report_date": "2026-10-22",
+      "canonical_title": "Rethinking Time Series Tokenization from a Frequency Perspective",
+      "task_role": "Parameter-free frequency tokenizer",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "tokenizer_not_forecaster",
+      "comparison_models": [
+        "PatchTST",
+        "ITransformer"
+      ],
+      "incremental_value": "Frequency partition, shift and Nyquist sampling can replace existing tokenizers while preserving spectral information.",
+      "rationale": "Still requires an attached forecasting model/head; anonymous source and permission unverified.",
+      "reopen_when": "Explicit tokenizer/layer utility request with permission and spectral reconstruction tests.",
+      "primary_url": "https://arxiv.org/abs/2610.28997",
+      "code_url": "https://anonymous.4open.science/r/TimeFT-75E3/",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "No new generic wrapper key.",
+        "Inaccessible anonymous URL does not verify exact historical HTTP status."
+      ]
+    },
+    {
+      "name": "Meta-iLaD",
+      "report_date": "2026-10-23",
+      "canonical_title": "Meta-iLaD: Identifiable Latent Dynamics via Meta-Learning of Dynamics Environments",
+      "task_role": "Few-shot environment-conditioned identifiable dynamics",
+      "decision": "skip_low_value",
+      "reason_category": "low_marginal_value_in_current_general_ltsf_scope",
+      "comparison_models": [
+        "Koopa",
+        "ProTran"
+      ],
+      "incremental_value": "Few-shot inferred environment variables and identifiable latent dynamics add a distinct meta-dynamics objective.",
+      "rationale": "Present queue targets reusable general-LTSF backbones; specialized context/query episodes, simulation and MoCap tasks create low immediate integration payoff here.",
+      "reopen_when": "Explicit few-shot dynamical-systems use case and API/evaluation mandate justify specialized integration.",
+      "primary_url": "https://proceedings.mlr.press/v306/ye26p.html",
+      "code_url": "https://github.com/GoForIt-YYB/Meta-iLaD",
+      "source_revision": null,
+      "code_license_status": "verified",
+      "code_license": "MIT",
+      "license_evidence_url": "https://github.com/GoForIt-YYB/Meta-iLaD",
+      "followup_priority": "low",
+      "notes": [
+        "Skip is scope-relative, not a claim of low scientific merit.",
+        "Paper versus AI-assisted refined source variants must be pinned deliberately.",
+        "Repository contains third-party notices and kaolin/gradsim data generation."
+      ]
+    },
+    {
+      "name": "DDCI",
+      "report_date": "2026-10-23",
+      "canonical_title": "Dynamic Dual-Feedback Conformal Inference for Time Series Forecasting",
+      "task_role": "Online prediction-interval calibration",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "posthoc_uq_not_backbone",
+      "comparison_models": [
+        "DeepAR",
+        "DLinear"
+      ],
+      "incremental_value": "Actual miscoverage and empirical-threshold feedback can stabilize prediction intervals around either existing forecaster.",
+      "rationale": "Requires revealed-label/error state and a chronological calibration protocol; supplies no new forecasting backbone.",
+      "reopen_when": "Explicit conformal-calibration API with delay/leakage tests and source/permission audit.",
+      "primary_url": "https://arxiv.org/abs/2610.26987",
+      "code_url": "https://github.com/sdu1998/DDCI",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Report-linked repository not independently retrieved in initial audit.",
+        "Not a low scientific-value claim."
+      ]
+    },
+    {
+      "name": "CRC",
+      "report_date": "2026-10-26",
+      "canonical_title": "Robust Residual Correction via Selective Deployment for Time Series Forecasting",
+      "task_role": "Frozen-forecaster residual correction and deployment calibration",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "posthoc_correction_not_backbone",
+      "comparison_models": [
+        "DLinear",
+        "PatchTST"
+      ],
+      "incremental_value": "Ridge floor and nonlinear refinement with a held-out selective-deployment firewall can improve either existing backbone.",
+      "rationale": "Base forecaster remains required; correction and validation state need temporal leakage protection; exact v3/source not fully audited.",
+      "reopen_when": "Explicit correction utility with pinned v3 definitions, source permission and chronology tests.",
+      "primary_url": "https://arxiv.org/abs/2512.22428v3",
+      "code_url": "https://github.com/Xavian1-oss/CRC",
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Earlier indexed title is Causality-Inspired Safe Residual Correction for Multivariate Time Series.",
+        "Report-linked code availability remains unverified.",
+        "No wrapper registration."
+      ]
+    },
+    {
+      "name": "Chameleon",
+      "report_date": "2026-10-26",
+      "canonical_title": "Channel-Dependent State Space Model for Multivariate Time Series Forecasting",
+      "task_role": "Channel-dependent selective state-space forecaster",
+      "decision": "hold",
+      "reason_category": "public_source_permission_and_kernel_audit",
+      "comparison_models": [
+        "PatchTST",
+        "ITransformer"
+      ],
+      "incremental_value": "Kalman-inspired cross-variable measurement updates complement GatedDeltaNet temporal dynamics with claimed linear channel scaling.",
+      "rationale": "No verified public official source; anonymous/Chameleon-TSF is a placeholder, not a usable pinned release.",
+      "reopen_when": "Official licensed release and faithful native recurrence/measurement-update and kernel portability audit.",
+      "primary_url": "https://arxiv.org/abs/2609.36453",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "unknown",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Do not reject merely as another SSM.",
+        "No universal benchmark or deployment-parity claim."
+      ]
+    },
+    {
+      "name": "CTLite",
+      "report_date": "2026-10-26",
+      "canonical_title": "CTLite: Lightweight Irregular Multivariate Time Series Forecasting with Reusable Continuous-Time Summaries",
+      "task_role": "Irregular multivariate forecasting architecture with reusable continuous-time summaries",
+      "decision": "hold",
+      "reason_category": "incomplete_official_assets_and_unknown_license",
+      "comparison_models": [
+        "FITS",
+        "FiLM"
+      ],
+      "incremental_value": "Explicit asynchronous timestamps, observation freshness and availability, and query-independent reusable history summaries are not supplied by these regular-grid frequency and memory forecasters.",
+      "rationale": "Distinctive and potentially manageable native architecture, but the inspected official repository contains only a README, metadata and five shell scripts, with no Python package, model or configuration source and no explicit license.",
+      "reopen_when": "Complete author model/configuration code and explicit source permission are published; then audit moment estimation, unsupported slopes, timestamp/mask/query contracts and cached-versus-uncached prediction and gradient equivalence.",
+      "primary_url": "https://arxiv.org/abs/2610.26379",
+      "code_url": "https://github.com/SSMa913/NICLab-CTLite",
+      "source_revision": "d324af1207c11f2419aa2aafe620b2a6a5b99e85",
+      "code_license_status": "unknown",
+      "code_license": "Unknown; no LICENSE/COPYING/NOTICE in the complete inspected tree",
+      "license_evidence_url": "https://api.github.com/repos/SSMa913/NICLab-CTLite/git/trees/d324af1207c11f2419aa2aafe620b2a6a5b99e85?recursive=1",
+      "followup_priority": "high",
+      "notes": [
+        "Asset/license hold, not a low-value verdict",
+        "Accessible official repository is not a complete released implementation",
+        "run_mimic.sh invokes missing ctlite.train and configs/MIMIC.json",
+        "Clinical benchmark permissions remain separate"
+      ]
+    },
+    {
+      "name": "REMIND",
+      "report_date": "2026-10-27",
+      "canonical_title": "When to Trust Memory: Retrieval-Guided Probabilistic Spatiotemporal Forecasting under Distribution Shift",
+      "task_role": "Retrieval-conditioned dual-branch probabilistic spatiotemporal forecasting framework",
+      "decision": "hold",
+      "reason_category": "unknown_license_and_high_framework_integration_burden",
+      "comparison_models": [
+        "GMAN",
+        "TimeGrad"
+      ],
+      "incremental_value": "Adds retrieval-supported shift diagnosis, memory-calibrated and deviation-aware prediction branches, and a hierarchical Gaussian mixture rather than embedding-conditioned attention or diffusion alone.",
+      "rationale": "Real model and retrieval code exists, but source permission is unknown and faithful integration requires memory/cache ownership, retrieval provenance, graph alignment and probabilistic output contracts.",
+      "reopen_when": "Explicit source permission is provided and a bounded design specifies caller-owned memory, retrieval cache serialization, split provenance and probabilistic evaluation.",
+      "primary_url": "https://arxiv.org/abs/2610.32329",
+      "code_url": "https://github.com/LvHaochenBANG/REMIND",
+      "source_revision": "d0e73424550aaf17a1c7566faf18b2f8fe1c690d",
+      "code_license_status": "unknown",
+      "code_license": "Unknown; no LICENSE/COPYING/NOTICE in the complete inspected tree",
+      "license_evidence_url": "https://api.github.com/repos/LvHaochenBANG/REMIND/git/trees/d0e73424550aaf17a1c7566faf18b2f8fe1c690d?recursive=1",
+      "followup_priority": "medium",
+      "notes": [
+        "Not a duplicate or low-value rejection",
+        "Official requirements include faiss-cpu, torch, numpy, easydict and tqdm",
+        "Do not replace retrieval with dummy memory",
+        "No independent evidence grade or runtime maturity assigned"
+      ]
+    },
+    {
+      "name": "DBCM",
+      "report_date": "2026-10-27",
+      "canonical_title": "DBCM: Dual-Branch Calibration Module for Test-Time Adaptation in Time Series Forecasting",
+      "task_role": "Test-time input/output calibration around a frozen forecaster",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "test_time_adaptation_layer_not_standalone_backbone",
+      "comparison_models": [
+        "DLinear",
+        "PatchTST"
+      ],
+      "incremental_value": "Adds shared temporal and channelwise low-rank calibration with channel mixing and gates around either forecaster; it does not replace their forecasting architecture.",
+      "rationale": "Faithful behavior requires sequential label-revelation timing, optimizer and adaptation state, reset policies and adjusted-prediction evaluation, outside the current standalone native-backbone queue.",
+      "reopen_when": "An adaptation subsystem is explicitly requested, with a leakage-safe streaming protocol and an officially licensed reference implementation.",
+      "primary_url": "https://arxiv.org/abs/2610.32071",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; official code not verified",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Role exclusion, not low research value",
+        "Primary section 3.2 applies calibration on both input and output; report describes input only",
+        "Primary full text inspected at https://arxiv.org/html/2610.32071v1"
+      ]
+    },
+    {
+      "name": "TimeMagnifier",
+      "report_date": "2026-10-28",
+      "canonical_title": "The Future Is Finer: Multivariate Time Series Super-Resolution Forecasting",
+      "task_role": "Coarse-history to fine-future multivariate super-resolution forecasting",
+      "decision": "hold",
+      "reason_category": "new_task_contract_and_unverified_official_assets",
+      "comparison_models": [
+        "NHITS",
+        "FITS"
+      ],
+      "incremental_value": "Adds an explicit cross-resolution task with Fourier anchoring, resolution-axis refinement and DTW alignment; ordinary multirate interpolation or frequency extrapolation does not establish this capability.",
+      "rationale": "Distinct task value, but no official source implementation or license was verified; cadence ratios, paired cross-resolution data, resampling policies, alignment and multiresolution losses need honest interfaces.",
+      "reopen_when": "Licensed author code and paired-data protocols are released and the project adopts a genuine coarse/fine forecasting batch and evaluation contract.",
+      "primary_url": "https://arxiv.org/abs/2610.33470",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; primary says code will be made publicly available",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Hold is not a low-value judgment",
+        "Do not substitute a generic residual head for the resolution-refinement/alignment method",
+        "No benchmark claims transferred to this repository"
+      ]
+    },
+    {
+      "name": "PCR",
+      "report_date": "2026-10-28",
+      "canonical_title": "Learning What to Share: Expert Specialization for Time-Series Forecasting",
+      "task_role": "Persistent Closed-Form Routing and residual expert specialization around frozen pretrained forecasters",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "specialization_and_alternating_training_layer_not_backbone",
+      "comparison_models": [
+        "PatchTST",
+        "ITransformer"
+      ],
+      "incremental_value": "Adds persistent channel-specific correction mixtures and low-rank residual experts, not a replacement patch or variate-token encoder.",
+      "rationale": "The primary method alternates closed-form mixture estimation with gradient-trained experts around frozen pretrained models. A random-init standalone PCR would omit the defining protocol.",
+      "reopen_when": "Expert-adaptation functionality is explicitly requested, with licensed reference code, identified caller-owned frozen forecasters and an alternating-optimization contract.",
+      "primary_url": "https://arxiv.org/abs/2610.33822",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; official code not verified",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "PCR is the method name; the canonical paper title differs",
+        "Role exclusion, not low research value",
+        "GalaxyTS is experimental infrastructure, not the backbone"
+      ]
+    },
+    {
+      "name": "STeP-TS",
+      "report_date": "2026-10-28",
+      "canonical_title": "STeP-TS: Shared Temporal Filters with Pruning for Time Series",
+      "task_role": "Compact shared-multiscale convolutional forecaster with variable scalar weights and structured pruning",
+      "decision": "skip_low_value",
+      "reason_category": "low_marginal_native_engineering_value_against_existing_convolutional_coverage",
+      "comparison_models": [
+        "MICN",
+        "ModernTCN"
+      ],
+      "incremental_value": "Especially shallow shared filter banks, variable-specific scalar specialization, intrinsic pruning signals and amplitude-adaptive normalization are distinct, but multiscale/convolutional forecasting is already covered.",
+      "rationale": "Another closely related convolutional forecaster has low current queue priority without a concrete edge requirement or verified matched-budget improvement. This is a prioritization judgment, not a literal-duplicate or inferior-performance claim.",
+      "reopen_when": "A real edge deployment need appears and licensed author code provides matched-lookback accuracy, latency and pruning evidence against MICN, ModernTCN and compact baselines.",
+      "primary_url": "https://arxiv.org/abs/2610.35128",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; official code not verified",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Primary describes competitive results, not universal superiority",
+        "Faithful implementation would include normalization and pruning/finalization semantics",
+        "Workshop acceptance is not independent benchmark reproduction"
+      ]
+    },
+    {
+      "name": "Timestral",
+      "report_date": "2026-10-29",
+      "canonical_title": "Timestral",
+      "task_role": "Pretrained multivariate probabilistic forecasting family with decoupled forecast tokens and covariate roles",
+      "decision": "hold",
+      "reason_category": "architecture_scope_evidence_and_separate_weight_permissions",
+      "comparison_models": [
+        "PatchTST",
+        "TimeXer"
+      ],
+      "incremental_value": "Decoupled Horizon Forecasting separates causal context from forecast tokens; role-aware asymmetric covariate flow and multivariate noncrossing quantiles extend existing patch and covariate models.",
+      "rationale": "Native architecture merit is plausible, but official source is inference-oriented and zero-shot value depends on separately licensed pretrained weights. Random-init implementation cannot inherit pretrained benchmark claims.",
+      "reopen_when": "A bounded architecture-only objective with independent native value is established, or a pretrained integration is separately authorized with explicit model-weight permission and task contracts.",
+      "primary_url": "https://arxiv.org/abs/2610.37585",
+      "code_url": "https://github.com/mistralai/timestral",
+      "source_revision": "a534bdbd244d64f3d9d743f46c7bf6fc330ed4ff",
+      "code_license_status": "verified",
+      "code_license": "Apache-2.0 for inference code; weights separately use Modified MIT with an employer/company monthly-revenue restriction",
+      "license_evidence_url": "https://github.com/mistralai/timestral/blob/a534bdbd244d64f3d9d743f46c7bf6fc330ed4ff/LICENSE",
+      "followup_priority": "medium",
+      "notes": [
+        "Official explanation: https://mistral.ai/news/timestral/",
+        "Weight license checked at https://huggingface.co/mistralai/Timestral-209M/blob/main/LICENSE",
+        "Weight license restricts companies/employers with preceding-month global consolidated monthly revenue above USD 20 million",
+        "Official dependencies include torch>=2.4, numpy, safetensors and huggingface_hub",
+        "No weights downloaded or terms accepted"
+      ]
+    },
+    {
+      "name": "RankFormer",
+      "report_date": "2026-10-29",
+      "canonical_title": "RankFormer: Rethinking Time Series Transformers through Representation Capacity Analysis and Progressive Decoding",
+      "task_role": "Supervised multivariate forecasting encoder-decoder with Hourglass Attention and Interactive Progressive Decoder",
+      "decision": "hold",
+      "reason_category": "unknown_source_license_and_unassessed_incremental_evidence",
+      "comparison_models": [
+        "PatchTST",
+        "Crossformer"
+      ],
+      "incremental_value": "Combines rank-oriented Hourglass attention with globally conditioned cross-channel progressive trajectory refinement; patchification or generic cross-variable attention alone is not equivalent.",
+      "rationale": "Potentially manageable native architecture with real source code, but no explicit license exists in the complete inspected tree and useful local ROI remains unproven.",
+      "reopen_when": "Explicit source permission is published, paper/source variants are aligned, and matched-protocol evidence supports a useful capability or engineering improvement versus current patch/cross-variable peers.",
+      "primary_url": "https://arxiv.org/abs/2610.36703",
+      "code_url": "https://github.com/TangPeiwang/Rankformer",
+      "source_revision": "52666e76c62159a8341bf4ea76e30b265338e88e",
+      "code_license_status": "unknown",
+      "code_license": "Unknown; no LICENSE/COPYING/NOTICE in the complete inspected tree",
+      "license_evidence_url": "https://api.github.com/repos/TangPeiwang/Rankformer/git/trees/52666e76c62159a8341bf4ea76e30b265338e88e?recursive=1",
+      "followup_priority": "high",
+      "notes": [
+        "Conditional architecture follow-up, not formal admission",
+        "Official requirements include torch>=2.7, numpy, pandas and scikit-learn",
+        "Preserve RoPE/hourglass topology, stochastic training and progressive/folded inference boundaries",
+        "Primary describes competitive results rather than universal wins"
+      ]
+    },
+    {
+      "name": "GAS-PFN",
+      "report_date": "2026-10-29",
+      "canonical_title": "GAS-PFN: Graph-Aware Spatiotemporal Prior-Data Fitted Networks for Zero-Shot Traffic Forecasting",
+      "task_role": "Graph-conditioned prior-data-fitted and in-context traffic forecasting",
+      "decision": "hold",
+      "reason_category": "unverified_pretraining_assets_prior_generator_and_protocol",
+      "comparison_models": [
+        "GMAN",
+        "STGCN"
+      ],
+      "incremental_value": "Learns zero-update transfer to new sensor graphs through graph-diffusion synthetic priors and two mask-conditioned Transformer passes, unlike graph attention or fixed-graph convolution trained per task.",
+      "rationale": "A random-init two-pass graph Transformer would not supply the PFN prior or zero-shot capability. Official code, checkpoints, generator and permissions were not verified.",
+      "reopen_when": "Licensed task-prior generation, training and inference code and model assets are released, together with a bounded support-context/graph/in-context API and cross-network evaluation protocol.",
+      "primary_url": "https://arxiv.org/abs/2610.37598",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; official code and model assets not verified",
+      "license_evidence_url": null,
+      "followup_priority": "medium",
+      "notes": [
+        "Asset/protocol hold, not low-value or duplicate",
+        "Synthetic task generator is part of the defining method",
+        "Do not claim zero-shot capability from a random-init architecture shell"
+      ]
+    },
+    {
+      "name": "TimeH2O-v1",
+      "report_date": "2026-10-30",
+      "canonical_title": "TimeH2O: Compact Foundation Models for Time Series Forecasting",
+      "task_role": "108M pretrained zero-shot quantile forecasting model with covariates",
+      "decision": "hold",
+      "reason_category": "missing_formal_technical_reference_source_pin_and_restricted_weights",
+      "comparison_models": [
+        "PatchTST",
+        "TimeXer"
+      ],
+      "incremental_value": "Vendor describes a flip-equivariant variable-patch pretrained quantile family and covariate adaptation; zero-shot results depend on pretraining rather than a generic random-init patch forecaster.",
+      "rationale": "Official blog and model card establish identity, but no formal paper or source repository pin was verified. Model card says GitHub and paper are coming soon; gated weights are noncommercial.",
+      "reopen_when": "Formal architecture details and inspectable licensed reference source are available and a separately authorized pretrained or independently useful native scope resolves model-weight permissions and task contracts.",
+      "primary_url": "https://h2o.ai/blog/2026/timeh2o-foundation-models",
+      "code_url": "https://pypi.org/project/h2ofm/",
+      "source_revision": null,
+      "code_license_status": "declared",
+      "code_license": "Vendor declares Apache-2.0 for h2ofm inference code; source license text not inspected. Weights use H2O Model Non-Commercial License v1.0",
+      "license_evidence_url": "https://h2o.ai/blog/2026/timeh2o-foundation-models",
+      "followup_priority": "medium",
+      "notes": [
+        "code_url is the official package distribution, not a verified source repository",
+        "Model card: https://huggingface.co/h2oai/timeh2o-v1",
+        "Official announcement page says October 26, not report October 27",
+        "Official package requires Python>=3.12",
+        "No gated assets downloaded or terms accepted"
+      ]
+    },
+    {
+      "name": "TimeHAT",
+      "report_date": "2026-10-30",
+      "canonical_title": "Learning from Points and Patches: A Pre-trained Hybrid Attention Transformer for Time Series Analysis",
+      "task_role": "Representation pretraining and multitask transfer with unified point-patch masking and hybrid attention",
+      "decision": "hold",
+      "reason_category": "unknown_source_license_and_pretraining_task_protocol_gap",
+      "comparison_models": [
+        "PatchTST",
+        "TimesNet"
+      ],
+      "incremental_value": "Adds joint point/patch reconstruction and extrapolation pretraining with bidirectional/directional hybrid attention; a random-init forecasting head does not provide the claimed transferable representations.",
+      "rationale": "Real model, pretraining and forecasting code exists, but source permission and pretrained assets are unverified and faithful integration needs pretrain/adapt and multitask contracts beyond another forecasting encoder.",
+      "reopen_when": "Explicit source permission is provided and a representation/pretraining deliverable is adopted with audited objectives, checkpoints and task-specific interfaces.",
+      "primary_url": "https://arxiv.org/abs/2610.36572",
+      "code_url": "https://github.com/TangPeiwang/TimeHAT",
+      "source_revision": "632bb241141750b9aa48b8d2cc9275c8ac5bfeea",
+      "code_license_status": "unknown",
+      "code_license": "Unknown; no LICENSE/COPYING/NOTICE in the complete inspected tree",
+      "license_evidence_url": "https://api.github.com/repos/TangPeiwang/TimeHAT/git/trees/632bb241141750b9aa48b8d2cc9275c8ac5bfeea?recursive=1",
+      "followup_priority": "medium",
+      "notes": [
+        "Lower native-forecasting queue priority than RankFormer, not a low-value verdict",
+        "Primary submission is October 27, not report October 26",
+        "Official training entry point requires NVIDIA GPU and uses BF16 by default",
+        "No pretrained weights fetched or verified"
+      ]
+    },
+    {
+      "name": "MetaARIMA",
+      "report_date": "2026-10-30",
+      "canonical_title": "MetaARIMA: Configuration-Level Transfer Learning for ARIMA Models",
+      "task_role": "Learned configuration policy and search for locally fitted classical ARIMA models",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "algorithm_configuration_automl_not_tensor_backbone",
+      "comparison_models": [
+        "DLinear",
+        "NBEATS"
+      ],
+      "incremental_value": "Introduces transfer at the configuration-policy level over classical local fitting rather than a differentiable forecasting forward operator; no ARIMA peer is registered in the current forecasting catalog.",
+      "rationale": "The meaningful deliverable is feature extraction, configuration recommendation, MMR and successive halving plus statistical model fitting, not a new neural architecture under the existing interface.",
+      "reopen_when": "Classical forecasting or learned algorithm configuration support is explicitly requested with separate fitting, search and pretrained-policy artifact governance.",
+      "primary_url": "https://arxiv.org/abs/2610.34171",
+      "code_url": "https://github.com/vcerqueira/experiments-metaarima",
+      "source_revision": "c8b059990115664e9ef14a44e71f8fbb6ac7c194",
+      "code_license_status": "verified",
+      "code_license": "MIT for inspected experiment source",
+      "license_evidence_url": "https://github.com/vcerqueira/experiments-metaarima/blob/c8b059990115664e9ef14a44e71f8fbb6ac7c194/LICENSE",
+      "followup_priority": "low",
+      "notes": [
+        "Role exclusion, not low research value",
+        "Dependencies include statsforecast, statsmodels, tsfeatures and CatBoost",
+        "Official README describes 48-72 hour metadata collection and separately rebuilt/downloaded artifacts",
+        "Experiment dependencies include optional comparison foundation models; these are not automatically required for a future core implementation"
+      ]
+    },
+    {
+      "name": "FARE",
+      "report_date": "2026-10-31",
+      "canonical_title": "FARE: Factor-Aware Retrieval with Error-Guided Fusion for Retail Forecasting",
+      "task_role": "Backbone-agnostic retail factor/shape retrieval and frozen forecast correction gates",
+      "decision": "out_of_backbone_scope",
+      "reason_category": "retrieval_correction_layer_not_standalone_backbone",
+      "comparison_models": [
+        "TFT",
+        "TimeXer"
+      ],
+      "incremental_value": "Adds historical factor/shape references and completed-development-error-guided correction on top of existing forecasts, rather than replacing known-future-covariate encoders.",
+      "rationale": "The useful implementation would be a separately scoped enhancement API with history/reference storage, promotions/calendar factors, completed-week errors and frozen fit/dev/test gates.",
+      "reopen_when": "Retail-demand enhancement is explicitly requested with licensed source and leakage-tested temporal reference, factor-availability and frozen-calibration contracts.",
+      "primary_url": "https://arxiv.org/abs/2610.40160",
+      "code_url": "https://github.com/HousonGu/FARE",
+      "source_revision": "9b653f273e0cb7293352a23e5d333f58342dc481",
+      "code_license_status": "verified",
+      "code_license": "MIT for inspected source",
+      "license_evidence_url": "https://github.com/HousonGu/FARE/blob/9b653f273e0cb7293352a23e5d333f58342dc481/LICENSE",
+      "followup_priority": "medium",
+      "notes": [
+        "Potentially useful enhancement; role exclusion is not low-value rejection",
+        "Both gates remain frozen at test time",
+        "Primary reports 4.06 percent average WAPE improvement on M5, so gains are not uniformly double-digit",
+        "Core dependencies include numpy, pandas, scipy, threadpoolctl and pyarrow; experiment backbones have separate environments"
+      ]
+    },
+    {
+      "name": "IMPACT",
+      "report_date": "2026-10-31",
+      "canonical_title": "IMPACT: Inverter-Informed Multimodal Learning for Photovoltaic Generation Forecasting",
+      "task_role": "PV-specific multimodal probabilistic forecasting and online conformal calibration",
+      "decision": "skip_low_value",
+      "reason_category": "low_marginal_general_library_value_relative_to_domain_integration_cost",
+      "comparison_models": [
+        "GMAN",
+        "TFT"
+      ],
+      "incremental_value": "Combines inverter graph dynamics, plant history, future solar geometry and weather with smart-persistence residual quantiles and calibration; this richer PV contract is not generic graph-attention novelty.",
+      "rationale": "Without a concrete PV use case, the general-library benefit does not justify inverter/plant hierarchy, geometry, meteorological availability, persistence and sequential calibration interfaces. Official code, permissions and public evaluation assets are also unverified.",
+      "reopen_when": "A concrete PV application supplies accessible data and licensed reference code and explicitly adopts the multimodal and online-calibration scope.",
+      "primary_url": "https://arxiv.org/abs/2610.40418",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; official code not verified",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Specific current-scope engineering-priority judgment, not a claim of poor scientific or PV application value",
+        "Asset/license uncertainty is a separate secondary blocker",
+        "Dropping solar or inverter inputs would alter model identity",
+        "Conformal calibration is not itself a new backbone"
+      ]
+    },
+    {
+      "name": "IMRouter",
+      "report_date": "2026-10-31",
+      "canonical_title": "IMRouter: Imbalance-aware Temporal Pattern Routing for LLM-based Time Series Forecasting",
+      "task_role": "Pattern-imbalance-aware expert training and cross-modal alignment for pretrained-LLM forecasting",
+      "decision": "skip_low_value",
+      "reason_category": "low_marginal_native_backbone_value_with_high_pretrained_training_pipeline_burden",
+      "comparison_models": [
+        "ITransformer",
+        "PatchTST"
+      ],
+      "incremental_value": "Targets rare temporal-pattern error through gradient conflict/density-guided routing and mutual-information alignment rather than adding a missing basic forecasting operator.",
+      "rationale": "Its defining contribution is a pretrained/training/evaluation pipeline with LLM and representation/clustering dependencies, high integration burden and no current long-tail-pattern requirement. A compact standalone replacement would lose the method.",
+      "reopen_when": "A specific long-tail temporal-pattern or LLM forecasting need appears with licensed code/weights, explicit training/alignment scope and per-pattern evidence.",
+      "primary_url": "https://arxiv.org/abs/2610.39246",
+      "code_url": null,
+      "source_revision": null,
+      "code_license_status": "unknown",
+      "code_license": "Unknown; official code and pretrained-model terms not verified",
+      "license_evidence_url": null,
+      "followup_priority": "low",
+      "notes": [
+        "Specific native-engineering-priority judgment, not a claim that long-tail forecasting lacks research value",
+        "Primary supports PATR gradient/density routing and RGSA alignment",
+        "Do not claim overall mean-MSE dominance from rare-pattern improvements",
+        "No automatic LLM weight loading"
+      ]
+    }
+  ]
+}

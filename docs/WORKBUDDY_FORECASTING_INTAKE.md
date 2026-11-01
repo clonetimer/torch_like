@@ -26,6 +26,8 @@ English: The inventory date is **2026-10-31**. The historical mapping below is p
 | Remaining after R4 / R4 后尚无映射 | 58 | Complete list and implementation boundaries in [R4](WORKBUDDY_FORECASTING_R4.md) / 完整名单及实现边界见 R4 |
 | Mapped after R5 / R5 后已有映射 | 39 | Adds observation-tier GMAN with explicit spatial embeddings/calendar / 新增要求空间嵌入及日历的观察池 GMAN |
 | Remaining after R5 / R5 后尚无映射 | 57 | Complete list and source boundaries in [R5](WORKBUDDY_FORECASTING_R5.md) / 完整名单及来源边界见 R5 |
+| R6 remaining-name triage / R6 剩余名单筛选 | 57/57 | 3 review priorities,32 holds,8 low-increment skips,14 non-backbone reroutes; no new implementation / 3优先、32暂缓、8低增益不加、14转非骨干方向；未新增实现 |
+| Mapping after R6 / R6 后名称映射 | 39/96 | Still57 unmapped; triage/exclusion is not implementation / 仍有57未映射，筛选或排除不等于实现；见[R6](WORKBUDDY_FORECASTING_R6.md) |
 | Honorable-mention occurrences / 附带提及次数 | 89 | Repetitions allowed; excluded from the 96 / 可重复，不计入 96 个主选项 |
 | Reports without a main selection / 无主选项的报告 | 3 | `report-2026-06-24.md`, `report-2026-10-24.md`, `report-2026-10-25.md` |
 
@@ -204,9 +206,9 @@ English: The same report contains conflicting descriptions of requiring no prede
 
 ## Prioritized Follow-up, Not Admission / 后续优先调研，不等于收录
 
-中文：以下顺序是基于机制缺口及可验证性的工程调研顺序，不是论文性能排名。**Non-stationary Transformers 已在 R2 完成核心准入和预测骨干实现，FiLM 已在 R3、Pyraformer 已在 R4 完成观察准入和实现**。最新剩余58项见 R4；报告链接本身不代表已核实许可证或性能。
+中文：以下保留早期基于机制缺口及可验证性的工程调研记录，不是论文性能排名。**Non-stationary Transformers已在R2完成核心准入，FiLM/R3、Pyraformer/R4、GMAN/R5已完成观察准入和实现**。R6已对全部57项剩余名称给出价值、任务角色和来源结论，完整现行取舍见[R6](WORKBUDDY_FORECASTING_R6.md)。本轮没有新增模型，映射仍39/96；报告链接本身不代表已核实许可证或性能。
 
-English: The order below is an engineering research priority, not an accuracy ranking. **Non-stationary Transformers has R2 core admission; FiLM has R3 and Pyraformer R4 observation admission and implementation**. See R4 for the remaining58 names. Report links alone do not certify licenses or performance.
+English: The following preserves earlier engineering research priorities, not accuracy rankings. **Non-stationary Transformers has R2 core admission; FiLM/R3, Pyraformer/R4 and GMAN/R5 have observation admission and implementation**. R6 now gives all57 remaining names explicit value/task-role/source dispositions. See[R6](WORKBUDDY_FORECASTING_R6.md) for current decisions. No model is added in R6; mapping remains39/96. Report links alone do not certify licenses or performance.
 
 ### 1. Non-stationary Transformers
 
