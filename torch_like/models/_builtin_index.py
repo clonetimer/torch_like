@@ -1,6 +1,7 @@
 """Static built-in model index used for discovery without importing model implementations."""
 
 BUILTIN_MODEL_INDEX = {
+    "DeepState": ("forecasting", "torch_like.models.forecasting.deepstate", "DeepState"),
     "GMAN": ("forecasting", "torch_like.models.forecasting.gman", "GMAN"),
     "Pyraformer": ("forecasting", "torch_like.models.forecasting.pyraformer", "Pyraformer"),
     "FiLM": ("forecasting", "torch_like.models.forecasting.film", "FiLM"),

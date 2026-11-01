@@ -6,18 +6,18 @@
   "target_catalog_schema_version": 2,
   "summary": {
     "domain_count": 13,
-    "model_count": 171,
-    "migration_ready_count": 171,
+    "model_count": 172,
+    "migration_ready_count": 172,
     "migration_unmapped_count": 0,
-    "maturity_unassessed_count": 152,
-    "benchmark_evidence_unassessed_count": 152,
+    "maturity_unassessed_count": 153,
+    "benchmark_evidence_unassessed_count": 153,
     "benchmarked_model_count": 19,
     "evidence_record_count": 4
   },
   "domains": [
     {
       "domain": "forecasting",
-      "model_count": 49
+      "model_count": 50
     },
     {
       "domain": "diagnosis",
@@ -107,7 +107,7 @@
     },
     {
       "value": "paper_aligned_portable_subset",
-      "model_count": 7
+      "model_count": 8
     },
     {
       "value": "paper_aligned_reference",
@@ -115,15 +115,15 @@
     }
   ],
   "api_contract_counts": {
-    "forward": 171,
-    "predict": 146,
+    "forward": 172,
+    "predict": 147,
     "loss_step": 73,
-    "fit_step": 15,
-    "config": 171,
-    "from_config": 171,
-    "param_count": 171,
-    "nn_module": 171,
-    "task_loss": 88
+    "fit_step": 16,
+    "config": 172,
+    "from_config": 172,
+    "param_count": 172,
+    "nn_module": 172,
+    "task_loss": 89
   },
   "evidence_records": {
     "ett-h1-forecasting-rolling-v1": {
@@ -615,6 +615,45 @@
         "implementation_fidelity": "framework_oriented",
         "implementation_scope": "full",
         "execution_profile": "standard",
+        "maturity": "unassessed",
+        "benchmark_evidence": "unassessed",
+        "evidence_record": null
+      },
+      "api_contract": {
+        "forward": true,
+        "predict": true,
+        "loss_step": false,
+        "fit_step": true,
+        "config": true,
+        "from_config": true,
+        "param_count": true,
+        "nn_module": true,
+        "task_loss": true
+      },
+      "migration_status": "ready"
+    },
+    {
+      "domain": "forecasting",
+      "name": "DeepState",
+      "class_path": "torch_like.models.forecasting.deepstate.DeepState",
+      "family": "structural_state_space",
+      "layer": "Probabilistic forecasting",
+      "supports": [
+        "distribution",
+        "joint_sampling",
+        "likelihood",
+        "observed_mask",
+        "explicit_seasonality"
+      ],
+      "paper": "Deep State Space Models for Time Series Forecasting (NeurIPS 2018)",
+      "description": "Covariate-driven residual LSTM with analytic level/trend/seasonal Gaussian filtering and correlated trajectories",
+      "complexity": "Dense float64 Gaussian algebra O(B*T*S^3), covariance storage O(B*S^2), plus O(B*T*L*D^2) recurrent work; S=state width",
+      "automl_default": true,
+      "legacy_integration_level": "paper_aligned_portable_subset",
+      "catalog_v2": {
+        "implementation_fidelity": "paper_aligned",
+        "implementation_scope": "subset",
+        "execution_profile": "portable",
         "maturity": "unassessed",
         "benchmark_evidence": "unassessed",
         "evidence_record": null

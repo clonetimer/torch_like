@@ -8,17 +8,17 @@ English: This file is generated deterministically from the live registry by `too
 
 - Registry version / 注册表版本: `0.9.0`
 - Domains / 领域数: 13
-- Models / 模型数: 171
-- Schema-v2 migration ready / 可迁移: 171
+- Models / 模型数: 172
+- Schema-v2 migration ready / 可迁移: 172
 - Unmapped integration levels / 未映射值: 0
-- Maturity unassessed / 成熟度未评估: 152
-- Benchmark evidence unassessed / 基准证据未评估: 152
+- Maturity unassessed / 成熟度未评估: 153
+- Benchmark evidence unassessed / 基准证据未评估: 153
 
 ## Domain Coverage / 领域覆盖
 
 | Domain / 领域 | Models / 模型数 |
 |---|---:|
-| `forecasting` | 49 |
+| `forecasting` | 50 |
 | `diagnosis` | 2 |
 | `detection` | 10 |
 | `graph` | 16 |
@@ -45,7 +45,7 @@ English: This file is generated deterministically from the live registry by `too
 | `paper_aligned_mlstm_reference` | 1 |
 | `paper_aligned_portable` | 1 |
 | `paper_aligned_portable_scan` | 2 |
-| `paper_aligned_portable_subset` | 7 |
+| `paper_aligned_portable_subset` | 8 |
 | `paper_aligned_reference` | 1 |
 
 ## API Signals / API 信号
@@ -56,15 +56,15 @@ English: These counts indicate callable class attributes only. They do not prove
 
 | Signal / 信号 | Models / 模型数 |
 |---|---:|
-| `forward` | 171 |
-| `predict` | 146 |
+| `forward` | 172 |
+| `predict` | 147 |
 | `loss_step` | 73 |
-| `fit_step` | 15 |
-| `config` | 171 |
-| `from_config` | 171 |
-| `param_count` | 171 |
-| `nn_module` | 171 |
-| `task_loss` | 88 |
+| `fit_step` | 16 |
+| `config` | 172 |
+| `from_config` | 172 |
+| `param_count` | 172 |
+| `nn_module` | 172 |
+| `task_loss` | 89 |
 
 ## Complete Inventory / 完整清单
 
@@ -82,6 +82,7 @@ English: These counts indicate callable class attributes only. They do not prove
 | `forecasting` | `DLinear` | `framework_oriented` | `full` | `standard` | `benchmarked` | `single_dataset` | true | decomposition, linear_baseline, channel_independent | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `DMSTGCN` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `DeepAR` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | distribution, sampling, likelihood | forward, predict, fit_step, config, from_config, param_count, nn_module, task_loss | `ready` |
+| `forecasting` | `DeepState` | `paper_aligned` | `subset` | `portable` | `unassessed` | `unassessed` | true | distribution, joint_sampling, likelihood, observed_mask, explicit_seasonality | forward, predict, fit_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `forecasting` | `FCGAGA` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | graph_mode | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `FEDformer` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, decomposition | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `forecasting` | `FITS` | `paper_aligned` | `full` | `standard` | `unassessed` | `unassessed` | true | frequency_domain, channel_independent, low_pass_filter | forward, predict, config, from_config, param_count, nn_module | `ready` |

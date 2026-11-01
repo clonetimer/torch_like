@@ -39,6 +39,9 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | FiLM (NeurIPS 2022) | 2026-10-31 | 2027-01-31 | maintainers | local reference parity, independent split/code audit, Legendre/FEL contract or official license change |
 | Pyraformer (ICLR 2022) | 2026-10-31 | 2027-01-31 | maintainers | independent protocol/provenance audit, sparse graph or BN contract, local benchmark or official license change |
 | GMAN (AAAI 2020) | 2026-11-01 | 2027-02-01 | maintainers | baseline-run provenance, spatial-embedding/calendar contract, BN/source-variant parity or official license change |
+| DeepState (NeurIPS 2018) | 2026-11-01 | 2027-02-01 | maintainers | external supplement/protocol audit, numerical parity, explicit calendar/missing-data contract or source/license change |
+| Paloma (arXiv 2610.25392v1) | 2026-11-01 | 2027-02-01 | maintainers | independent experiment, phase-index/normalization contract or source/license change |
+| SEER (ICML 2026) | 2026-11-01 | 2027-02-01 | maintainers | controlled independent robustness experiments, run provenance, replacement/routing contract or source/license change |
 | SAM 2.1 | 2026-10-19 | 2026-11-19 | maintainers | video protocol or independent latency evidence |
 | Uni-Mol v1 | 2026-10-19 | 2026-11-19 | maintainers | molecular protocol or checkpoint-policy change |
 | TabPFN v2 | 2026-10-19 | 2026-11-19 | maintainers | license, checkpoint, or independent benchmark change |
@@ -99,6 +102,9 @@ English: Both implementations subsequently passed model-level acceptance and are
 | FiLM (NeurIPS 2022) | yes | yes | yes | yes | yes: fixed Legendre memory with frequency filtering and reconstruction absent | MIT | pass |
 | Pyraformer (ICLR 2022) | yes | yes | yes | yes | yes: explicit inter-scale tree and intra-scale neighbor attention absent | Apache-2.0 | pass |
 | GMAN (AAAI 2020) | yes | yes | yes | yes | yes: embedding-conditioned spatial/temporal fusion and history-to-future transform attention absent | Apache-2.0 | pass |
+| DeepState (NeurIPS 2018) | yes | yes | yes | yes | yes: structural Gaussian posterior filtering and correlated trajectory contract absent | Apache-2.0; pinned LICENSE, NOTICE and source | pass |
+| Paloma (arXiv 2610.25392v1) | yes | yes | yes | yes | yes: phase-conditioned directional/amplitude residual modulation absent | Apache-2.0; pinned model and loader | pass |
+| SEER (ICML 2026) | yes | yes | yes | yes | yes: learned patch-quality replacement and augmented embeddings absent | MIT; pinned model and embedding source | pass |
 | SAM 2.1 | yes | yes | yes | yes | yes | Apache-2.0 | pass |
 | Uni-Mol v1 | yes | yes | yes | yes | yes | MIT | pass |
 | TabPFN v2 | yes | yes | yes | yes | weak: value depends on pretrained prior | modified Apache/weight restrictions | pass with risk |
@@ -130,6 +136,9 @@ R=相关性，P=能力/性能，U=工程实用性，E=效率/成本，I=创新�
 | FiLM | 24 | 14 | 13 | 7 | 8 | 8 | 8 | 82 | A | 5 | 77.0 | observation, implemented |
 | Pyraformer | 23 | 11 | 12 | 7 | 8 | 8 | 7 | 76 | A | 7 | 69.0 | observation, implemented |
 | GMAN | 23 | 13 | 12 | 5 | 8 | 8 | 7 | 76 | A | 6 | 70.0 | observation, implemented |
+| DeepState | 24 | 10 | 12 | 7 | 8 | 8 | 7 | 76 | A | 8 | 68.0 | observation, implemented |
+| Paloma | 23 | 12 | 13 | 9 | 8 | 3 | 7 | 75 | C | 6 | 50.25 | rejected, no code |
+| SEER | 24 | 13 | 11 | 6 | 8 | 6 | 7 | 75 | B | 7 | 60.5 | rejected, no code |
 | SAM 2.1 | 23 | 18 | 13 | 7 | 9 | 10 | 9 | 89 | B | 5 | 75.1 | observation |
 | Fourier Neural Operator | 23 | 16 | 14 | 9 | 9 | 10 | 9 | 90 | B | 5 | 76.0 | observation |
 | Uni-Mol v1 | 22 | 17 | 12 | 7 | 9 | 8 | 8 | 83 | B | 6 | 68.7 | observation |
@@ -159,6 +168,9 @@ the cited primary and independent evidence remains mandatory.
 | FiLM | distinct fixed polynomial memory absent from current forecasters | actual independent experiments, task-dependent competitiveness rather than broad wins | reusable standalone components but more complex than linear forecasters | FFT filtering helps but dense sequential memory costs O(T*N^2) | combines fixed polynomial memory and spectral denoising | independent benchmark and augmentation research use | pinned MIT source and two experimental sources; FrAug code/split audit and local parity unresolved |
 | Pyraformer | distinct multiresolution sparse attention despite broad forecasting coverage | weak external forecasting results limit performance value | native random-init operator, nontrivial graph and boundary contracts | sparse interactions scale favorably, total head and measured speed remain configuration-dependent | explicit parent/child plus same-scale graph attention | independent studies and public Time-Series-Library use, not proof of superiority | pinned Apache source; test-selected original checkpoints, adapted protocols and local parity unresolved |
 | GMAN | distinct spatial/temporal gated attention with calendar-driven history-to-future bridge | externally evaluated foundational baseline, newer methods improve many difficult regimes | reusable random-init operator, but supplied embeddings and raw calendar constrain inputs | dense node/time attention and expensive external compute measurements | multi-attention fusion and transform bridge, not current universal novelty | repeated external evaluation and officially linked third-party port | pinned Apache reference and two experimental papers; legacy TF, variants and unpublished baseline provenance limit replication |
+| DeepState | fills explicit structural probabilistic inference gap | limited performance justification in external studies | native reusable forecaster with caller-supplied feature/calendar burden | shared recurrent parameterization; dense covariance and float64 accumulation cost | recurrent parameters plus analytical structural inference | established GluonTS support and independent experimental use | pinned permissive source; external protocol and local parity unresolved |
+| Paloma | concrete periodic-modeling capability | author results without independently established advantage | compact standalone operator with explicit phase contract | simple linear modulation; no local timing claim | directional/amplitude residual modulation | limited verified independent adoption | licensed model/loader available; phase and normalization parity unresolved |
+| SEER | learned patch-quality handling is a specific capability | author results and one scoped external clean-forecast report | substantial routing, loss and input contract | MoE/attention cost and incomplete large-data external runs | augmented patch/series embeddings plus replacement | experiment infrastructure and one external-use report | pinned source; independent protocol, artifacts and robustness unresolved |
 | SAM 2.1 | video segmentation gap | strong official and domain results | prompt/memory API | substantial model cost | streaming video memory | broad adoption | paper/code plus domain evaluations |
 | Fourier Neural Operator | scientific operator gap | established PDE results, task dependent | reusable function-to-function layer | FFT global mixing | resolution-transfer operator view | mature NeuralOperator ecosystem | paper, two codebases, JMLR survey |
 | Uni-Mol v1 | molecular domain gap | strong but task-dependent | useful atom/pair states | chemistry preprocessing cost | 3D molecular pretraining | established scientific use | paper/code and independent benchmark |
@@ -265,6 +277,22 @@ the cited primary and independent evidence remains mandatory.
 - Registry: `NonstationaryTransformer`; integration level `paper_aligned_portable_subset`.
 
 ## Observation / 观察收录
+
+### DeepState (NeurIPS 2018)
+
+- Category: recurrently conditioned structural linear Gaussian probabilistic forecasting.
+- Discovery: `Workbuddy-TorchLike/report-2026-06-16.md`; formally reviewed 2026-11-01 before public integration.
+- Core value: shared recurrent generation of level/trend/seasonal state parameters, analytic posterior conditioning and joint forecast trajectories.
+- Evidence: [primary: Rangapuram et al., NeurIPS2018](https://papers.neurips.cc/paper_files/paper/2018/hash/5cf68969fb67aa6082363a6d4e6468e2-Abstract.html), [official: GluonTS pinned d60556ca71167a3ec1ea807b491dd982d1de2112](https://github.com/awslabs/gluonts/tree/d60556ca71167a3ec1ea807b491dd982d1de2112), [official: Apache-2.0 license](https://github.com/awslabs/gluonts/blob/d60556ca71167a3ec1ea807b491dd982d1de2112/LICENSE), [official: NOTICE](https://github.com/awslabs/gluonts/blob/d60556ca71167a3ec1ea807b491dd982d1de2112/NOTICE), [independent: VAEneu §§5.2/5.4/6](https://link.springer.com/article/10.1007/s10489-024-06203-5), [independent: Vuong/Nguyen/Goulet TAGI-LSTM/SSM p.11 Appendix-L rerun statement](https://profs.polymtl.ca/jagoulet/Site/Papers/Vuong_el_al_TAGI_LSTM_2024.pdf).
+- Evidence interpretation: A counts two independently authored experimental reports. VAEneu explicitly runs GluonTS baselines with default hyperparameters. TAGI's authors explicitly report new GluonTS DeepState runs for Appendix L; its copied main Table2 is excluded. Appendix-L tables, exact versions/splits and executable provenance remain unaudited. This is literature-source evidence, not two locally reproduced pipelines. Invalidating the TAGI rerun statement gives B and **60.4/rejected**, with unchanged value/risk.
+- Peer comparison: local `DeepAR` uses observation-encoded recurrent parameters and marginal sampling; `ProTran` uses a variational latent representation. Neither exposes DeepState's explicit structural Gaussian filtering and seasonal phase contract.
+- Score: value 76; evidence A; risk 8; final 68.0.
+- Risk deduction: 3 legacy-port/numerical-state burden,3 incomplete external protocol/supplement audit,2 unassessed local parity. E7 includes dense covariance and float64-accumulation compute/storage cost; it is not a measured speed rating.
+- Decision: observation, implemented.
+- Conclusion reason: distinct probabilistic functionality and two external experimental sources support observation admission; performance evidence and numerical/integration costs limit promotion.
+- Implementation boundary: native independent univariate Gaussian series; explicit known real/static features, seasonal indices and observed masks. Emit/update/transition ordering, rank-one structural innovations and residual recurrent layers are retained. Each tensor position advances one state step; this is not an irregular-time/gap-duration API. Conditional-future NLL, separate context likelihood, per-row scale1 fallback, dropout0 subset and float64 algebra/model-dtype outputs are explicit adaptations. See [R7 contract and usage](WORKBUDDY_FORECASTING_R7.md).
+- Missing information: Appendix-L protocol and baseline revisions, upstream checkpoint/training-pipeline parity, controlled local accuracy/calibration and CPU/CUDA resource measurements. Maturity and benchmark evidence remain `unassessed`.
+- Registry: `DeepState`; integration level `paper_aligned_portable_subset`.
 
 ### GMAN (AAAI 2020)
 
@@ -379,6 +407,36 @@ the cited primary and independent evidence remains mandatory.
 No unscored candidate currently remains in this formal pool. New discoveries must enter here before formal scoring; they may not jump directly from a paper announcement into implementation. Discovery ledger: on 2026-10-31, FITS and STGCN were first recorded from the two reports named in the admission review above, then promoted to the Core Inclusion section only after the source, hard-gate, independent-evidence, and score reviews were complete. Neither promotion itself marks an implementation complete.
 
 ## Rejected / 淘汰
+
+### Paloma (arXiv 2610.25392v1)
+
+- Category: phase-conditioned periodic residual modulation forecasting.
+- Discovery: `Workbuddy-TorchLike/report-2026-10-20.md`; formal R7 review 2026-11-01.
+- Core value: learned cycle templates and separate directional/amplitude modulation of residual representations, usable as a standalone forecaster.
+- Evidence: [primary: fixed v1 paper](https://arxiv.org/html/2610.25392v1), [official: pinned def3dfc612bd6554be8f2ed7d5174848d6a37119](https://github.com/TSTS13/Paloma/tree/def3dfc612bd6554be8f2ed7d5174848d6a37119), [official: Apache-2.0 license](https://github.com/TSTS13/Paloma/blob/def3dfc612bd6554be8f2ed7d5174848d6a37119/LICENSE).
+- Evidence interpretation: C; this bounded search found no independently authored experimental rerun. The author's five seeds are author experiments, not independent sources. Absence from the search is not proof that no external study exists.
+- Peer comparison: `DLinear` supplies decomposed temporal linear prediction; `FITS` supplies low-pass complex spectral extrapolation. Neither provides Paloma's phase-conditioned residual modulation.
+- Score: value 75; evidence C; risk 6; final 50.25.
+- Risk deduction: 3 phase-index convention,2 normalization/short-window behavior,1 native parity. The dimension split and risk decomposition are maintainer judgments recorded in R7, not measured performance or recovered user preferences.
+- Decision: rejected, no code.
+- Conclusion reason: plausible lightweight architectural value, but evidence-adjusted score remains below65.
+- Contract findings: the pinned loader passes the first forecast phase (`cycle_index[s_end]`), while the model gathers a history-length template from that phase. A future port must resolve non-cycle-multiple histories explicitly. Sample-variance normalization retains gradients; the source also has unused query/individual options. No implementation was added.
+- Missing information: independent controlled comparisons, reconciled phase convention, short-window/normalization policy and local numerical/gradient parity.
+
+### SEER (ICML 2026)
+
+- Category: patch-quality-aware forecasting with augmented embeddings and learned replacement.
+- Discovery: `Workbuddy-TorchLike/report-2026-07-07.md`; formal R7 review 2026-11-01. Identity is Qiu et al.,arXiv2602.00589,not the unrelated Self-Evolving Event Reasoning namesake.
+- Core value: learned replacement of selected patch representations with series-level information, MoE patch embeddings and attention.
+- Evidence: [primary: ICML2026/PMLR paper](https://proceedings.mlr.press/v306/qiu26n.html), [primary: fixed v1 manuscript](https://arxiv.org/html/2602.00589v1), [official: pinned bfa3133b5301b60a3e880e852ce9a4b0d3560238](https://github.com/decisionintelligence/SEER/tree/bfa3133b5301b60a3e880e852ce9a4b0d3560238), [official: MIT license](https://github.com/decisionintelligence/SEER/blob/bfa3133b5301b60a3e880e852ce9a4b0d3560238/LICENSE), [independent: scoped external logbook b4084270005b529ed5a5011e8344e2f219e0352d](https://huggingface.co/spaces/ancs21/repro-seer/commit/b4084270005b529ed5a5011e8344e2f219e0352d).
+- Evidence interpretation: B is granted for this bounded review. The pinned logbook reports26 completed clean-forecast cells across7 datasets and ETTh1 configuration comparisons,24 within5% of published values; ETTh2 differs,Traffic/two Electricity runs remain incomplete,baseline columns are reused and degraded-data robustness is absent. Raw result files were referenced but not inspected. This is one provenance-limited source; stricter C gives49.25 and leaves rejection unchanged.
+- Peer comparison: `PatchTST` retains patch representations in attention; `ITransformer` models channel tokens. SEER adds learned replacement, but robustness beyond these peers remains independently unestablished.
+- Score: value 75; evidence B; risk 7; final 60.5.
+- Risk deduction: 3 robustness/protocol uncertainty,2 replacement/routing/surrogate-gradient semantics,2 native-port/resource/local-parity uncertainty. Dimension/risk splits are R7 maintainer judgments,not measurements.
+- Decision: rejected, no code.
+- Conclusion reason: distinct architecture, but even the granted B evidence leaves the score below65.
+- Contract findings: `score_threshold=0` bypasses both replacement and an additional causal encoder. The logbook comparison is a replacement-path/configuration ablation,not an isolated token-filter effect. A future port must preserve `score * detach(1/score)` surrogate gradients and MoE/loss semantics. The paper's zero-coded missing-data protocol does not establish arbitrary NaN/mask support.
+- Missing information: independent controlled corrupted-data comparisons,rerun baselines,run artifacts/source revisions,isolated mechanism ablations,native routing/loss parity and resource measurements.
 
 ### V-JEPA 2
 

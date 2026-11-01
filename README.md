@@ -21,6 +21,7 @@ English: The first batch from 36 forecasting literature reports adds `FITS` spec
 - [第四批 Pyraformer 与剩余 58 项 / R4 Pyraformer and 58 remaining candidates](docs/WORKBUDDY_FORECASTING_R4.md)
 - [第五批 GMAN 与剩余 57 项 / R5 GMAN and 57 remaining candidates](docs/WORKBUDDY_FORECASTING_R5.md)
 - [第六批：57 项价值筛选 / R6: all 57 remaining candidates triaged](docs/WORKBUDDY_FORECASTING_R6.md)
+- [第七批：DeepState 与重点候选评审 / R7: native DeepState and priority reviews](docs/WORKBUDDY_FORECASTING_R7.md)
 - Example / 示例: `python -m examples.demo_workbuddy_forecasting`
 
 中文：R2 新增 `NonstationaryTransformer`，R3 新增 `FiLM`，R4 新增原生稀疏 `Pyraformer`，R5 新增需要固定空间嵌入与未来日历的 `GMAN`。FiLM（77分）、Pyraformer（69分）与 GMAN（70分）留在观察池，不升为核心；成熟度仍为 `unassessed`。R5 后报告名称映射为 39/96，剩余57项不是全部已承诺实现。
@@ -30,6 +31,10 @@ English: R2 adds `NonstationaryTransformer`, R3 `FiLM`, R4 native sparse `Pyrafo
 中文：R6已逐项筛选剩余57项：3项优先深审、32项暂缓、8项当前增益较低不添加、14项转非骨干方向。**本轮新增模型0项**，映射仍为39/96、预测模型仍为49个；初筛不替代正式准入。逐项理由、许可/源码不确定性和重开条件见[R6记录](docs/WORKBUDDY_FORECASTING_R6.md)。
 
 English: R6 triages all57:3 research priorities,32 holds,8 low-increment skips and14 non-backbone reroutes. **No model is added in R6**; mapping remains39/96 and forecasting count49. Every disposition keeps evidence, uncertainty and reopening conditions; triage is not formal admission.
+
+中文：**R7当前进展：新增原生DeepState，观察级68分**，支持显式季节项、缺失观测、解析状态推断及相关轨迹采样。全库172个模型、预测50个，报告名称映射40/96。Paloma50.25分、SEER60.5分保留正式评审记录，本轮不添加代码。DeepState成熟度及基准证据仍为`unassessed`；使用方法与适配边界见[R7](docs/WORKBUDDY_FORECASTING_R7.md)。
+
+English: **R7 adds native DeepState at observation68**, with explicit seasonal phases, missing observations, analytic state inference and correlated forecast paths. Current totals are172 models/50 forecasting,40/96 report names mapped. Paloma50.25 and SEER60.5 remain rejected/no-code. DeepState maturity and benchmark evidence remain`unassessed`; R7 documents usage and numerical/objective adaptations.
 
 ## 工业诊断与健康评估算法库的职责边界
 

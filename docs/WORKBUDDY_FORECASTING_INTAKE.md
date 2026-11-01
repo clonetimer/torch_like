@@ -28,6 +28,8 @@ English: The inventory date is **2026-10-31**. The historical mapping below is p
 | Remaining after R5 / R5 后尚无映射 | 57 | Complete list and source boundaries in [R5](WORKBUDDY_FORECASTING_R5.md) / 完整名单及来源边界见 R5 |
 | R6 remaining-name triage / R6 剩余名单筛选 | 57/57 | 3 review priorities,32 holds,8 low-increment skips,14 non-backbone reroutes; no new implementation / 3优先、32暂缓、8低增益不加、14转非骨干方向；未新增实现 |
 | Mapping after R6 / R6 后名称映射 | 39/96 | Still57 unmapped; triage/exclusion is not implementation / 仍有57未映射，筛选或排除不等于实现；见[R6](WORKBUDDY_FORECASTING_R6.md) |
+| Mapping after R7 / R7 后名称映射 | 40/96 | Adds observation-tier DeepState;56 unmapped / 新增观察级DeepState，尚有56项未映射 |
+| R7 priority-review closure / R7重点评审结果 | 1 implemented,2 rejected | DeepState68;Paloma50.25 and SEER60.5 no-code / 32暂缓、8低增益和14非骨干历史处置保留，见[R7](WORKBUDDY_FORECASTING_R7.md) |
 | Honorable-mention occurrences / 附带提及次数 | 89 | Repetitions allowed; excluded from the 96 / 可重复，不计入 96 个主选项 |
 | Reports without a main selection / 无主选项的报告 | 3 | `report-2026-06-24.md`, `report-2026-10-24.md`, `report-2026-10-25.md` |
 
