@@ -19,11 +19,12 @@ English: The first batch from 36 forecasting literature reports adds `FITS` spec
 - [第二批 NonstationaryTransformer / R2](docs/WORKBUDDY_FORECASTING_R2.md)
 - [第三批 FiLM 与剩余 59 项 / R3 FiLM and 59 remaining candidates](docs/WORKBUDDY_FORECASTING_R3.md)
 - [第四批 Pyraformer 与剩余 58 项 / R4 Pyraformer and 58 remaining candidates](docs/WORKBUDDY_FORECASTING_R4.md)
+- [第五批 GMAN 与剩余 57 项 / R5 GMAN and 57 remaining candidates](docs/WORKBUDDY_FORECASTING_R5.md)
 - Example / 示例: `python -m examples.demo_workbuddy_forecasting`
 
-中文：R2 新增 `NonstationaryTransformer`，R3 新增 `FiLM`，R4 新增 `Pyraformer` 的原生稀疏金字塔注意力与直接预测头。FiLM（77分）及 Pyraformer（69分）留在观察池，不升为核心；成熟度仍为 `unassessed`。R4 后报告名称映射为 38/96，剩余58项不是全部已承诺实现。
+中文：R2 新增 `NonstationaryTransformer`，R3 新增 `FiLM`，R4 新增原生稀疏 `Pyraformer`，R5 新增需要固定空间嵌入与未来日历的 `GMAN`。FiLM（77分）、Pyraformer（69分）与 GMAN（70分）留在观察池，不升为核心；成熟度仍为 `unassessed`。R5 后报告名称映射为 39/96，剩余57项不是全部已承诺实现。
 
-English: R2 adds `NonstationaryTransformer`, R3 `FiLM`, and R4 native indexed sparse `Pyraformer` with a direct forecast head. FiLM77 and Pyraformer69 stay in observation, not core; maturity remains `unassessed`. Post-R4 mapping is38/96; the remaining58 names are not a promised implementation backlog.
+English: R2 adds `NonstationaryTransformer`, R3 `FiLM`, R4 native sparse `Pyraformer`, and R5 `GMAN` with required spatial embeddings and future calendar. FiLM77, Pyraformer69 and GMAN70 stay in observation, not core; maturity remains `unassessed`. Post-R5 mapping is39/96; the remaining57 names are not a promised implementation backlog.
 
 ## 工业诊断与健康评估算法库的职责边界
 

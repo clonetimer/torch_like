@@ -127,6 +127,8 @@
         "GDN",
         "GDNConfig",
         "GIN",
+        "GMAN",
+        "GMANConfig",
         "GNAN",
         "GPS",
         "GPSConfig",
@@ -516,6 +518,8 @@
         "GDN",
         "GDNConfig",
         "GIN",
+        "GMAN",
+        "GMANConfig",
         "GNAN",
         "GPS",
         "GPSConfig",
@@ -9865,6 +9869,282 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 2
+        }
+      ]
+    },
+    "torch_like.GMAN": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.gman.GMAN",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "relu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "spatial_embedding",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "time_slots_per_day",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 288
+        },
+        {
+          "name": "temporal_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "use_batch_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "bn_decay",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.9
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.GMANConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.gman.GMANConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "relu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "spatial_embedding",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "time_slots_per_day",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 288
+        },
+        {
+          "name": "temporal_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "use_batch_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "bn_decay",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.9
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
         }
       ]
     },
@@ -40521,6 +40801,282 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 2
+        }
+      ]
+    },
+    "torch_like.models.GMAN": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.gman.GMAN",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "relu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "spatial_embedding",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "time_slots_per_day",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 288
+        },
+        {
+          "name": "temporal_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "use_batch_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "bn_decay",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.9
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        }
+      ]
+    },
+    "torch_like.models.GMANConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.gman.GMANConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 8
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "relu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "spatial_embedding",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
+        },
+        {
+          "name": "time_slots_per_day",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 288
+        },
+        {
+          "name": "temporal_mask",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "use_batch_norm",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "bn_decay",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.9
+        },
+        {
+          "name": "dtype",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": null
         }
       ]
     },

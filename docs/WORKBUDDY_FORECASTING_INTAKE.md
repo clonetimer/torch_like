@@ -24,6 +24,8 @@ English: The inventory date is **2026-10-31**. The historical mapping below is p
 | Remaining after R3 / R3 后尚无映射 | 59 | Complete names and next Pyraformer scope in [R3](WORKBUDDY_FORECASTING_R3.md) / 完整名单及下一项范围见 R3 |
 | Mapped after R4 / R4 后已有映射 | 38 | Adds observation-tier Pyraformer, not benchmark promotion / 新增观察池 Pyraformer，不代表基准晋升 |
 | Remaining after R4 / R4 后尚无映射 | 58 | Complete list and implementation boundaries in [R4](WORKBUDDY_FORECASTING_R4.md) / 完整名单及实现边界见 R4 |
+| Mapped after R5 / R5 后已有映射 | 39 | Adds observation-tier GMAN with explicit spatial embeddings/calendar / 新增要求空间嵌入及日历的观察池 GMAN |
+| Remaining after R5 / R5 后尚无映射 | 57 | Complete list and source boundaries in [R5](WORKBUDDY_FORECASTING_R5.md) / 完整名单及来源边界见 R5 |
 | Honorable-mention occurrences / 附带提及次数 | 89 | Repetitions allowed; excluded from the 96 / 可重复，不计入 96 个主选项 |
 | Reports without a main selection / 无主选项的报告 | 3 | `report-2026-06-24.md`, `report-2026-10-24.md`, `report-2026-10-25.md` |
 
