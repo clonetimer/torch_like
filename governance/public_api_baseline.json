@@ -237,6 +237,8 @@
         "ProbabilisticForecastingBatch",
         "ProbabilisticForecastingConfig",
         "ProbabilisticForecastingModel",
+        "Pyraformer",
+        "PyraformerConfig",
         "ROCKET",
         "ROCKETConfig",
         "RTDETR",
@@ -623,6 +625,8 @@
         "ProbabilisticForecastingBatch",
         "ProbabilisticForecastingConfig",
         "ProbabilisticForecastingModel",
+        "Pyraformer",
+        "PyraformerConfig",
         "ROCKET",
         "ROCKETConfig",
         "RTDETR",
@@ -17889,6 +17893,254 @@
       "kind": "class",
       "target": "torch_like.models.forecasting.common.ProbabilisticForecastingModel",
       "signature": []
+    },
+    "torch_like.Pyraformer": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.pyraformer.Pyraformer",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "window_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            4,
+            4,
+            4
+          ]
+        },
+        {
+          "name": "inner_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "d_bottleneck",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        }
+      ]
+    },
+    "torch_like.PyraformerConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.pyraformer.PyraformerConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "window_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            4,
+            4,
+            4
+          ]
+        },
+        {
+          "name": "inner_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "d_bottleneck",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        }
+      ]
     },
     "torch_like.ROCKET": {
       "kind": "class",
@@ -48211,6 +48463,254 @@
       "kind": "class",
       "target": "torch_like.models.forecasting.common.ProbabilisticForecastingModel",
       "signature": []
+    },
+    "torch_like.models.Pyraformer": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.pyraformer.Pyraformer",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "window_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            4,
+            4,
+            4
+          ]
+        },
+        {
+          "name": "inner_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "d_bottleneck",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        }
+      ]
+    },
+    "torch_like.models.PyraformerConfig": {
+      "kind": "class",
+      "target": "torch_like.models.forecasting.pyraformer.PyraformerConfig",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "dec_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "c_out",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "label_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "pred_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "n_heads",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 4
+        },
+        {
+          "name": "e_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "d_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "d_ff",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 128
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.05
+        },
+        {
+          "name": "embed",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "fixed"
+        },
+        {
+          "name": "freq",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "activation",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": "gelu"
+        },
+        {
+          "name": "output_attention",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "window_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": [
+            4,
+            4,
+            4
+          ]
+        },
+        {
+          "name": "inner_size",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "d_bottleneck",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        }
+      ]
     },
     "torch_like.models.ROCKET": {
       "kind": "class",

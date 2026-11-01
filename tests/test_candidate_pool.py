@@ -45,7 +45,7 @@ class CandidatePoolValidationTests(unittest.TestCase):
 
     def test_hard_gate_parser_reads_all_candidates(self):
         gates = parse_hard_gates(self.document)
-        self.assertEqual(len(gates), 20)
+        self.assertEqual(len(gates), 21)
         self.assertEqual(sum(gate.gate == "fail" for gate in gates), 2)
         nonstationary = [row for row in parse_scorecard(self.document) if row.model == "Non-stationary Transformers"]
         self.assertEqual(len(nonstationary), 1)
@@ -53,6 +53,10 @@ class CandidatePoolValidationTests(unittest.TestCase):
         film = [row for row in parse_scorecard(self.document) if row.model == "FiLM"]
         self.assertEqual(len(film), 1)
         self.assertEqual(film[0].decision, "observation, implemented")
+        pyraformer = [row for row in parse_scorecard(self.document) if row.model == "Pyraformer"]
+        self.assertEqual(len(pyraformer), 1)
+        self.assertEqual(pyraformer[0].final, 69.0)
+        self.assertEqual(pyraformer[0].decision.split(",")[0], "observation")
 
     def test_invalid_value_final_and_decision_are_reported_together(self):
         row = CandidateScore(

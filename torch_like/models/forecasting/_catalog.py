@@ -44,6 +44,7 @@ from torch_like.models.forecasting.nonstationary_transformer import (
 from torch_like.models.forecasting.patchtst import PatchTST
 from torch_like.models.forecasting.ppm import PPM
 from torch_like.models.forecasting.protran import ProTran
+from torch_like.models.forecasting.pyraformer import Pyraformer, PyraformerConfig
 from torch_like.models.forecasting.rul_adapters import AutoformerRUL, InformerRUL, LogTransRUL
 from torch_like.models.forecasting.scinet import SCINet
 from torch_like.models.forecasting.softs import SOFTS, SOFTSConfig
@@ -63,6 +64,16 @@ from torch_like.models.registry import register_model_catalog
 from torch_like.models.rul import RULBatch, RULConfig, RULModel
 
 model_zoo = {
+    "Pyraformer": {
+        "cls": Pyraformer,
+        "family": "pyramidal_sparse_attention",
+        "layer": "Transformer / attention forecasting",
+        "integration_level": "paper_aligned_portable_subset",
+        "supports": ["sparse_attention", "multiscale", "bottleneck_construction", "direct_forecast"],
+        "paper": "Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting (ICLR 2022)",
+        "description": "Four-level bottleneck pyramid with indexed neighbor attention and a direct last-ancestor FC head",
+        "complexity": "Attention O(B*S*K*D), gather storage O(B*S*K*D); projections/FFN O(B*S*(D^2+D*F)); head O(B*D*H*C)",
+    },
     "FiLM": {
         "cls": FiLM,
         "family": "frequency_legendre_memory",
@@ -545,6 +556,8 @@ __all__ = [
     "FITS",
     "FiLMConfig",
     "FiLM",
+    "PyraformerConfig",
+    "Pyraformer",
     "STGCNConfig",
     "STGCN",
     "NonstationaryTransformerConfig",
