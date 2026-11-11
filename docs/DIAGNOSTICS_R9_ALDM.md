@@ -25,12 +25,10 @@ These defects are documented as reference-code findings, not attributed to the p
 ## Public API
 
 ~~~python
-import torch
-from torch_like.models import create_model
+from torch_like.diagnostics import SignalBatch
+from torch_like.models import ALDMDetector
 
-detector = create_model(
-    "ALDMDetector",
-    domain="detection",
+detector = ALDMDetector(
     input_dim=51,
     seq_len=60,
     d_model=64,
@@ -39,22 +37,27 @@ detector = create_model(
     flow_layers=2,
 )
 
-# Train on normal-only windows. Fit preprocessing on the training split only.
-batch = detector.make_detection_batch(normal_training_windows)
-loss = detector.fit_step(batch)
-loss.backward()
-
-# Use model.eval() for deterministic density scoring.
-detector.eval()
-window_scores = detector.score_batch(
-    detector.make_detection_batch(held_out_windows),
-    reduction="mean",
+# Fit on normal-only windows. Fit preprocessing on the training split only.
+detector.fit(
+    normal_training_batch,  # SignalBatch
+    epochs=20,
+    batch_size=128,
 )
 
-# Calibrate only on an independent healthy calibration split.
-threshold = detector.calibrate_threshold(
-    detector.make_detection_batch(healthy_calibration_windows),
+# score() returns one window-level DiagnosticResult.
+window_result = detector.score(held_out_batch)  # SignalBatch
+window_scores = window_result.values
+
+# Prefer a separate healthy calibration partition for operational thresholds.
+detector.calibrate_threshold(
+    detector.make_detection_batch(healthy_calibration_values),
     quantile=0.995,
+)
+
+# Retain temporal/channel resolution when computing event-level metrics.
+time_channel_scores = detector.score_batch(
+    detector.make_detection_batch(held_out_values),
+    reduction="none",
 )
 ~~~
 
@@ -98,7 +101,7 @@ The reference event precision is point precision multiplied by normal-point spec
 - The contrastive encoder uses aligned stochastic views and hierarchical max-pooling. It does not reproduce every random-crop and masking detail of the authors' TS2Vec variant.
 - Training assumes predominantly healthy/normal windows. Contaminated training data can cause anomalies to be absorbed into the learned normal distribution.
 - No scaler is fit internally. Fit normalization only on the training split; use separate validation and healthy calibration data; never select epochs or thresholds on test labels.
-- The model does not bundle datasets or author checkpoints. IEEE's abstract reports three widely used benchmarks plus a newly constructed dataset; the official repository README lists SWaT, TEPE, PSM and MSL. The exact mapping between the paper's benchmark description and repository data names remains to be verified against the full experimental protocol. No published paper metric is claimed as a local result.
+- The model implements fit(SignalBatch) and score(SignalBatch), so it can be used by AnomalyDiagnosticWorkflow. That workflow enforces recording/sample-disjoint reference, validation and sealed test partitions; validation_f1 selects thresholds on validation only. The convenience fit method's initial native threshold is a quantile of the fitted healthy reference scores; use an independent healthy calibration partition for stricter operating thresholds. The model does not bundle datasets or author checkpoints. IEEE's abstract reports three widely used benchmarks plus a newly constructed dataset; the official repository README lists SWaT, TEPE, PSM and MSL. The exact mapping between the paper's benchmark description and repository data names remains to be verified against the full experimental protocol. No published paper metric is claimed as a local result.
 - The event-wise metric is for one contiguous, already aligned time series. Do not concatenate independent runs or overlapping windows without a documented score-alignment policy.
 
 ## Verification
