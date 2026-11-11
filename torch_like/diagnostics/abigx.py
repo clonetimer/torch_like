@@ -170,8 +170,10 @@ class ABIGXExplainer:
             values = values.reshape(1)
         elif values.shape[0] != batch_size:
             raise ValueError("score_fn output must have the same leading batch dimension as inputs")
+        elif values.numel() != batch_size:
+            raise ValueError("score_fn must return exactly one scalar score per input sample")
         else:
-            values = values.reshape(batch_size, -1).mean(dim=1)
+            values = values.reshape(batch_size)
         if not torch.isfinite(values).all():
             raise ValueError("score_fn returned nonfinite fault scores")
         return values
