@@ -29,15 +29,23 @@ classification_score = make_classification_spe(
     representation_fn=penultimate_features,
     normal_reference=normal_windows,
 )
-explanation = explainer.explain(fault_windows, classification_score)
+# The attribution target is the scalar confidence of the explained fault class.
+def fault_confidence(x: torch.Tensor) -> torch.Tensor:
+    return classifier(x).softmax(dim=-1)[:, explained_class]
+
+explanation = explainer.explain(
+    fault_windows,
+    classification_score,
+    attribution_fn=fault_confidence,
+)
 ```
 
-The score function must be differentiable, batch-separable, and return one scalar fault score per sample (or a tensor with the batch dimension first). The caller controls model evaluation mode, preprocessing, valid input ranges and the choice of representation layer.
+The AFR score function and IG attribution function must be differentiable, batch-separable, and return one scalar per sample (or a tensor with the batch dimension first). For fault detection they can be the same anomaly score. For fault classification, use normal-centroid SPE for AFR and a separate scalar output such as the explained fault-class confidence for IG. The caller controls model evaluation mode, preprocessing, valid input ranges and the choice of representation layer.
 
 ## Algorithm
 
 1. **Fault-aware baseline (AFR)**: initialise the reconstructed sample at the explained input. Iteratively descend the fault score and project the perturbation onto a caller-selected L0, L1, L2 or L-infinity budget. The best score-reducing iterate is retained.
-2. **Attribution (IG)**: integrate input gradients along the straight path from the AFR baseline to the original sample. Multiply the average path gradient by the input-baseline difference.
+2. **Attribution (IG)**: integrate gradients of the FDC output (for classification, the selected fault confidence) along the straight path from the AFR baseline to the original sample. Multiply the average path gradient by the input-baseline difference. The AFR objective and IG attribution target are separate inputs; they are the same score only when the detector output itself is the desired explanation target.
 3. **Output**: return per-feature signed attributions, AFR baseline, original/baseline scores and an Integrated-Gradients completeness residual.
 
 The implementation follows the minimisation direction in the paper's AFR objective and Eq. (20). The paper's Algorithm 1 pseudocode prints an additive gradient update, which conflicts with the stated minimisation objective and the subtractive update in Eq. (20); this implementation deliberately uses gradient descent and tests that the score decreases.
