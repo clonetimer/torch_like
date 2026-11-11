@@ -65,7 +65,7 @@ class HSNNIBRULTests(unittest.TestCase):
     def test_eval_forward_is_finite_deterministic_and_nonnegative(self):
         model = small_model()
         model.eval()
-        x = torch.as_tensor(make_signals().values)
+        x = torch.tensor(make_signals().values, dtype=torch.float32)
         first = model(x)
         second = model(x)
         self.assertEqual(first.shape, (4,))
@@ -76,7 +76,7 @@ class HSNNIBRULTests(unittest.TestCase):
     def test_information_bottleneck_loss_backpropagates(self):
         model = small_model()
         model.train()
-        x = torch.as_tensor(make_signals().values)
+        x = torch.tensor(make_signals().values, dtype=torch.float32)
         targets = torch.tensor([20.0, 18.0, 12.0, 8.0])
         objective = model.training_loss(x, targets, loss="mse")
         self.assertEqual(objective.ndim, 0)
