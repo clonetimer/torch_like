@@ -571,6 +571,7 @@
         "KimiLinearConfig",
         "Koopa",
         "KoopaConfig",
+        "KnowledgeDataPINNRUL",
         "LLaMA",
         "LLaMAConfig",
         "LLaVA",
