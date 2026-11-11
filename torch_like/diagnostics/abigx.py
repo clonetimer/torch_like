@@ -57,10 +57,10 @@ class ABIGXExplanation:
             if tensors[name].shape != (batch_size,):
                 raise ValueError(f"{name} must contain one scalar per input sample")
         for name, value in tensors.items():
-            if not torch.is_floating_point(value) or not torch.math.isfinite(value).all():
+            if not torch.is_floating_point(value) or not torch.isfinite(value).all():
                 raise ValueError(f"{name} must contain finite floating-point values")
         if self.norm not in {0.0, 1.0, 2.0, math.inf}:
-            raise ValueError("norm must be one of 0, 1, 2 or math.infinity")
+            raise ValueError("norm must be one of 0, 1, 2 or infinity")
         if not math.isfinite(self.epsilon) or self.epsilon <= 0:
             raise ValueError("epsilon must be finite and positive")
 
@@ -81,7 +81,7 @@ class ABIGXExplanation:
         """Return a JSON-compatible summary; tensors are converted to CPU lists."""
         return {
             "method": "ABIGX",
-            "norm": "math.inf" if self.norm == math.inf else self.norm,
+            "norm": "inf" if self.norm == math.inf else self.norm,
             "epsilon": self.epsilon,
             "attributions": self.attributions.cpu().tolist(),
             "baseline": self.baseline.cpu().tolist(),
@@ -103,7 +103,7 @@ class ABIGXExplainer:
     be batch-separable: one sample's output cannot depend on other batch members.
 
     Supported perturbation constraints are L0 (epsilon is a feature budget),
-    L1, L2 and L-math.infinity. The portable implementation uses projected gradient
+    L1, L2 and L-infinity. The portable implementation uses projected gradient
     descent for every norm; it does not claim the global optimum of the
     mixed-integer program described for linear models in the paper.
     """
@@ -118,14 +118,14 @@ class ABIGXExplainer:
         ig_steps: int = 32,
     ) -> None:
         if isinstance(norm, bool) or norm not in {0, 1, 2, math.inf}:
-            raise ValueError("norm must be one of 0, 1, 2 or math.infinity")
+            raise ValueError("norm must be one of 0, 1, 2 or infinity")
         if isinstance(epsilon, bool) or not isinstance(epsilon, (int, float)) or not math.isfinite(epsilon):
             raise ValueError("epsilon must be a finite number")
         if norm == 0:
             if not isinstance(epsilon, int) or epsilon < 1:
                 raise ValueError("L0 epsilon must be a positive integer feature budget")
         elif epsilon <= 0:
-            raise ValueError("epsilon must be positive for L1, L2 and L-math.infinity constraints")
+            raise ValueError("epsilon must be positive for L1, L2 and L-infinity constraints")
         if isinstance(steps, bool) or not isinstance(steps, int) or steps < 1:
             raise ValueError("steps must be a positive integer")
         if isinstance(ig_steps, bool) or not isinstance(ig_steps, int) or ig_steps < 2:
@@ -152,7 +152,7 @@ class ABIGXExplainer:
             raise TypeError("inputs must be a torch tensor")
         if inputs.ndim < 2 or inputs.shape[0] < 1 or any(size < 1 for size in inputs.shape[1:]):
             raise ValueError("inputs must have a nonempty batch dimension and nonempty feature dimensions")
-        if not torch.is_floating_point(inputs) or not torch.math.isfinite(inputs).all():
+        if not torch.is_floating_point(inputs) or not torch.isfinite(inputs).all():
             raise ValueError("inputs must contain finite floating-point values")
         return inputs.detach()
 
@@ -172,7 +172,7 @@ class ABIGXExplainer:
             raise ValueError("score_fn output must have the same leading batch dimension as inputs")
         else:
             values = values.reshape(batch_size, -1).mean(dim=1)
-        if not torch.math.isfinite(values).all():
+        if not torch.isfinite(values).all():
             raise ValueError("score_fn returned nonfinite fault scores")
         return values
 
@@ -239,7 +239,7 @@ class ABIGXExplainer:
                 gradient = torch.autograd.grad(scores.sum(), point, only_inputs=True)[0]
             except RuntimeError as exc:
                 raise ValueError("score_fn must be differentiable with respect to its input") from exc
-            if not torch.math.isfinite(gradient).all():
+            if not torch.isfinite(gradient).all():
                 raise ValueError("score_fn produced nonfinite input gradients")
 
             candidate = point.detach() - self.step_size * self._direction(gradient.detach())
@@ -292,7 +292,7 @@ class ABIGXExplainer:
                     gradient = torch.autograd.grad(scores.sum(), point, only_inputs=True)[0]
                 except RuntimeError as exc:
                     raise ValueError("attribution_fn must be differentiable along the IG path") from exc
-                if not torch.math.isfinite(gradient).all():
+                if not torch.isfinite(gradient).all():
                     raise ValueError("attribution_fn produced nonfinite IG gradients")
                 accumulated += gradient.detach()
 
@@ -333,7 +333,7 @@ def make_classification_spe(
         if not isinstance(representations, torch.Tensor) or representations.shape[0] != reference.shape[0]:
             raise ValueError("representation_fn must return a tensor with the reference batch dimension")
         representations = representations.reshape(representations.shape[0], -1)
-        if not torch.math.isfinite(representations).all():
+        if not torch.isfinite(representations).all():
             raise ValueError("normal reference representations must be finite")
         centroid = representations.mean(dim=0).detach()
 
