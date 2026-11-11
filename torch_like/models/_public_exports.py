@@ -95,6 +95,8 @@ PUBLIC_EXPORTS = {
     "DetectionConfig": ("torch_like.models.detection.common", "DetectionConfig"),
     "DetectionBatch": ("torch_like.models.detection.common", "DetectionBatch"),
     "DetectionModel": ("torch_like.models.detection.common", "DetectionModel"),
+    "ALDMDetectorConfig": ("torch_like.models.detection.aldm", "ALDMDetectorConfig"),
+    "ALDMDetector": ("torch_like.models.detection.aldm", "ALDMDetector"),
     "CBAMTCNDetectorConfig": ("torch_like.models.detection.cbam_tcn", "CBAMTCNDetectorConfig"),
     "CBAMTCNDetector": ("torch_like.models.detection.cbam_tcn", "CBAMTCNDetector"),
     "AnomalyTransformerConfig": ("torch_like.models.detection.anomaly_transformer", "AnomalyTransformerConfig"),
