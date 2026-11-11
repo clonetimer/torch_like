@@ -210,31 +210,29 @@ class HSNNIBRUL(RULModel):
         for group_index, group in enumerate(groups):
             indices = torch.as_tensor(group, device=hidden.device, dtype=torch.long)
             target_features = local.index_select(0, indices)
-            target_updates = []
+            cross_messages = []
 
-            for target in target_features:
-                cross_messages = []
-                for other_index, other_group in enumerate(groups):
-                    if other_index == group_index:
-                        continue
-                    other_indices = torch.as_tensor(other_group, device=hidden.device, dtype=torch.long)
-                    other_features = local.index_select(0, other_indices)
-                    differences = target.unsqueeze(0) - other_features
-                    scores = self.inter_similarity(differences).squeeze(-1)
-                    weights = scores / scores.sum().clamp_min(1e-8)
-                    context = torch.sum(weights.unsqueeze(-1) * other_features, dim=0)
-                    joined = torch.cat((context, target), dim=-1)
-                    eta = torch.tanh(self.gate_eta(joined))
-                    mu = torch.sigmoid(self.gate_mu(joined))
-                    cross_messages.append(eta * mu)
+            for other_index, other_group in enumerate(groups):
+                if other_index == group_index:
+                    continue
+                other_indices = torch.as_tensor(other_group, device=hidden.device, dtype=torch.long)
+                other_features = local.index_select(0, other_indices)
+                differences = target_features.unsqueeze(1) - other_features.unsqueeze(0)
+                scores = self.inter_similarity(differences).squeeze(-1)
+                weights = scores / scores.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+                context = weights @ other_features
+                joined = torch.cat((context, target_features), dim=-1)
+                eta = torch.tanh(self.gate_eta(joined))
+                mu = torch.sigmoid(self.gate_mu(joined))
+                cross_messages.append(eta * mu)
 
-                if cross_messages:
-                    cross_update = torch.stack(cross_messages, dim=0).mean(dim=0)
-                    target_updates.append(target + cross_update)
-                else:
-                    target_updates.append(target)
+            if cross_messages:
+                cross_update = torch.stack(cross_messages, dim=0).mean(dim=0)
+                target_updates = target_features + cross_update
+            else:
+                target_updates = target_features
 
-            updated = updated.index_copy(0, indices, torch.stack(target_updates, dim=0))
+            updated = updated.index_copy(0, indices, target_updates)
 
         summaries = torch.stack(
             [updated.index_select(0, torch.as_tensor(group, device=hidden.device)).mean(dim=0) for group in groups],
