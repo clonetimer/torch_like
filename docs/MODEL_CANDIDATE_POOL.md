@@ -41,6 +41,7 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | GMAN (AAAI 2020) | 2026-11-01 | 2027-02-01 | maintainers | baseline-run provenance, spatial-embedding/calendar contract, BN/source-variant parity or official license change |
 | DeepState (NeurIPS 2018) | 2026-11-01 | 2027-02-01 | maintainers | external supplement/protocol audit, numerical parity, explicit calendar/missing-data contract or source/license change |
 | HSNN-IB (Information Fusion 2026) | 2026-11-11 | 2027-02-11 | maintainers | C-MAPSS/SCADA replication, upstream code availability, graph-partition or information-bottleneck implementation change |
+| ALDM (IEEE T-ASE 2026) | 2026-11-11 | 2027-02-11 | maintainers | independent SWaT/TEPE/PSM/MSL protocol and benchmark, leakage audit, adaptive-metric/flow implementation change or upstream license change |
 | Paloma (arXiv 2610.25392v1) | 2026-11-01 | 2027-02-01 | maintainers | independent experiment, phase-index/normalization contract or source/license change |
 | SEER (ICML 2026) | 2026-11-01 | 2027-02-01 | maintainers | controlled independent robustness experiments, run provenance, replacement/routing contract or source/license change |
 | SAM 2.1 | 2026-10-19 | 2026-11-19 | maintainers | video protocol or independent latency evidence |
@@ -105,6 +106,7 @@ English: Both implementations subsequently passed model-level acceptance and are
 | GMAN (AAAI 2020) | yes | yes | yes | yes | yes: embedding-conditioned spatial/temporal fusion and history-to-future transform attention absent | Apache-2.0 | pass |
 | DeepState (NeurIPS 2018) | yes | yes | yes | yes | yes: structural Gaussian posterior filtering and correlated trajectory contract absent | Apache-2.0; pinned LICENSE, NOTICE and source | pass |
 | HSNN-IB (Information Fusion 2026) | yes | yes | yes | yes | yes: representative subgraph partition and variational information bottleneck are absent from existing RUL candidates | paper-derived method; no upstream code/assets copied; independent implementation | pass with risk |
+| ALDM (IEEE T-ASE 2026) | yes | yes | yes | yes | yes: adaptive-metric contrastive latent learning and sensor-graph-conditioned density scoring are absent from current detector families | MIT; official implementation available | pass |
 | Paloma (arXiv 2610.25392v1) | yes | yes | yes | yes | yes: phase-conditioned directional/amplitude residual modulation absent | Apache-2.0; pinned model and loader | pass |
 | SEER (ICML 2026) | yes | yes | yes | yes | yes: learned patch-quality replacement and augmented embeddings absent | MIT; pinned model and embedding source | pass |
 | SAM 2.1 | yes | yes | yes | yes | yes | Apache-2.0 | pass |
@@ -140,6 +142,7 @@ R=相关性，P=能力/性能，U=工程实用性，E=效率/成本，I=创新�
 | GMAN | 23 | 13 | 12 | 5 | 8 | 8 | 7 | 76 | A | 6 | 70.0 | observation, implemented |
 | DeepState | 24 | 10 | 12 | 7 | 8 | 8 | 7 | 76 | A | 8 | 68.0 | observation, implemented |
 | HSNN-IB | 24 | 15 | 14 | 6 | 8 | 5 | 8 | 80 | B | 5 | 67.0 | observation, implemented |
+| ALDM | 24 | 16 | 13 | 7 | 8 | 6 | 8 | 82 | B | 5 | 68.8 | observation, implemented |
 | Paloma | 23 | 12 | 13 | 9 | 8 | 3 | 7 | 75 | C | 6 | 50.25 | rejected, no code |
 | SEER | 24 | 13 | 11 | 6 | 8 | 6 | 7 | 75 | B | 7 | 60.5 | rejected, no code |
 | SAM 2.1 | 23 | 18 | 13 | 7 | 9 | 10 | 9 | 89 | B | 5 | 75.1 | observation |
@@ -173,6 +176,7 @@ the cited primary and independent evidence remains mandatory.
 | GMAN | distinct spatial/temporal gated attention with calendar-driven history-to-future bridge | externally evaluated foundational baseline, newer methods improve many difficult regimes | reusable random-init operator, but supplied embeddings and raw calendar constrain inputs | dense node/time attention and expensive external compute measurements | multi-attention fusion and transform bridge, not current universal novelty | repeated external evaluation and officially linked third-party port | pinned Apache reference and two experimental papers; legacy TF, variants and unpublished baseline provenance limit replication |
 | DeepState | fills explicit structural probabilistic inference gap | limited performance justification in external studies | native reusable forecaster with caller-supplied feature/calendar burden | shared recurrent parameterization; dense covariance and float64 accumulation cost | recurrent parameters plus analytical structural inference | established GluonTS support and independent experimental use | pinned permissive source; external protocol and local parity unresolved |
 | HSNN-IB | multi-sensor graph RUL gap | paper reports C-MAPSS and wind-SCADA gains; no local replication | reuses native RULRegressor and sensor-window contract | LSTM and dynamic graph costs are unmeasured | HMGPA, HGSFU and MFIBM in one RUL model | recent journal paper; no official code located | detailed equations/pseudocode and API/gradient tests; data protocol parity unverified |
+| ALDM | adds conditional latent-density anomaly scoring beyond reconstruction/forecasting detectors | paper reports SWaT, TEPE, PSM and MSL results; local benchmark unassessed | native DetectionModel fit/score API with caller-owned windows | LSTM, graph attention, flow and pairwise temporal contrastive costs | adaptive SPD soft labels plus conditional scalar flow | official MIT repository; independent adoption evidence limited | official implementation and independent API/gradient tests; dataset protocol parity and benchmark replication unverified |
 | Paloma | concrete periodic-modeling capability | author results without independently established advantage | compact standalone operator with explicit phase contract | simple linear modulation; no local timing claim | directional/amplitude residual modulation | limited verified independent adoption | licensed model/loader available; phase and normalization parity unresolved |
 | SEER | learned patch-quality handling is a specific capability | author results and one scoped external clean-forecast report | substantial routing, loss and input contract | MoE/attention cost and incomplete large-data external runs | augmented patch/series embeddings plus replacement | experiment infrastructure and one external-use report | pinned source; independent protocol, artifacts and robustness unresolved |
 | SAM 2.1 | video segmentation gap | strong official and domain results | prompt/memory API | substantial model cost | streaming video memory | broad adoption | paper/code plus domain evaluations |
@@ -315,6 +319,23 @@ the cited primary and independent evidence remains mandatory.
 - Missing information: controlled C-MAPSS FD001–FD004 and SCADA reproduction, head-to-head comparison against `THGNN`/`TCNRUL`/`PatchTSTRUL`, K/M/threshold/λ sensitivity, CPU/CUDA latency and memory, and cross-condition generalization.
 - Registry: `HSNNIBRUL`; integration level `paper_aligned_portable_subset`.
 
+
+### ALDM (IEEE T-ASE 2026)
+
+- Category: unsupervised multivariate time-series anomaly detection with conditional latent-density estimation.
+- Discovery: IMA paper library and the official ALDM repository; formally reviewed 2026-11-11 before Registry admission.
+- Core value: combines per-sensor recurrent encoding, learned sensor-graph context, a compact TS2Vec-inspired dilated temporal encoder, adaptive-metric hierarchical contrastive learning, and conditional scalar normalizing-flow likelihood scoring.
+- Evidence: [primary: Liu et al., IEEE Transactions on Automation Science and Engineering 23 (2026)](https://doi.org/10.1109/TASE.2026.3674236), [official: ALDM reference implementation](https://github.com/YuLiu-61/ALDM), [official: MIT license](https://github.com/YuLiu-61/ALDM/blob/main/LICENSE), [independent: DBLP publication record](https://dblp.org/rec/journals/tase/LiuSSLWG26).
+- Evidence interpretation: B satisfies the primary/official/independent source threshold for identity and method availability. DBLP is bibliographic evidence, not an independent numerical replication. The upstream README reports SWaT, TEPE, PSM and MSL support; these published or upstream results are not attributed to this repository implementation.
+- Peer comparison: `GDN` learns a sensor graph for reconstruction-style anomaly scoring; `OmniAnomaly` uses variational recurrent reconstruction; `DCDetector` uses dual time/channel attention and representation discrepancy. ALDM adds conditional latent-density scoring and adaptive-metric soft temporal targets rather than another reconstruction-only detector.
+- Score: value 82; evidence B; risk 5; final 68.8.
+- Decision: observation, implemented.
+- Conclusion reason: the architecture adds a distinct unsupervised scoring mechanism and has passed framework/API/gradient tests. It remains observation because independent SWaT/TEPE/PSM/MSL reproduction, event-level comparison and compute-cost measurements are not complete.
+- Risk deduction: 2 for upstream implementation defects corrected in the portable implementation, 2 for incomplete independent dataset/protocol evidence, and 1 for unmeasured latency and memory cost.
+- Implementation boundary: this is a paper-aligned portable subset, not a line-by-line upstream reproduction. The model uses a low-rank positive-definite metric (W=UU^T+\epsilon I), a compact dilated temporal contrastive encoder and conditional affine flow blocks for scalar sensor values. It does not bundle upstream dataset loaders, raw data, test-AUC checkpoint selection or thresholds. The upstream SWaT/TEPE loaders fit scalers before splitting and the training script selects checkpoints using test AUC; neither practice is copied. Callers must fit preprocessing on training data only, select models/thresholds on validation data, and keep the test period sealed.
+- Acceptance: `tests/test_detection_aldm.py` covers registry construction, configuration round-trip, deterministic window scoring, sensor-graph normalization, positive-definite metric symmetry/non-negativity, gradients through the metric/flow/contrastive paths, odd window lengths, batch-size-one training and invalid-input boundaries. These are contract/numerical tests, not dataset benchmarks.
+- Missing information: full paper text and exact dataset split/threshold protocols, independent reproduction on SWaT/TEPE/PSM/MSL, event-wise metric parity, cross-condition generalization, and CPU/CUDA latency and memory. Maturity and benchmark evidence remain `unassessed`.
+- Registry: `ALDMDetector`; integration level `paper_aligned_portable_subset`.
 
 ### GMAN (AAAI 2020)
 
