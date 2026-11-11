@@ -4,7 +4,8 @@ import unittest
 
 import torch
 
-from torch_like.diagnostics.abigx import ABIGXExplainer, ABIGXExplanation, make_classification_spe
+from torch_like.diagnostics import ABIGXExplainer, make_classification_spe
+from torch_like.diagnostics.abigx import ABIGXExplanation
 
 
 class ABIGXExplainerTests(unittest.TestCase):
