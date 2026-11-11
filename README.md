@@ -32,9 +32,9 @@ English: R2 adds `NonstationaryTransformer`, R3 `FiLM`, R4 native sparse `Pyrafo
 
 English: R6 triages all57:3 research priorities,32 holds,8 low-increment skips and14 non-backbone reroutes. **No model is added in R6**; mapping remains39/96 and forecasting count49. Every disposition keeps evidence, uncertainty and reopening conditions; triage is not formal admission.
 
-中文：**R7当前进展：新增原生DeepState，观察级68分**，支持显式季节项、缺失观测、解析状态推断及相关轨迹采样。全库172个模型、预测50个，报告名称映射40/96。Paloma50.25分、SEER60.5分保留正式评审记录，本轮不添加代码。DeepState成熟度及基准证据仍为`unassessed`；使用方法与适配边界见[R7](docs/WORKBUDDY_FORECASTING_R7.md)。
+中文：**R7当前进展：新增原生DeepState，观察级68分**，支持显式季节项、缺失观测、解析状态推断及相关轨迹采样。全库174个模型、预测50个，报告名称映射40/96。Paloma50.25分、SEER60.5分保留正式评审记录，本轮不添加代码。DeepState成熟度及基准证据仍为`unassessed`；使用方法与适配边界见[R7](docs/WORKBUDDY_FORECASTING_R7.md)。
 
-English: **R7 adds native DeepState at observation68**, with explicit seasonal phases, missing observations, analytic state inference and correlated forecast paths. Current totals are172 models/50 forecasting,40/96 report names mapped. Paloma50.25 and SEER60.5 remain rejected/no-code. DeepState maturity and benchmark evidence remain`unassessed`; R7 documents usage and numerical/objective adaptations.
+English: **R7 adds native DeepState at observation68**, with explicit seasonal phases, missing observations, analytic state inference and correlated forecast paths. Current totals are174 models/50 forecasting,40/96 report names mapped. Paloma50.25 and SEER60.5 remain rejected/no-code. DeepState maturity and benchmark evidence remain`unassessed`; R7 documents usage and numerical/objective adaptations.
 
 ## 工业诊断与健康评估算法库的职责边界
 
@@ -76,6 +76,8 @@ R7（IMA RUL 文献补充）：新增 HSNNIBRUL，吸收 Information Fusion 2026
 
 R7 (IMA RUL literature intake): adds HSNNIBRUL with HMGPA-inspired subgraph partitioning, HGSFU-inspired gated cross-subgraph updates and MFIBM-inspired variational information bottleneck, trained and served through the native RULRegressor. It samples the latent during training and uses the posterior mean at inference; the model-specific training_loss includes the KL term. This remains a paper-aligned candidate, not a reproduction of the paper's C-MAPSS/SCADA scores. Caller-owned preprocessing, windowing and RUL labels are unchanged. See [R7 notes](docs/DIAGNOSTICS_R7.md).
 R8 (IMA explainability intake): adds an independent ABIGX-style explainer to `torch_like.diagnostics`. It constructs a fault-aware AFR baseline with projected gradient descent, then integrates gradients from that baseline to the explained sample. It supports L0/L1/L2/L-infinity budgets and separates the AFR objective from the IG attribution target for classification. It requires differentiable models and produces associational, not causal, attributions; no TEP/MVTec or telemetry benchmark is claimed. See [R8 notes](docs/DIAGNOSTICS_R8_ABIGX.md) and the [IMA algorithm intake review](docs/IMA_ALGORITHM_INTAKE_20261111.md).
+R9（IMA 物理信息学习补充）：新增 KnowledgeDataPINNRUL，采用 MLP 状态网络 Psi、正值退化速率网络 Gamma、自动微分物理残差和单调性约束，并通过原生 RULRegressor 完成训练与推理。它是原论文 M-PINN 的 paper-aligned 子集，并针对 RUL 递减方向调整方程符号；不声称复现 PHM 2010、NASA Ames 或航天器数据集指标。完整模型已进入完整版 RUL 目录；独立 Stable Wheel 暂不包含。详见 [R9 文档](docs/DIAGNOSTICS_R9_PINN.md)。
+R9 (IMA physics-informed learning intake): adds KnowledgeDataPINNRUL with an MLP state network Psi, positive degradation-rate network Gamma, an autograd governing-rate residual and a monotonicity penalty, trained and served through the native RULRegressor. This is a paper-aligned M-PINN subset with the equation sign adapted to decreasing RUL; it does not claim PHM 2010, NASA Ames or spacecraft benchmark reproduction. The full-framework RUL catalog includes it; the separate Stable Wheel does not yet ship it. See [R9 notes](docs/DIAGNOSTICS_R9_PINN.md).
 
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 

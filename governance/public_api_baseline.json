@@ -176,6 +176,7 @@
         "KimiLinearConfig",
         "Koopa",
         "KoopaConfig",
+        "KnowledgeDataPINNRUL",
         "LLaMA",
         "LLaMAConfig",
         "LLaVA",
@@ -570,6 +571,7 @@
         "KimiLinearConfig",
         "Koopa",
         "KoopaConfig",
+        "KnowledgeDataPINNRUL",
         "LLaMA",
         "LLaMAConfig",
         "LLaVA",
@@ -13545,6 +13547,60 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": true
+        }
+      ]
+    },
+    "torch_like.KnowledgeDataPINNRUL": {
+      "kind": "class",
+      "target": "torch_like.models.knowledge_data_pinn.KnowledgeDataPINNRUL",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 60
+        },
+        {
+          "name": "hidden_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 32
+        },
+        {
+          "name": "hidden_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "physics_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "monotonicity_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "min_rate",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-06
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
         }
       ]
     },
@@ -44963,6 +45019,60 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": true
+        }
+      ]
+    },
+    "torch_like.models.KnowledgeDataPINNRUL": {
+      "kind": "class",
+      "target": "torch_like.models.knowledge_data_pinn.KnowledgeDataPINNRUL",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 16
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 60
+        },
+        {
+          "name": "hidden_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 32
+        },
+        {
+          "name": "hidden_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "physics_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "monotonicity_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "min_rate",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-06
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
         }
       ]
     },

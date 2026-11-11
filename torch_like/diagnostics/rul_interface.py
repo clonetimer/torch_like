@@ -22,6 +22,7 @@ _RUL_MODELS = {
     "TransformerRUL": "torch_like.models.rul_backbones",
     "THGNN": "torch_like.models.thgnn",
     "HSNNIBRUL": "torch_like.models.hsnn_ib",
+    "KnowledgeDataPINNRUL": "torch_like.models.knowledge_data_pinn",
     "InformerRUL": "torch_like.models.forecasting.rul_adapters",
     "AutoformerRUL": "torch_like.models.forecasting.rul_adapters",
     "LogTransRUL": "torch_like.models.forecasting.rul_adapters",

@@ -142,7 +142,7 @@ R=相关性，P=能力/性能，U=工程实用性，E=效率/成本，I=创新�
 | GMAN | 23 | 13 | 12 | 5 | 8 | 8 | 7 | 76 | A | 6 | 70.0 | observation, implemented |
 | DeepState | 24 | 10 | 12 | 7 | 8 | 8 | 7 | 76 | A | 8 | 68.0 | observation, implemented |
 | HSNN-IB | 24 | 15 | 14 | 6 | 8 | 5 | 8 | 80 | B | 5 | 67.0 | observation, implemented |
-| Knowledge-Data PINN | 25 | 16 | 14 | 7 | 9 | 6 | 8 | 85 | B | 7 | 69.5 | observation, no code |
+| Knowledge-Data PINN | 25 | 16 | 14 | 7 | 9 | 6 | 8 | 85 | B | 7 | 69.5 | observation, implemented |
 | Paloma | 23 | 12 | 13 | 9 | 8 | 3 | 7 | 75 | C | 6 | 50.25 | rejected, no code |
 | SEER | 24 | 13 | 11 | 6 | 8 | 6 | 7 | 75 | B | 7 | 60.5 | rejected, no code |
 | SAM 2.1 | 23 | 18 | 13 | 7 | 9 | 10 | 9 | 89 | B | 5 | 75.1 | observation |
@@ -330,12 +330,13 @@ the cited primary and independent evidence remains mandatory.
 - Evidence interpretation: B satisfies the primary/official/independent identity-and-method evidence threshold. Independent records are bibliographic, not independent numerical replications. The paper reports HMoTP, PHM 2010 and NASA Ames milling experiments; those results are not attributed to this repository.
 - Peer comparison: `HSNNIBRUL` uses graph partitioning and a variational bottleneck but has no governing-rate residual; `TCNRUL` learns temporal patterns without a learned physical-rate mechanism; `SINDyDetector` identifies sparse explicit dynamics but is not a supervised neural RUL estimator.
 - Score: value 85; evidence B; risk 7; final 69.5.
-- Decision: observation, no code.
+- Decision: observation, implemented.
 - Conclusion reason: the two-network Ψ/Γ structure, autograd PDE residual and monotonicity term fill a distinct physical-consistency gap and are directly relevant to degradation/RUL work. Admission remains observation because the author implementation was not located, derivative-based residuals are noise-sensitive, and no local dataset replication has been completed.
 - Risk deduction: 3 for the absence of an official implementation and independent numerical replication; 2 for derivative noise, collocation/time-scaling sensitivity and loss-weight balance; 2 for the paper-specific sign/feature protocol and unmeasured training cost.
 - Implementation boundary: the intended first implementation is the MLP-based M-PINN subset, not the BiLSTM L-PINN variant. The RUL adaptation reverses the paper's increasing-wear sign: `d(RUL)/dt + Γ(x,t,RUL,∂RUL/∂x,∂RUL/∂t)=0`, with `Γ>0`. It uses the paper's data, physics-residual and monotonicity losses. Input features and time coordinates remain caller-preprocessed; no milling datasets, author weights or feature-selection pipeline are bundled.
 - Missing information: controlled PHM 2010 and NASA Ames replication; satellite component telemetry transfer; sensitivity to feature scaling, time normalization, derivative noise and physics/monotonicity weights; CPU/CUDA training overhead; comparison against `HSNNIBRUL`, `THGNN` and `TCNRUL`.
-- Registry: pending implementation and public API acceptance.
+- Acceptance: `tests/test_knowledge_data_pinn_rul.py` covers trajectory and residual contracts, finite loss components, gradients through both Psi and Gamma, explicit time-coordinate validation, public RUL factory construction and end-to-end adapter fit/predict. These are synthetic contract tests, not PHM 2010/NASA Ames or spacecraft benchmark results.
+- Registry: `KnowledgeDataPINNRUL`; integration level `paper_aligned_portable_subset`.
 
 
 ### GMAN (AAAI 2020)
@@ -448,7 +449,7 @@ the cited primary and independent evidence remains mandatory.
 
 ## Candidate Record / 候选记录
 
-No unscored candidate currently remains in this formal pool. New discoveries must enter here before formal scoring; they may not jump directly from a paper announcement into implementation. Discovery ledger: on 2026-10-31, FITS and STGCN were first recorded from the two reports named in the admission review above, then promoted to the Core Inclusion section only after the source, hard-gate, independent-evidence, and score reviews were complete. On 2026-11-11, HSNN-IB was recorded from the IMA paper library, reviewed against the publisher record and independent bibliographic sources, passed the hard gates with risk, and entered Observation after implementation/API checks. Its local dataset benchmark and runtime maturity remain unassessed. On 2026-11-11, Knowledge-Data PINN was reviewed against the full IMA paper, publisher record and independent bibliographic sources, passed the hard gates with risk, and entered Observation before code admission; implementation and local benchmark evidence remain pending.
+No unscored candidate currently remains in this formal pool. New discoveries must enter here before formal scoring; they may not jump directly from a paper announcement into implementation. Discovery ledger: on 2026-10-31, FITS and STGCN were first recorded from the two reports named in the admission review above, then promoted to the Core Inclusion section only after the source, hard-gate, independent-evidence, and score reviews were complete. On 2026-11-11, HSNN-IB was recorded from the IMA paper library, reviewed against the publisher record and independent bibliographic sources, passed the hard gates with risk, and entered Observation after implementation/API checks. Its local dataset benchmark and runtime maturity remain unassessed. On 2026-11-11, Knowledge-Data PINN was reviewed against the full IMA paper, publisher record and independent bibliographic sources, passed the hard gates with risk, and entered Observation before code admission. The M-PINN-derived decreasing-RUL subset was then implemented and passed API/gradient contract tests; local PHM 2010/NASA Ames and spacecraft benchmark evidence remains pending.
 
 ## Rejected / 淘汰
 
