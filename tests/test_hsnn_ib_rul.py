@@ -6,7 +6,7 @@ import numpy as np
 import torch
 
 from torch_like.diagnostics import SignalBatch, create_rul_regressor, list_rul_models
-from torch_like.models.hsnn_ib import HSNNIBRUL
+from torch_like.models import HSNNIBRUL, create_model, list_models
 
 
 def make_signals(batch=4, *, steps=12, channels=4):
@@ -118,6 +118,20 @@ class HSNNIBRULTests(unittest.TestCase):
 
     def test_rul_factory_lists_hsnn_ib(self):
         self.assertIn("HSNNIBRUL", list_rul_models())
+
+    def test_hsnn_ib_is_registered_and_publicly_constructible(self):
+        self.assertIn("HSNNIBRUL", list_models("rul"))
+        model = create_model(
+            "HSNNIBRUL",
+            domain="rul",
+            enc_in=4,
+            seq_len=12,
+            hidden_dim=8,
+            num_layers=1,
+            num_subgraphs=2,
+            max_nodes_per_subgraph=2,
+        )
+        self.assertIsInstance(model, HSNNIBRUL)
 
     def test_invalid_dimensions_threshold_and_input_are_rejected(self):
         with self.assertRaisesRegex(ValueError, "num_subgraphs"):
