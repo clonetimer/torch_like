@@ -83,11 +83,7 @@ class SINDyDetector:
         if np.iscomplexobj(raw):
             raise ValueError("complex-valued controls require an explicit real-valued representation")
         values = np.asarray(raw, dtype=np.float64)
-        if (
-            values.ndim != len(leading_shape) + 1
-            or values.shape[:-1] != leading_shape
-            or values.shape[-1] <= 0
-        ):
+        if values.ndim != len(leading_shape) + 1 or values.shape[:-1] != leading_shape or values.shape[-1] <= 0:
             raise ValueError(f"controls must have shape {leading_shape} + (control_channels,)")
         if expected_dim is not None and values.shape[-1] != expected_dim:
             raise ValueError(f"expected {expected_dim} control channels, got {values.shape[-1]}")
@@ -102,9 +98,7 @@ class SINDyDetector:
         state_names: tuple[str, ...],
     ) -> tuple[np.ndarray, tuple[str, ...]]:
         variables = states if controls is None else np.concatenate((states, controls), axis=1)
-        names = state_names + (
-            () if controls is None else tuple(f"u{index}" for index in range(controls.shape[1]))
-        )
+        names = state_names + (() if controls is None else tuple(f"u{index}" for index in range(controls.shape[1])))
         variable_count = variables.shape[1]
         term_count = int(self.include_bias)
         term_count += sum(comb(variable_count + degree - 1, degree) for degree in range(1, self.polynomial_degree + 1))
@@ -156,9 +150,7 @@ class SINDyDetector:
             for state_index in range(derivatives.shape[1]):
                 active = ~small[:, state_index]
                 if active.any():
-                    updated[active, state_index] = self._solve(
-                        normalized[:, active], derivatives[:, state_index]
-                    )
+                    updated[active, state_index] = self._solve(normalized[:, active], derivatives[:, state_index])
             if np.array_equal(updated, coefficients):
                 break
             coefficients = updated
@@ -230,9 +222,7 @@ class SINDyDetector:
         for state_index, state_name in enumerate(self._channel_names):
             terms = [
                 f"{coefficient:+.6g}*{feature_name}"
-                for feature_name, coefficient in zip(
-                    feature_names, coefficients[:, state_index], strict=True
-                )
+                for feature_name, coefficient in zip(feature_names, coefficients[:, state_index], strict=True)
                 if abs(float(coefficient)) > 1e-10
             ]
             equations.append(f"d({state_name})/dt = {' '.join(terms) if terms else '0'}")
@@ -275,9 +265,7 @@ class SINDyDetector:
         values = np.asarray(raw, dtype=np.float64)
         if values.ndim < 2 or values.shape[-1] != len(self._channel_names) or not np.isfinite(values).all():
             raise ValueError("states must be finite with shape (..., time_or_batch, fitted_state_channels)")
-        control_values = self._prepare_controls(
-            controls, values.shape[:-1], expected_dim=self._control_dim
-        )
+        control_values = self._prepare_controls(controls, values.shape[:-1], expected_dim=self._control_dim)
         flat_states = values.reshape(-1, values.shape[-1])
         flat_controls = None if control_values is None else control_values.reshape(-1, self._control_dim)
         library, feature_names = self._library(flat_states, flat_controls, self._channel_names)
