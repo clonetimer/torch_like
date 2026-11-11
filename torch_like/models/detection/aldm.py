@@ -94,10 +94,7 @@ class ALDMDetector(DetectionModel):
             raise ValueError("metric_temperature must be finite and positive")
         if not math.isfinite(augmentation_noise) or augmentation_noise < 0:
             raise ValueError("augmentation_noise must be finite and nonnegative")
-        if (
-            not math.isfinite(augmentation_mask_probability)
-            or not 0.0 <= augmentation_mask_probability < 1.0
-        ):
+        if not math.isfinite(augmentation_mask_probability) or not 0.0 <= augmentation_mask_probability < 1.0:
             raise ValueError("augmentation_mask_probability must be finite and in [0, 1)")
         if not math.isfinite(metric_regularization) or metric_regularization < 0:
             raise ValueError("metric_regularization must be finite and nonnegative")
@@ -173,8 +170,7 @@ class ALDMDetector(DetectionModel):
             raise ValueError("ALDMDetector requires at least one input window")
         if x.shape[1:] != (self.seq_len, self.input_dim):
             raise ValueError(
-                f"ALDMDetector expects x with shape (batch, {self.seq_len}, {self.input_dim}), "
-                f"got {tuple(x.shape)}"
+                f"ALDMDetector expects x with shape (batch, {self.seq_len}, {self.input_dim}), got {tuple(x.shape)}"
             )
         if not torch.is_floating_point(x) or not torch.isfinite(x).all().item():
             raise ValueError("ALDMDetector requires finite floating-point input windows")
