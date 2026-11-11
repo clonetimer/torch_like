@@ -1,7 +1,7 @@
 """Detection task interfaces and models."""
 
-from torch_like.models.detection.anomaly_transformer import AnomalyTransformer, AnomalyTransformerConfig
 from torch_like.models.detection.aldm import ALDMDetector, ALDMDetectorConfig
+from torch_like.models.detection.anomaly_transformer import AnomalyTransformer, AnomalyTransformerConfig
 from torch_like.models.detection.cbam_tcn import CBAMTCNDetector, CBAMTCNDetectorConfig
 from torch_like.models.detection.common import DetectionBatch, DetectionConfig, DetectionModel
 from torch_like.models.detection.dc_detector import DCDetector, DCDetectorConfig
