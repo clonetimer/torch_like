@@ -155,7 +155,11 @@ class HSNNIBRUL(RULModel):
         if not torch.isfinite(edge_weights).all().item() or torch.any(edge_weights < 0).item():
             raise ValueError("edge_weights must be finite and nonnegative")
 
+        if edge_weights.is_complex():
+            raise ValueError("edge_weights must be real-valued")
         weights = edge_weights.detach()
+        if not weights.is_floating_point():
+            weights = weights.to(dtype=torch.float32)
         row_sum = weights.sum(dim=-1)
         probabilities = weights / row_sum.clamp_min(torch.finfo(weights.dtype).eps).unsqueeze(-1)
         entropy = -(probabilities * probabilities.clamp_min(1e-12).log()).sum(dim=-1)
