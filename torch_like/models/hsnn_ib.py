@@ -164,7 +164,10 @@ class HSNNIBRUL(RULModel):
         entropy = -(probabilities * probabilities.clamp_min(torch.finfo(weights.dtype).tiny).log()).sum(dim=-1)
         strength = row_sum / self.enc_in
         centrality = self.centrality_alpha * strength - (1.0 - self.centrality_alpha) * entropy
-        ranking = torch.argsort(centrality, descending=True, stable=True).tolist()
+        ranking = sorted(
+            range(self.enc_in),
+            key=lambda node: (-round(float(centrality[node].item()), 6), node),
+        )
 
         remaining = set(range(self.enc_in))
         groups: list[tuple[int, ...]] = []
