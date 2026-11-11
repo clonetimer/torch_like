@@ -58,6 +58,7 @@ BUILTIN_MODEL_INDEX = {
     "InceptionTime": ("diagnosis", "torch_like.models.diagnosis.inception_time", "InceptionTime"),
     "ROCKET": ("diagnosis", "torch_like.models.diagnosis.rocket", "ROCKET"),
     "CBAMTCNDetector": ("detection", "torch_like.models.detection.cbam_tcn", "CBAMTCNDetector"),
+    "ALDMDetector": ("detection", "torch_like.models.detection.aldm", "ALDMDetector"),
     "TranAD": ("detection", "torch_like.models.detection.tranad", "TranAD"),
     "USAD": ("detection", "torch_like.models.detection.usad", "USAD"),
     "OmniAnomaly": ("detection", "torch_like.models.detection.omni_anomaly", "OmniAnomaly"),
