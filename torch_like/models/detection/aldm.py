@@ -123,6 +123,41 @@ class ConditionalMAFBlock(nn.Module):
         return transformed, -log_scale
 
 
+class DilatedTemporalContrastiveEncoder(nn.Module):
+    """Compact TS2Vec-inspired dilated encoder for the contrastive views."""
+
+    def __init__(self, input_dim: int, output_dim: int, dropout: float, depth: int = 4) -> None:
+        super().__init__()
+        self.input_projection = nn.Linear(input_dim, output_dim)
+        self.blocks = nn.ModuleList(
+            [
+                nn.ModuleDict(
+                    {
+                        "conv": nn.Conv1d(
+                            output_dim,
+                            output_dim,
+                            kernel_size=3,
+                            padding=2**index,
+                            dilation=2**index,
+                        ),
+                        "norm": nn.LayerNorm(output_dim),
+                        "dropout": nn.Dropout(dropout),
+                    }
+                )
+                for index in range(depth)
+            ]
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        values = self.input_projection(x)
+        for block in self.blocks:
+            residual = values
+            update = block["conv"](values.transpose(1, 2)).transpose(1, 2)
+            update = block["dropout"](F.gelu(update))
+            values = block["norm"](residual + update)
+        return values
+
+
 class ALDMDetector(DetectionModel):
     """Unsupervised ALDM-style detector for windows shaped (batch, length, channels).
 
@@ -209,10 +244,10 @@ class ALDMDetector(DetectionModel):
         self.temporal_transition = nn.Linear(d_model, d_model)
         self.context_norm = nn.LayerNorm(d_model)
         self.metric_projection = nn.Linear(input_dim * d_model, metric_dim)
-        self.contrastive_projection = nn.Sequential(
-            nn.Linear(metric_dim, metric_dim),
-            nn.GELU(),
-            nn.Linear(metric_dim, metric_dim),
+        self.contrastive_encoder = DilatedTemporalContrastiveEncoder(
+            input_dim=input_dim,
+            output_dim=metric_dim,
+            dropout=dropout,
         )
         self.adaptive_metric = AdaptiveSPDMetric(metric_dim, metric_rank)
         self.flow = nn.ModuleList(
@@ -347,8 +382,8 @@ class ALDMDetector(DetectionModel):
         second_view = self._augment(batch.x)
         _, _, first_metric = self.encode(first_view)
         _, _, second_metric = self.encode(second_view)
-        first_embedding = self.contrastive_projection(first_metric)
-        second_embedding = self.contrastive_projection(second_metric)
+        first_embedding = self.contrastive_encoder(first_view)
+        second_embedding = self.contrastive_encoder(second_view)
         contrastive = self._hierarchical_contrastive_loss(
             first_embedding,
             second_embedding,
