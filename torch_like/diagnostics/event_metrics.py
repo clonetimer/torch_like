@@ -94,10 +94,7 @@ def compute_event_wise_metrics(
         if prediction[start:end].any():
             detected += 1
 
-    false_positive_events = sum(
-        not truth[start:end].any()
-        for start, end in predicted_events
-    )
+    false_positive_events = sum(not truth[start:end].any() for start, end in predicted_events)
     false_negative_events = len(true_events) - detected
 
     predicted_points = int(prediction.sum())
