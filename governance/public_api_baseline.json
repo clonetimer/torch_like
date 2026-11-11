@@ -553,6 +553,7 @@
         "GraphormerConfig",
         "GroundingDINO",
         "GroundingDINOConfig",
+        "HSNNIBRUL",
         "HuBERT",
         "HuBERTConfig",
         "Hyena",
