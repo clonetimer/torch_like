@@ -72,6 +72,10 @@ R6（IMA 科研文献算法补充）：新增 `SINDyDetector`，使用稀疏动�
 
 R6 (IMA scientific-literature intake): adds `SINDyDetector` for sparse dynamics identification and healthy-model derivative-residual scoring, plus `ModalityConditionedConformalClassifier` for split-conformal prediction sets calibrated by exact sensor/modality availability masks. SINDy alarm thresholds require an independent healthy development set; unseen conformal masks fail explicitly instead of falling back to a global threshold. Both remain `unassessed`: synthetic contract tests are not paper-benchmark reproduction. No neural model catalog count or Stable allowlist change. See [R6 notes](docs/DIAGNOSTICS_R6.md).
 
+R7（IMA RUL 文献补充）：新增 HSNNIBRUL，吸收 Information Fusion 2026 的 HMGPA 子图划分、HGSFU 门控跨子图传播与 MFIBM 变分信息瓶颈机制，并通过统一 RULRegressor 接口训练/推理。模型使用训练期随机潜变量、推理期后验均值，并通过模型专属 training_loss 将 KL 项纳入优化。当前属于 paper-aligned candidate，未复现论文 C-MAPSS/SCADA 指标；数据预处理、窗口与 RUL 标签仍由调用方负责。详见 [R7 文档](docs/DIAGNOSTICS_R7.md)。
+
+R7 (IMA RUL literature intake): adds HSNNIBRUL with HMGPA-inspired subgraph partitioning, HGSFU-inspired gated cross-subgraph updates and MFIBM-inspired variational information bottleneck, trained and served through the native RULRegressor. It samples the latent during training and uses the posterior mean at inference; the model-specific training_loss includes the KL term. This remains a paper-aligned candidate, not a reproduction of the paper's C-MAPSS/SCADA scores. Caller-owned preprocessing, windowing and RUL labels are unchanged. See [R7 notes](docs/DIAGNOSTICS_R7.md).
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
