@@ -1,6 +1,6 @@
 """Industrial diagnostics task contracts and backend-preserving algorithm registry."""
 
-from torch_like.diagnostics.abigx import ABIGXExplanation, ABIGXExplainer, make_classification_spe
+from torch_like.diagnostics.abigx import ABIGXExplainer, ABIGXExplanation, make_classification_spe
 from torch_like.diagnostics.classification import (
     FaultLabelSchema,
     SklearnWindowFaultClassifier,
