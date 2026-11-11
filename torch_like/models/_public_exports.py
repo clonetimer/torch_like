@@ -354,6 +354,7 @@ PUBLIC_EXPORTS = {
     "DecisionTransformer": ("torch_like.models.reinforcement.decision_transformer", "DecisionTransformer"),
     "THGNN": ("torch_like.models.thgnn", "THGNN"),
     "HSNNIBRUL": ("torch_like.models.hsnn_ib", "HSNNIBRUL"),
+    "KnowledgeDataPINNRUL": ("torch_like.models.knowledge_data_pinn", "KnowledgeDataPINNRUL"),
     "TCNRUL": ("torch_like.models.rul_backbones", "TCNRUL"),
     "PatchTSTRUL": ("torch_like.models.rul_backbones", "PatchTSTRUL"),
     "TransformerRUL": ("torch_like.models.rul_backbones", "TransformerRUL"),
