@@ -14,8 +14,10 @@ from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
+import numpy as np
 import torch.nn.functional as F
 
+from torch_like.diagnostics.types import DiagnosticResult, SignalBatch
 from torch_like.models.detection.common import DetectionBatch, DetectionConfig, DetectionModel
 
 
@@ -112,6 +114,7 @@ class ALDMDetector(DetectionModel):
         self.augmentation_noise = float(augmentation_noise)
         self.augmentation_mask_probability = float(augmentation_mask_probability)
         self.metric_regularization = float(metric_regularization)
+        self._signal_metadata: tuple[tuple[str, ...], tuple[str, ...], float] | None = None
 
         self._config = ALDMDetectorConfig(
             input_dim=input_dim,
@@ -161,6 +164,111 @@ class ALDMDetector(DetectionModel):
                 )
                 for _ in range(flow_layers)
             ]
+        )
+
+    def fit(
+        self,
+        reference: SignalBatch,
+        *,
+        epochs: int = 10,
+        batch_size: int = 128,
+        learning_rate: float = 1e-3,
+        weight_decay: float = 1e-5,
+        seed: int = 42,
+        gradient_clip_norm: float = 5.0,
+        calibration_quantile: float = 0.995,
+    ) -> "ALDMDetector":
+        """Fit on healthy-only SignalBatch windows for AnomalyDiagnosticWorkflow.
+
+        The initial native threshold is a quantile of the fitted reference
+        scores. For stricter threshold calibration, call calibrate_threshold
+        with a separate healthy calibration partition after fitting.
+        """
+        if not isinstance(reference, SignalBatch):
+            raise TypeError("reference must be SignalBatch")
+        if reference.shape[0] < 2:
+            raise ValueError("ALDM fitting requires at least two healthy reference windows")
+        if reference.shape[1:] != (self.seq_len, self.input_dim):
+            raise ValueError(
+                f"reference must have shape (windows, {self.seq_len}, {self.input_dim})"
+            )
+        if not np.isfinite(reference.values).all():
+            raise ValueError("reference windows must contain only finite values")
+        integer_settings = {"epochs": epochs, "batch_size": batch_size, "seed": seed}
+        if any(type(value) is not int or value < 0 for value in integer_settings.values()):
+            raise ValueError("epochs, batch_size and seed must be nonnegative integers")
+        if epochs < 1 or batch_size < 1:
+            raise ValueError("epochs and batch_size must be positive")
+        if not math.isfinite(learning_rate) or learning_rate <= 0:
+            raise ValueError("learning_rate must be finite and positive")
+        if not math.isfinite(weight_decay) or weight_decay < 0:
+            raise ValueError("weight_decay must be finite and nonnegative")
+        if not math.isfinite(gradient_clip_norm) or gradient_clip_norm <= 0:
+            raise ValueError("gradient_clip_norm must be finite and positive")
+        if not math.isfinite(calibration_quantile) or not 0.0 < calibration_quantile < 1.0:
+            raise ValueError("calibration_quantile must be finite and strictly between zero and one")
+
+        parameter = next(self.parameters())
+        device, dtype = parameter.device, parameter.dtype
+        values = torch.as_tensor(np.array(reference.values, copy=True), device=device, dtype=dtype)
+        generator = torch.Generator(device="cpu").manual_seed(seed)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=learning_rate, weight_decay=weight_decay)
+
+        self.train()
+        for _ in range(epochs):
+            order = torch.randperm(values.shape[0], generator=generator).tolist()
+            for start in range(0, values.shape[0], batch_size):
+                indices = order[start : start + batch_size]
+                batch = self.make_detection_batch(values[indices])
+                optimizer.zero_grad(set_to_none=True)
+                loss = self.fit_step(batch)
+                if not torch.isfinite(loss).item():
+                    raise FloatingPointError("ALDM training produced a nonfinite loss")
+                loss.backward()
+                gradient_norm = torch.nn.utils.clip_grad_norm_(self.parameters(), gradient_clip_norm)
+                if not torch.isfinite(gradient_norm).item():
+                    raise FloatingPointError("ALDM training produced nonfinite gradients")
+                optimizer.step()
+
+        self._signal_metadata = (reference.channel_names, reference.units, reference.sample_rate_hz)
+        self.eval()
+        self.calibrate_threshold(
+            self.make_detection_batch(values),
+            quantile=calibration_quantile,
+        )
+        self.eval()
+        return self
+
+    def score(self, batch: SignalBatch) -> DiagnosticResult:
+        """Return one deterministic anomaly score per SignalBatch window."""
+        if not isinstance(batch, SignalBatch):
+            raise TypeError("batch must be SignalBatch")
+        if self._signal_metadata is None:
+            raise RuntimeError("fit ALDMDetector on healthy SignalBatch windows before scoring")
+        channel_names, units, sample_rate_hz = self._signal_metadata
+        if batch.channel_names != channel_names:
+            raise ValueError("channel names or channel ordering differ from the fitted reference")
+        if batch.units != units:
+            raise ValueError("channel units differ from the fitted reference")
+        if batch.sample_rate_hz != sample_rate_hz:
+            raise ValueError("sample_rate_hz differs from the fitted reference")
+        if batch.shape[1:] != (self.seq_len, self.input_dim):
+            raise ValueError("score windows have a different sequence or channel shape")
+        parameter = next(self.parameters())
+        values = torch.as_tensor(np.array(batch.values, copy=True), device=parameter.device, dtype=parameter.dtype)
+        was_training = self.training
+        try:
+            self.eval()
+            with torch.inference_mode():
+                scores = self(values)
+        finally:
+            self.train(was_training)
+        return DiagnosticResult(
+            task="anomaly_detection",
+            output_kind="anomaly_score",
+            values=scores.detach().cpu().numpy(),
+            algorithm_name="ALDMDetector",
+            threshold=self._config.threshold,
         )
 
     def _validate_input(self, x: torch.Tensor) -> None:
