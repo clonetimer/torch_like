@@ -34,6 +34,13 @@ def make_signals(samples=8, *, length=128, rate=25600.0):
 
 
 class AGILFeatureGraphTests(unittest.TestCase):
+    def test_graph_batch_rejects_complex_inputs(self):
+        with self.assertRaisesRegex(ValueError, "real-valued"):
+            AGILGraphBatch(
+                np.ones((2, 16, 1), dtype=np.complex128),
+                np.eye(16),
+            )
+
     def test_extracts_sixteen_finite_features_in_paper_order(self):
         signals = make_signals(samples=5)
         features = extract_agil_features(signals)
@@ -162,6 +169,8 @@ class AGILMultiTaskTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "node_features"):
             model(torch.randn(2, 15, 1), adjacency)
+        with self.assertRaisesRegex(ValueError, "real-valued"):
+            model(torch.ones(2, 16, 1, dtype=torch.complex64), adjacency)
         with self.assertRaisesRegex(ValueError, "symmetric"):
             model(x, torch.triu(torch.ones(16, 16)))
         with self.assertRaisesRegex(ValueError, "nonnegative"):
