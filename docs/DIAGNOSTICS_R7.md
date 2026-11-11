@@ -52,6 +52,12 @@ The model includes the following mechanisms:
 
 The existing RULRegressor now supports an optional model-specific training_loss hook. HSNNIBRUL uses this hook to optimize MSE/MAE/Huber plus the information-bottleneck KL term. Existing RUL models continue using their original loss path.
 
+## Public registration and distribution scope
+
+The full repository registers `HSNNIBRUL` in the `rul` model domain and exports it through `torch_like.models`. It can be constructed through either the model registry (`create_model("HSNNIBRUL", domain="rul", ...)`) or the diagnostic adapter (`create_rul_regressor("HSNNIBRUL", unit=..., ...)`).
+
+The separate `torch-like-algorithms` Stable Wheel remains on its existing explicit allowlist and does not include `hsnn_ib.py` in this release. Its `list_rul_models()` therefore does not advertise HSNN-IB. The full-framework catalog count and the slim-wheel algorithm inventory are intentionally different.
+
 ## Deliberate implementation boundaries
 
 This is a paper-aligned implementation of the main architectural ideas, not a line-by-line reproduction of the authors' code or a claim of reproducing their reported scores.
