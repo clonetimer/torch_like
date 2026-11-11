@@ -142,8 +142,8 @@ class ABIGXExplainer:
         self.epsilon = float(epsilon)
         self.steps = steps
         self.ig_steps = ig_steps
-        self.step_size = float(step_size) if step_size is not None else (
-            1.0 / steps if norm == 0 else float(epsilon) / steps
+        self.step_size = (
+            float(step_size) if step_size is not None else (1.0 / steps if norm == 0 else float(epsilon) / steps)
         )
 
     @staticmethod
