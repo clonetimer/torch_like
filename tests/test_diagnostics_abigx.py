@@ -67,10 +67,17 @@ class ABIGXExplainerTests(unittest.TestCase):
         values = score(torch.tensor([[1.0, 0.0], [0.0, 1.0]]))
         self.assertEqual(values.shape, (2,))
         self.assertTrue(torch.all(values > 0))
+        attribution = lambda x: x[:, 0] + 2.0 * x[:, 1]
         explanation = ABIGXExplainer(norm=2, epsilon=0.25, steps=8, step_size=0.03, ig_steps=8).explain(
-            torch.tensor([[1.0, 0.0]]), score
+            torch.tensor([[1.0, 0.0]]), score, attribution_fn=attribution
         )
         self.assertLess(float(explanation.baseline_scores[0]), float(explanation.original_scores[0]))
+        torch.testing.assert_close(
+            explanation.completeness_residual,
+            torch.zeros_like(explanation.completeness_residual),
+            atol=1e-6,
+            rtol=1e-6,
+        )
 
     def test_zero_gradient_keeps_the_original_sample_as_baseline(self):
         inputs = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
