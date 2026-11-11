@@ -69,6 +69,10 @@ For time/channel-level analysis, score_batch(..., reduction="none") returns shap
 5. **Conditional density scoring**: each sensor/time latent scalar is transformed by a context-conditioned affine flow; negative log likelihood is the anomaly score.
 6. **Event-wise evaluation**: compute_event_wise_metrics implements the reference event recall / point-precision × normal-specificity F1 index with safe handling of empty predictions and normal-only series.
 
+## Distribution scope
+
+ALDMDetector is included in the full torch_like model catalog and public model namespace. The separate slim Stable Wheel remains on its existing explicit allowlist and does not ship ALDMDetector in this release. The full-framework detection catalog and the slim-wheel algorithm inventory are intentionally different.
+
 ## Fidelity and limits
 
 - This is an independent paper-aligned subset. It does not copy source code from the MIT repository.
