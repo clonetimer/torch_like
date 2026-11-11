@@ -12,6 +12,7 @@ from torch_like.diagnostics.classification_workflow import (
     FaultClassificationWorkflow,
 )
 from torch_like.diagnostics.composition import DiagnosticBundleResult, DiagnosticPipeline, DiagnosticStage
+from torch_like.diagnostics.conformal import ConformalPredictionSet, ModalityConditionedConformalClassifier
 from torch_like.diagnostics.decisions import DecisionMode, DiagnosticDecision
 from torch_like.diagnostics.events import DiagnosticEvent, extract_anomaly_events
 from torch_like.diagnostics.fault_sources import (
@@ -55,6 +56,7 @@ from torch_like.diagnostics.selection import (
     FaultSelectionReport,
     FaultSelectionWorkflow,
 )
+from torch_like.diagnostics.sindy import SINDyDetector, register_sindy_detector
 from torch_like.diagnostics.sklearn_adapter import (
     DEFAULT_WINDOW_FEATURES,
     SklearnWindowAnomalyDetector,
@@ -96,6 +98,8 @@ __all__ = [
     "DecisionMode",
     "DiagnosticDecision",
     "DiagnosticBundleResult",
+    "ConformalPredictionSet",
+    "ModalityConditionedConformalClassifier",
     "DiagnosticPipeline",
     "DiagnosticStage",
     "RULForecast",
@@ -150,6 +154,8 @@ __all__ = [
     "welch_psd",
     "register_pca_detectors",
     "EWMADetector",
+    "SINDyDetector",
+    "register_sindy_detector",
     "ZScoreDetector",
     "register_statistical_detectors",
     "DiagnosticAlgorithmSpec",
