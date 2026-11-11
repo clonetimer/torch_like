@@ -14,9 +14,7 @@ class ABIGXExplainerTests(unittest.TestCase):
         def score(x):
             return x.square().sum(dim=1)
 
-        explanation = ABIGXExplainer(norm=2, epsilon=0.5, steps=20, step_size=0.05, ig_steps=32).explain(
-            inputs, score
-        )
+        explanation = ABIGXExplainer(norm=2, epsilon=0.5, steps=20, step_size=0.05, ig_steps=32).explain(inputs, score)
 
         self.assertIsInstance(explanation, ABIGXExplanation)
         self.assertTrue(torch.all(explanation.baseline_scores < explanation.original_scores))
@@ -48,9 +46,7 @@ class ABIGXExplainerTests(unittest.TestCase):
         def score(x):
             return (x * weights).sum(dim=1)
 
-        explanation = ABIGXExplainer(norm=2, epsilon=0.4, steps=8, step_size=0.05, ig_steps=20).explain(
-            inputs, score
-        )
+        explanation = ABIGXExplainer(norm=2, epsilon=0.4, steps=8, step_size=0.05, ig_steps=20).explain(inputs, score)
 
         torch.testing.assert_close(
             explanation.completeness_residual,
@@ -91,9 +87,7 @@ class ABIGXExplainerTests(unittest.TestCase):
 
     def test_zero_gradient_keeps_the_original_sample_as_baseline(self):
         inputs = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
-        explanation = ABIGXExplainer(norm=2, epsilon=1.0, steps=3).explain(
-            inputs, lambda x: x.sum(dim=1) * 0.0 + 1.0
-        )
+        explanation = ABIGXExplainer(norm=2, epsilon=1.0, steps=3).explain(inputs, lambda x: x.sum(dim=1) * 0.0 + 1.0)
         torch.testing.assert_close(explanation.baseline, inputs)
         torch.testing.assert_close(explanation.attributions, torch.zeros_like(inputs))
 
