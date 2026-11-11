@@ -166,6 +166,15 @@ class ALDMDetector(DetectionModel):
             ]
         )
 
+    @staticmethod
+    def _validate_uniform_sampling(batch: SignalBatch, name: str) -> None:
+        if batch.timestamps_s is None:
+            return
+        expected_interval = 1.0 / batch.sample_rate_hz
+        intervals = np.diff(batch.timestamps_s, axis=1)
+        if not np.allclose(intervals, expected_interval, rtol=1e-4, atol=max(1e-9, expected_interval * 1e-6)):
+            raise ValueError(f"{name} timestamps must be uniformly sampled at sample_rate_hz")
+
     def fit(
         self,
         reference: SignalBatch,
@@ -194,6 +203,7 @@ class ALDMDetector(DetectionModel):
             )
         if not np.isfinite(reference.values).all():
             raise ValueError("reference windows must contain only finite values")
+        self._validate_uniform_sampling(reference, "reference")
         integer_settings = {"epochs": epochs, "batch_size": batch_size, "seed": seed}
         if any(type(value) is not int or value < 0 for value in integer_settings.values()):
             raise ValueError("epochs, batch_size and seed must be nonnegative integers")
@@ -252,6 +262,7 @@ class ALDMDetector(DetectionModel):
             raise ValueError("channel units differ from the fitted reference")
         if batch.sample_rate_hz != sample_rate_hz:
             raise ValueError("sample_rate_hz differs from the fitted reference")
+        self._validate_uniform_sampling(batch, "score")
         if batch.shape[1:] != (self.seq_len, self.input_dim):
             raise ValueError("score windows have a different sequence or channel shape")
         parameter = next(self.parameters())
