@@ -309,13 +309,11 @@ class _AGILEdgePool(nn.Module):
                     for i, j in zip(upper[0].tolist(), upper[1].tolist(), strict=True)
                     if float(graph[i, j].item()) > 0.0
                 ]
-                edge_pairs.sort(
-                    key=lambda pair: (
-                        -float((0.5 + 0.5 * (edge_probabilities[pair[0], pair[1]] + edge_probabilities[pair[1], pair[0]])).item()),
-                        pair[0],
-                        pair[1],
-                    )
-                )
+                pair_scores = {
+                    pair: 0.5 + 0.5 * (edge_probabilities[pair[0], pair[1]] + edge_probabilities[pair[1], pair[0]])
+                    for pair in edge_pairs
+                }
+                edge_pairs.sort(key=lambda pair: (-float(pair_scores[pair].item()), pair[0], pair[1]))
                 matched: set[int] = set()
                 clusters = []
                 for i, j in edge_pairs:
@@ -330,7 +328,7 @@ class _AGILEdgePool(nn.Module):
             for group in clusters:
                 if len(group) == 2 and edge_probabilities is not None:
                     i, j = group
-                    score = 0.5 + 0.5 * (edge_probabilities[i, j] + edge_probabilities[j, i])
+                    score = pair_scores[(i, j)]
                     merged_features.append(score * (features[i] + features[j]))
                 else:
                     merged_features.append(features[group[0]])
