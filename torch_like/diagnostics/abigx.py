@@ -11,8 +11,6 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
-
 import torch
 
 
@@ -78,7 +76,7 @@ class ABIGXExplanation:
         """Return flattened feature indices ordered by descending absolute contribution."""
         return self.absolute_attributions.flatten(start_dim=1).argsort(dim=1, descending=True)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, object]:
         """Return a JSON-compatible summary; tensors are converted to CPU lists."""
         return {
             "method": "ABIGX",
