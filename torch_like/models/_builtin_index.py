@@ -180,6 +180,7 @@ BUILTIN_MODEL_INDEX = {
     ),
     "THGNN": ("rul", "torch_like.models.thgnn", "THGNN"),
     "HSNNIBRUL": ("rul", "torch_like.models.hsnn_ib", "HSNNIBRUL"),
+    "KnowledgeDataPINNRUL": ("rul", "torch_like.models.knowledge_data_pinn", "KnowledgeDataPINNRUL"),
     "InformerRUL": ("rul", "torch_like.models.forecasting.rul_adapters", "InformerRUL"),
     "AutoformerRUL": ("rul", "torch_like.models.forecasting.rul_adapters", "AutoformerRUL"),
     "LogTransRUL": ("rul", "torch_like.models.forecasting.rul_adapters", "LogTransRUL"),
