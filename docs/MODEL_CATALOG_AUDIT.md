@@ -8,11 +8,11 @@ English: This file is generated deterministically from the live registry by `too
 
 - Registry version / 注册表版本: `0.9.0`
 - Domains / 领域数: 13
-- Models / 模型数: 172
-- Schema-v2 migration ready / 可迁移: 172
+- Models / 模型数: 173
+- Schema-v2 migration ready / 可迁移: 173
 - Unmapped integration levels / 未映射值: 0
-- Maturity unassessed / 成熟度未评估: 153
-- Benchmark evidence unassessed / 基准证据未评估: 153
+- Maturity unassessed / 成熟度未评估: 154
+- Benchmark evidence unassessed / 基准证据未评估: 154
 
 ## Domain Coverage / 领域覆盖
 
@@ -22,7 +22,7 @@ English: This file is generated deterministically from the live registry by `too
 | `diagnosis` | 2 |
 | `detection` | 10 |
 | `graph` | 16 |
-| `rul` | 7 |
+| `rul` | 8 |
 | `sequence` | 19 |
 | `vision` | 29 |
 | `multimodal` | 5 |
@@ -45,7 +45,7 @@ English: This file is generated deterministically from the live registry by `too
 | `paper_aligned_mlstm_reference` | 1 |
 | `paper_aligned_portable` | 1 |
 | `paper_aligned_portable_scan` | 2 |
-| `paper_aligned_portable_subset` | 8 |
+| `paper_aligned_portable_subset` | 9 |
 | `paper_aligned_reference` | 1 |
 
 ## API Signals / API 信号
@@ -56,15 +56,15 @@ English: These counts indicate callable class attributes only. They do not prove
 
 | Signal / 信号 | Models / 模型数 |
 |---|---:|
-| `forward` | 172 |
-| `predict` | 147 |
-| `loss_step` | 73 |
+| `forward` | 173 |
+| `predict` | 148 |
+| `loss_step` | 74 |
 | `fit_step` | 16 |
-| `config` | 172 |
-| `from_config` | 172 |
-| `param_count` | 172 |
-| `nn_module` | 172 |
-| `task_loss` | 89 |
+| `config` | 173 |
+| `from_config` | 173 |
+| `param_count` | 173 |
+| `nn_module` | 173 |
+| `task_loss` | 90 |
 
 ## Complete Inventory / 完整清单
 
@@ -149,6 +149,7 @@ English: These counts indicate callable class attributes only. They do not prove
 | `graph` | `PNA` | `framework_oriented` | `full` | `dense` | `unassessed` | `unassessed` | true | adjacency, node_task, graph_task, multi_aggregation, degree_scaling | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `graph` | `SpikeGraphormer` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | adjacency, node_task, graph_task, attention, spiking | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `rul` | `AutoformerRUL` | `framework_oriented` | `full` | `standard` | `benchmarked` | `single_dataset` | true | none | forward, predict, loss_step, config, from_config, param_count, nn_module, task_loss | `ready` |
+| `rul` | `HSNNIBRUL` | `paper_aligned` | `subset` | `portable` | `unassessed` | `unassessed` | true | hierarchical_subgraphs, dynamic_graph, gated_cross_subgraph, information_bottleneck, rul_regression | forward, predict, loss_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `rul` | `InformerRUL` | `framework_oriented` | `full` | `standard` | `benchmarked` | `single_dataset` | true | none | forward, predict, loss_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `rul` | `LogTransRUL` | `framework_oriented` | `full` | `standard` | `benchmarked` | `single_dataset` | true | none | forward, predict, loss_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `rul` | `PatchTSTRUL` | `framework_oriented` | `full` | `standard` | `benchmarked` | `single_dataset` | true | patching, channel_independent, loss_step | forward, predict, loss_step, config, from_config, param_count, nn_module, task_loss | `ready` |
