@@ -470,8 +470,13 @@ class AGILMultiTask(nn.Module):
         if node_mask is None:
             mask = torch.ones(x.shape[:2], device=x.device, dtype=torch.bool)
         else:
-            if node_mask.shape != x.shape[:2]:
+            if not isinstance(node_mask, torch.Tensor) or node_mask.shape != x.shape[:2]:
                 raise ValueError("node_mask must have shape (batch, 16)")
+            if node_mask.dtype != torch.bool:
+                if not torch.isfinite(node_mask).all().item() or not torch.all(
+                    (node_mask == 0) | (node_mask == 1)
+                ).item():
+                    raise ValueError("node_mask must contain only boolean or numeric 0/1 values")
             mask = node_mask.to(device=x.device, dtype=torch.bool)
             if not mask.any(dim=1).all().item():
                 raise ValueError("each graph must contain at least one valid node")
@@ -499,6 +504,24 @@ class AGILMultiTask(nn.Module):
         fault_logits = self.fault_head(fault_features)
         rul_values = self.rul_head(rul_features).squeeze(-1)
         return AGILMultiTaskOutput(fault_logits=fault_logits, rul_values=rul_values)
+
+    def predict_proba(
+        self,
+        node_features: torch.Tensor,
+        adjacency: torch.Tensor,
+        node_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """Return fault-class probabilities from the diagnosis head."""
+        return torch.softmax(self.forward(node_features, adjacency, node_mask).fault_logits, dim=-1)
+
+    def predict_rul(
+        self,
+        node_features: torch.Tensor,
+        adjacency: torch.Tensor,
+        node_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """Return nonnegative RUL estimates from the prognosis head."""
+        return self.forward(node_features, adjacency, node_mask).rul_values
 
     def training_loss(
         self,
