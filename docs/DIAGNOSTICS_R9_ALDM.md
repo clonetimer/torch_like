@@ -77,7 +77,7 @@ For time/channel-level analysis, score_batch(..., reduction="none") returns shap
 - The contrastive encoder uses aligned stochastic views and hierarchical max-pooling. It does not reproduce every random-crop and masking detail of the authors' TS2Vec variant.
 - Training assumes predominantly healthy/normal windows. Contaminated training data can cause anomalies to be absorbed into the learned normal distribution.
 - No scaler is fit internally. Fit normalization only on the training split; use separate validation and healthy calibration data; never select epochs or thresholds on test labels.
-- The model does not bundle SWaT, TEPE, PSM, MSL or the authors' newly constructed dataset. No published paper metric is claimed as a local result.
+- The model does not bundle datasets or author checkpoints. IEEE's abstract reports three widely used benchmarks plus a newly constructed dataset; the official repository README lists SWaT, TEPE, PSM and MSL. The exact mapping between the paper's benchmark description and repository data names remains to be verified against the full experimental protocol. No published paper metric is claimed as a local result.
 - The event-wise metric is for one contiguous, already aligned time series. Do not concatenate independent runs or overlapping windows without a documented score-alignment policy.
 
 ## Verification
