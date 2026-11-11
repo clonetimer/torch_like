@@ -1,5 +1,13 @@
 """Industrial diagnostics task contracts and backend-preserving algorithm registry."""
 
+from torch_like.diagnostics.agil import (
+    AGIL_FEATURE_NAMES,
+    AGILFeatureGraphBuilder,
+    AGILGraphBatch,
+    AGILMultiTask,
+    AGILMultiTaskOutput,
+    extract_agil_features,
+)
 from torch_like.diagnostics.classification import (
     FaultLabelSchema,
     SklearnWindowFaultClassifier,
@@ -92,6 +100,12 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "AGIL_FEATURE_NAMES",
+    "AGILFeatureGraphBuilder",
+    "AGILGraphBatch",
+    "AGILMultiTask",
+    "AGILMultiTaskOutput",
+    "extract_agil_features",
     "AnomalyScoreProjection",
     "project_anomaly_scores",
     "StreamingThreshold",
