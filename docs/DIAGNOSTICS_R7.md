@@ -45,7 +45,7 @@ The model includes the following mechanisms:
 
 1. **Sensor sequence encoding**: one LSTM encodes each sensor's window into a node representation.
 2. **Initial graph**: cosine similarity between sensor-window sequences creates a thresholded adjacency, with self-loops retained.
-3. **HMGPA-inspired partitioning**: learned nonnegative edge weights are ranked using average connection strength and negative neighbor-weight entropy. High-centrality nodes become subgraph centers, and each center selects up to M-1 unused neighbors.
+3. **HMGPA-inspired partitioning**: learned edge similarities reweight the previous graph while preserving each node's total incoming connection strength. Centrality combines mean connection strength with negative entropy of the softmax-normalized edge distribution. High-centrality nodes become subgraph centers, and each center selects up to M-1 unused neighbors.
 4. **HGSFU-inspired update**: a two-layer tanh network updates features inside each subgraph; learned cross-subgraph similarities and two gates regulate information exchanged between groups.
 5. **MFIBM-inspired fusion**: subgraph summaries are fused by a Gaussian variational bottleneck, with a standard-normal KL penalty.
 6. **RUL regression**: a nonnegative scalar head predicts the caller-declared RUL target unit.
