@@ -73,6 +73,23 @@ For time/channel-level analysis, score_batch(..., reduction="none") returns shap
 
 ALDMDetector is included in the full torch_like model catalog and public model namespace. The separate slim Stable Wheel remains on its existing explicit allowlist and does not ship ALDMDetector in this release. The full-framework detection catalog and the slim-wheel algorithm inventory are intentionally different.
 
+## Event-wise metric usage
+
+~~~python
+from torch_like.diagnostics import compute_event_wise_metrics
+
+# Both arrays must refer to one contiguous, aligned timeline.
+metrics = compute_event_wise_metrics(
+    ground_truth_labels,
+    predicted_labels,
+    # Optional half-open intervals preserve adjacent but independent events.
+    gt_intervals=((120, 135), (135, 142)),
+)
+print(metrics.precision, metrics.recall, metrics.f1)
+~~~
+
+The reference event precision is point precision multiplied by normal-point specificity; event recall counts a ground-truth event as detected when any predicted point overlaps it. The utility also returns event TP/FP/FN counts. Empty predictions and normal-only series return finite zero-safe metrics instead of division-by-zero errors.
+
 ## Fidelity and limits
 
 - This is an independent paper-aligned subset. It does not copy source code from the MIT repository.
