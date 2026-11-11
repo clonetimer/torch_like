@@ -71,7 +71,7 @@ class ABIGXExplanation:
         """Return a JSON-compatible summary; tensors are converted to CPU lists."""
         return {
             "method": "ABIGX",
-            "norm": self.norm,
+            "norm": "inf" if self.norm == inf else self.norm,
             "epsilon": self.epsilon,
             "attributions": self.attributions.cpu().tolist(),
             "baseline": self.baseline.cpu().tolist(),
@@ -311,7 +311,8 @@ def make_classification_spe(
         current = current.reshape(current.shape[0], -1)
         if current.shape[1] != centroid.numel():
             raise ValueError("representation dimension differs from the normal reference")
-        return (current - centroid).square().sum(dim=1)
+        reference_centroid = centroid.to(device=current.device, dtype=current.dtype)
+        return (current - reference_centroid).square().sum(dim=1)
 
     return score_fn
 
