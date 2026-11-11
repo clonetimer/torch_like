@@ -110,8 +110,12 @@ class AGILGraphBatch:
     feature_names: tuple[str, ...] = AGIL_FEATURE_NAMES
 
     def __post_init__(self) -> None:
-        nodes = np.asarray(self.node_features, dtype=np.float64)
-        adjacency = np.asarray(self.adjacency, dtype=np.float64)
+        raw_nodes = np.asarray(self.node_features)
+        raw_adjacency = np.asarray(self.adjacency)
+        if np.iscomplexobj(raw_nodes) or np.iscomplexobj(raw_adjacency):
+            raise ValueError("AGIL graph inputs must be real-valued")
+        nodes = np.asarray(raw_nodes, dtype=np.float64)
+        adjacency = np.asarray(raw_adjacency, dtype=np.float64)
         if nodes.ndim != 3 or nodes.shape[0] <= 0 or nodes.shape[1:] != (16, 1):
             raise ValueError("node_features must have shape (samples, 16, 1)")
         if adjacency.shape != (16, 16) or not np.isfinite(adjacency).all():
@@ -448,6 +452,8 @@ class AGILMultiTask(nn.Module):
             raise ValueError("node_features must have shape (batch, 16, 1)")
         if node_features.shape[1:] != (self.num_nodes, self.input_dim):
             raise ValueError("node_features must have shape (batch, 16, 1)")
+        if node_features.is_complex():
+            raise ValueError("node_features must be real-valued")
         if not torch.isfinite(node_features).all().item():
             raise ValueError("node_features must be finite")
         parameter = next(self.parameters())
@@ -541,6 +547,8 @@ class AGILMultiTask(nn.Module):
             raise ValueError("fault_labels contain a class index outside num_classes")
         if not isinstance(rul_targets, torch.Tensor) or rul_targets.shape != output.rul_values.shape:
             raise ValueError("rul_targets must have shape (batch,)")
+        if rul_targets.is_complex():
+            raise ValueError("rul_targets must be real-valued")
         targets = rul_targets.to(device=output.rul_values.device, dtype=output.rul_values.dtype)
         if not torch.isfinite(targets).all().item() or torch.any(targets < 0).item():
             raise ValueError("rul_targets must be finite and nonnegative")
