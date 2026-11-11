@@ -9,9 +9,6 @@ from torch_like.models.detection.aldm import AdaptiveSPDMetric
 
 
 class ALDMDetectorTests(unittest.TestCase):
-    def make_model(self, **kwargs):
-        return tl.ALDMDector(**kwargs)
-
     def test_registry_and_public_api_construction(self):
         model = tl.create_model(
             "ALDMDetector",
@@ -24,12 +21,12 @@ class ALDMDetectorTests(unittest.TestCase):
             flow_hidden_dim=16,
             flow_layers=2,
         )
-        self.assertIsInstance(model, tl.ALDMDector)
+        self.assertIsInstance(model, tl.ALDMDetector)
         self.assertEqual(model.config()["input_dim"], 4)
         self.assertEqual(model.config()["seq_len"], 9)
 
     def test_forward_and_window_level_score_contract(self):
-        model = tl.ALDMDector(
+        model = tl.ALDMDetector(
             input_dim=4,
             seq_len=9,
             d_model=16,
@@ -51,7 +48,7 @@ class ALDMDetectorTests(unittest.TestCase):
         self.assertTrue(torch.isfinite(scores).all())
 
     def test_training_objective_backpropagates_through_flow_and_adaptive_metric(self):
-        model = tl.ALDMDector(
+        model = tl.ALDMDetector(
             input_dim=3,
             seq_len=9,
             d_model=12,
@@ -77,7 +74,7 @@ class ALDMDetectorTests(unittest.TestCase):
         self.assertTrue(any(gradient is not None for gradient in contrastive_gradients))
 
     def test_evaluation_is_deterministic_and_sensor_graph_is_normalized(self):
-        model = tl.ALDMDector(
+        model = tl.ALDMDetector(
             input_dim=4,
             seq_len=7,
             d_model=12,
@@ -114,7 +111,7 @@ class ALDMDetectorTests(unittest.TestCase):
         self.assertGreater(float(metric.factor.grad.abs().sum()), 0.0)
 
     def test_single_sample_odd_length_and_no_contrastive_training(self):
-        model = tl.ALDMDector(
+        model = tl.ALDMDetector(
             input_dim=2,
             seq_len=7,
             d_model=8,
@@ -127,7 +124,7 @@ class ALDMDetectorTests(unittest.TestCase):
         self.assertEqual(loss.ndim, 0)
         self.assertTrue(torch.isfinite(loss))
 
-        nll_only = tl.ALDMDector(
+        nll_only = tl.ALDMDetector(
             input_dim=2,
             seq_len=7,
             d_model=8,
@@ -139,7 +136,7 @@ class ALDMDetectorTests(unittest.TestCase):
         self.assertTrue(torch.isfinite(nll_only.fit_step(batch)))
 
     def test_invalid_shapes_and_configuration_are_rejected(self):
-        model = tl.ALDMDector(
+        model = tl.ALDMDetector(
             input_dim=3,
             seq_len=8,
             d_model=8,
@@ -164,7 +161,7 @@ class ALDMDetectorTests(unittest.TestCase):
         )
         for config in invalid_configs:
             with self.subTest(config=config), self.assertRaises(ValueError):
-                tl.ALDMDector(**config)
+                tl.ALDMDetector(**config)
 
 
 if __name__ == "__main__":
