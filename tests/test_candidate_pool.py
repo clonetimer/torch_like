@@ -45,7 +45,7 @@ class CandidatePoolValidationTests(unittest.TestCase):
 
     def test_hard_gate_parser_reads_all_candidates(self):
         gates = parse_hard_gates(self.document)
-        self.assertEqual(len(gates), 27)
+        self.assertEqual(len(gates), 28)
         self.assertEqual(sum(gate.gate == "fail" for gate in gates), 2)
         nonstationary = [row for row in parse_scorecard(self.document) if row.model == "Non-stationary Transformers"]
         self.assertEqual(len(nonstationary), 1)
