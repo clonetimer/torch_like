@@ -4,14 +4,14 @@ import unittest
 
 import torch
 
-from torch_like.diagnostics import ABIGXExplainer, make_classification_spe
-from torch_like.diagnostics.abigx import ABIGXExplanation
+from torch_like.diagnostics import ABIGXExplainer, ABIGXExplanation, make_classification_spe
 
 
 class ABIGXExplainerTests(unittest.TestCase):
     def test_l2_reconstruction_reduces_fault_score_within_budget(self):
         inputs = torch.tensor([[1.0, 2.0], [3.0, 4.0]], dtype=torch.float64)
-        score = lambda x: x.square().sum(dim=1)
+        def score(x):
+            return x.square().sum(dim=1)
         explanation = ABIGXExplainer(norm=2, epsilon=0.5, steps=20, step_size=0.05, ig_steps=32).explain(
             inputs, score
         )
@@ -25,7 +25,8 @@ class ABIGXExplainerTests(unittest.TestCase):
 
     def test_linf_l1_and_l0_constraints_are_projected_per_sample(self):
         inputs = torch.tensor([[2.0, 3.0, 4.0], [1.0, 2.0, 3.0]])
-        score = lambda x: x.sum(dim=1)
+        def score(x):
+            return x.sum(dim=1)
 
         linf = ABIGXExplainer(norm=float("inf"), epsilon=0.25, steps=5, step_size=0.1).explain(inputs, score)
         self.assertLessEqual(float((linf.baseline - inputs).abs().max()), 0.250001)
@@ -40,7 +41,8 @@ class ABIGXExplainerTests(unittest.TestCase):
     def test_integrated_gradients_completeness_for_linear_fault_score(self):
         inputs = torch.tensor([[1.0, -2.0, 3.0], [2.0, 1.0, -1.0]], dtype=torch.float64)
         weights = torch.tensor([0.5, -1.5, 2.0], dtype=torch.float64)
-        score = lambda x: (x * weights).sum(dim=1)
+        def score(x):
+            return (x * weights).sum(dim=1)
         explanation = ABIGXExplainer(norm=2, epsilon=0.4, steps=8, step_size=0.05, ig_steps=20).explain(
             inputs, score
         )
@@ -67,7 +69,8 @@ class ABIGXExplainerTests(unittest.TestCase):
         values = score(torch.tensor([[1.0, 0.0], [0.0, 1.0]]))
         self.assertEqual(values.shape, (2,))
         self.assertTrue(torch.all(values > 0))
-        attribution = lambda x: x[:, 0] + 2.0 * x[:, 1]
+        def attribution(x):
+            return x[:, 0] + 2.0 * x[:, 1]
         explanation = ABIGXExplainer(norm=2, epsilon=0.25, steps=8, step_size=0.03, ig_steps=8).explain(
             torch.tensor([[1.0, 0.0]]), score, attribution_fn=attribution
         )
