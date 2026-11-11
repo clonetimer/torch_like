@@ -1,5 +1,6 @@
 """Industrial diagnostics task contracts and backend-preserving algorithm registry."""
 
+from torch_like.diagnostics.abigx import ABIGXExplanation, ABIGXExplainer, make_classification_spe
 from torch_like.diagnostics.classification import (
     FaultLabelSchema,
     SklearnWindowFaultClassifier,
@@ -92,6 +93,9 @@ from torch_like.diagnostics.workflow import (
 )
 
 __all__ = [
+    "ABIGXExplanation",
+    "ABIGXExplainer",
+    "make_classification_spe",
     "AnomalyScoreProjection",
     "project_anomaly_scores",
     "StreamingThreshold",
