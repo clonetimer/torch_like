@@ -76,6 +76,10 @@ R7（IMA RUL 文献补充）：新增 HSNNIBRUL，吸收 Information Fusion 2026
 
 R7 (IMA RUL literature intake): adds HSNNIBRUL with HMGPA-inspired subgraph partitioning, HGSFU-inspired gated cross-subgraph updates and MFIBM-inspired variational information bottleneck, trained and served through the native RULRegressor. It samples the latent during training and uses the posterior mean at inference; the model-specific training_loss includes the KL term. This remains a paper-aligned candidate, not a reproduction of the paper's C-MAPSS/SCADA scores. Caller-owned preprocessing, windowing and RUL labels are unchanged. See [R7 notes](docs/DIAGNOSTICS_R7.md).
 
+R8（IMA 多任务诊断文献补充）：新增 AGILFeatureGraphBuilder 与 AGILMultiTask，覆盖 F1–F16 振动特征、仅由训练窗口拟合的 Pearson 特征图、三层 GIN/EdgePool 共享编码器、故障分类与 RUL 专属自注意力及加权联合损失。原论文 per-sample Pearson 图在单窗口标量特征下存在数据表示歧义；本实现明确采用训练集相关图作为无泄漏适配，不声称逐行复现。模型仍为 research candidate，未复现论文轴承数据指标，且不进入全局模型目录或 Stable 白名单。详见 [R8 文档](docs/DIAGNOSTICS_R8.md)。
+
+R8 (IMA multi-task diagnosis intake): adds AGILFeatureGraphBuilder and AGILMultiTask with F1–F16 vibration features, a Pearson feature graph fitted only on training windows, a shared three-layer GIN/EdgePool encoder, task-specific attention for fault classification and RUL, and a weighted joint loss. The paper's per-sample Pearson graph is ambiguous for scalar window features; this implementation explicitly uses a leakage-controlled training-set correlation graph and does not claim line-by-line reproduction. The model remains a research candidate, has no reproduced bearing benchmark scores, and is not admitted to the global model catalog or Stable allowlist. See [R8 notes](docs/DIAGNOSTICS_R8.md).
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
