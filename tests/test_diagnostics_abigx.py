@@ -114,7 +114,7 @@ class ABIGXExplainerTests(unittest.TestCase):
         )
         summary = explanation.to_dict()
         self.assertEqual(summary["method"], "ABIGX")
-        self.assertEqual(summary["norm"], float("inf"))
+        self.assertEqual(summary["norm"], "inf")
         self.assertEqual(len(summary["feature_ranking"]), 1)
         self.assertEqual(len(summary["attributions"]), 1)
 
