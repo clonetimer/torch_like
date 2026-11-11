@@ -337,7 +337,6 @@ the cited primary and independent evidence remains mandatory.
 - Missing information: controlled PHM 2010 and NASA Ames replication; satellite component telemetry transfer; sensitivity to feature scaling, time normalization, derivative noise and physics/monotonicity weights; CPU/CUDA training overhead; comparison against `HSNNIBRUL`, `THGNN` and `TCNRUL`.
 - Acceptance: `tests/test_knowledge_data_pinn_rul.py` covers trajectory and residual contracts, finite loss components, gradients through both Psi and Gamma, explicit time-coordinate validation, public RUL factory construction and end-to-end adapter fit/predict. These are synthetic contract tests, not PHM 2010/NASA Ames or spacecraft benchmark results.
 - Registry: `KnowledgeDataPINNRUL`; integration level `paper_aligned_portable_subset`.
-- Registry: pending implementation and public API acceptance.
 
 
 ### GMAN (AAAI 2020)
