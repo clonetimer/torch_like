@@ -21,6 +21,7 @@ from torch_like.models.detection.common import DetectionBatch, DetectionConfig, 
 
 @dataclass
 class ALDMDetectorConfig(DetectionConfig):
+    d_model: int = 64
     metric_dim: int = 32
     latent_dim: int = 64
     flow_layers: int = 2
@@ -168,6 +169,8 @@ class ALDMDetector(DetectionModel):
     def _validate_input(self, x: torch.Tensor) -> None:
         if not isinstance(x, torch.Tensor) or x.ndim != 3:
             raise ValueError("ALDMDetector expects x with shape (batch, seq_len, input_dim)")
+        if x.shape[0] < 1:
+            raise ValueError("ALDMDetector requires at least one input window")
         if x.shape[1:] != (self.seq_len, self.input_dim):
             raise ValueError(
                 f"ALDMDetector expects x with shape (batch, {self.seq_len}, {self.input_dim}), "
@@ -337,13 +340,16 @@ class ALDMDetector(DetectionModel):
         if not math.isfinite(quantile) or not 0.0 < quantile < 1.0:
             raise ValueError("quantile must be finite and strictly between zero and one")
         was_training = self.training
-        self.eval()
-        scores = self.score_batch(healthy_batch, reduction="mean")
-        threshold = float(torch.quantile(scores, quantile).item())
-        self._config.threshold = threshold
-        if was_training:
-            self.train()
-        return threshold
+        try:
+            self.eval()
+            scores = self.score_batch(healthy_batch, reduction="mean")
+            if scores.numel() == 0 or not torch.isfinite(scores).all().item():
+                raise ValueError("healthy calibration scores must be nonempty and finite")
+            threshold = float(torch.quantile(scores, quantile).item())
+            self._config.threshold = threshold
+            return threshold
+        finally:
+            self.train(was_training)
 
 
 __all__ = ["ALDMDetectorConfig", "ALDMDetector"]
