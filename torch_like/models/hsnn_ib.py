@@ -164,7 +164,7 @@ class HSNNIBRUL(RULModel):
         entropy = -(probabilities * probabilities.clamp_min(1e-12).log()).sum(dim=-1)
         strength = row_sum / self.enc_in
         centrality = self.centrality_alpha * strength - (1.0 - self.centrality_alpha) * entropy
-        ranking = torch.argsort(centrality, descending=True).tolist()
+        ranking = torch.argsort(centrality, descending=True, stable=True).tolist()
 
         remaining = set(range(self.enc_in))
         groups: list[tuple[int, ...]] = []
@@ -172,7 +172,7 @@ class HSNNIBRUL(RULModel):
             if center not in remaining:
                 continue
             candidates = [node for node in remaining if node != center and float(weights[center, node].item()) > 0.0]
-            candidates.sort(key=lambda node: float(weights[center, node].item()), reverse=True)
+            candidates.sort(key=lambda node: (-float(weights[center, node].item()), node))
             selected = (center, *candidates[: self.max_nodes_per_subgraph - 1])
             groups.append(selected)
             remaining.difference_update(selected)
