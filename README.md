@@ -32,9 +32,9 @@ English: R2 adds `NonstationaryTransformer`, R3 `FiLM`, R4 native sparse `Pyrafo
 
 English: R6 triages all57:3 research priorities,32 holds,8 low-increment skips and14 non-backbone reroutes. **No model is added in R6**; mapping remains39/96 and forecasting count49. Every disposition keeps evidence, uncertainty and reopening conditions; triage is not formal admission.
 
-中文：**R7当前进展：新增原生DeepState，观察级68分**，支持显式季节项、缺失观测、解析状态推断及相关轨迹采样。全库172个模型、预测50个，报告名称映射40/96。Paloma50.25分、SEER60.5分保留正式评审记录，本轮不添加代码。DeepState成熟度及基准证据仍为`unassessed`；使用方法与适配边界见[R7](docs/WORKBUDDY_FORECASTING_R7.md)。
+中文：**R7新增原生DeepState，观察级68分**，支持显式季节项、缺失观测、解析状态推断及相关轨迹采样。当前全库174个模型：预测50个、检测11个、RUL 8个；报告名称映射40/96。DeepState成熟度及基准证据仍为`unassessed`；使用方法与适配边界见[R7](docs/WORKBUDDY_FORECASTING_R7.md)。
 
-English: **R7 adds native DeepState at observation68**, with explicit seasonal phases, missing observations, analytic state inference and correlated forecast paths. Current totals are172 models/50 forecasting,40/96 report names mapped. Paloma50.25 and SEER60.5 remain rejected/no-code. DeepState maturity and benchmark evidence remain`unassessed`; R7 documents usage and numerical/objective adaptations.
+English: **R7 adds native DeepState at observation68**, with explicit seasonal phases, missing observations, analytic state inference and correlated forecast paths. Current totals are174 models: 50 forecasting, 11 detection and 8 RUL. The report-name mapping remains40/96. DeepState maturity and benchmark evidence remain`unassessed`; R7 documents usage and numerical/objective adaptations.
 
 ## 工业诊断与健康评估算法库的职责边界
 
