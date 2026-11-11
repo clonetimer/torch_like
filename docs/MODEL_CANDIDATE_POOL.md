@@ -564,6 +564,7 @@ No unscored candidate currently remains in this formal pool. New discoveries mus
 4. 持续跟踪：FNO/神经算子、SAM 2.1、Uni-Mol；应先设计领域协议，再写模型代码。
 5. 潜在偏差：英文论文和开源 GitHub 生态被过度代表；硬件相关速度、训练数据重叠和作者自报结果可能抬高评分；未找到的独立复现不等于不存在。
 6. 2026-10-31 增量：FITS 与 STGCN 分别以 85 和 82 分获核心收录，随后完成模型级实现验收；不声称本仓库数据集基准已完成。 / Increment: FITS and STGCN receive core admission at 85 and 82 and subsequently pass model-level implementation acceptance; no completed framework dataset benchmark is claimed.
+7. 2026-11-11 IMA 增量：ABIGX 作为独立诊断解释工具已合并；ALDM 以 68.8 分进入观察收录并完成 portable subset，实现测试通过但 SWaT/TEPE/PSM/MSL 基准仍未评估。 / Increment: ABIGX was merged as an independent diagnostic explainer; ALDM enters observation at 68.8 and its portable subset passes contract tests, while SWaT/TEPE/PSM/MSL benchmark evidence remains unassessed.
 
 ## Admission Order / 实施顺序
 
@@ -572,3 +573,4 @@ No unscored candidate currently remains in this formal pool. New discoveries mus
 3. FITS: **implemented** with complex-frequency interpolation, explicit inverse-FFT length, and forecast-horizon slicing.
 4. STGCN: **implemented** with supplied-graph Chebyshev/temporal convolutions, node-shared normalization, and a direct multi-horizon head.
 5. Do not implement observation/rejected entries without a new evidence review and a domain protocol.
+6. ALDM: **implemented** as a paper-aligned portable subset; independent SWaT/TEPE/PSM/MSL evaluation and event-metric parity remain open.
