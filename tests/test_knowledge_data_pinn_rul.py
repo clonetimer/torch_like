@@ -5,9 +5,8 @@ import unittest
 import numpy as np
 import torch
 
-from torch_like.diagnostics import SignalBatch
-from torch_like.diagnostics.rul_interface import RULRegressor
-from torch_like.models.knowledge_data_pinn import KnowledgeDataPINNRUL
+from torch_like.diagnostics import SignalBatch, create_rul_regressor, list_rul_models
+from torch_like.models import KnowledgeDataPINNRUL, create_model, list_models
 
 
 def make_signals(batch=6, *, steps=10, channels=3):
@@ -99,8 +98,17 @@ class KnowledgeDataPINNRULTests(unittest.TestCase):
         signals = make_signals()
         times = make_times(6, 10)
         targets = np.array([90.0, 80.0, 70.0, 60.0, 50.0, 40.0], dtype=np.float32)
-        model = small_model()
-        regressor = RULRegressor(model, unit="cycles")
+        regressor = create_rul_regressor(
+            "KnowledgeDataPINNRUL",
+            unit="cycles",
+            enc_in=3,
+            seq_len=10,
+            hidden_dim=8,
+            hidden_layers=2,
+            physics_weight=0.2,
+            monotonicity_weight=0.3,
+        )
+        self.assertIsInstance(regressor.model, KnowledgeDataPINNRUL)
 
         regressor.fit(
             signals,
@@ -116,6 +124,21 @@ class KnowledgeDataPINNRULTests(unittest.TestCase):
         self.assertEqual(result.values.shape, (6,))
         self.assertTrue(np.isfinite(result.values).all())
         self.assertTrue(np.all(result.values >= 0))
+
+    def test_model_is_registered_and_publicly_constructible(self):
+        self.assertIn("KnowledgeDataPINNRUL", list_rul_models())
+        self.assertIn("KnowledgeDataPINNRUL", list_models("rul"))
+        model = create_model(
+            "KnowledgeDataPINNRUL",
+            domain="rul",
+            enc_in=3,
+            seq_len=10,
+            hidden_dim=8,
+            hidden_layers=2,
+        )
+        self.assertIsInstance(model, KnowledgeDataPINNRUL)
+        restored = KnowledgeDataPINNRUL.from_config(model.config())
+        self.assertIsInstance(restored, KnowledgeDataPINNRUL)
 
     def test_default_time_grid_and_loss_functions(self):
         model = small_model()
