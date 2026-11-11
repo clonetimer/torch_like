@@ -298,8 +298,10 @@ class HSNNIBRUL(RULModel):
     ) -> torch.Tensor:
         """RUL prediction loss plus the variational information-bottleneck KL term."""
         del x_mark
+        self._validate_input(x)
         if not isinstance(targets, torch.Tensor) or targets.shape != (x.shape[0],):
             raise ValueError("targets must have shape (batch,)")
+        targets = targets.to(device=x.device, dtype=x.dtype)
         if not torch.isfinite(targets).all().item() or torch.any(targets < 0).item():
             raise ValueError("RUL targets must be finite and nonnegative")
         if loss not in {"mse", "mae", "huber"}:
