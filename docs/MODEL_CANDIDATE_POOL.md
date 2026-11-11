@@ -2,13 +2,13 @@
 
 ## Scope / 范围
 
-本候选池用于控制 `torch_like` 的正式模型收录质量，而不是追求模型数量。评估范围覆盖当前注册表尚未充分覆盖的通用深度学习能力。最近增量评估日期为 2026-10-31；各模型的实际复核日期以复审台账为准，身份、许可证和可用状态均以对应版本为准。
+本候选池用于控制 `torch_like` 的正式模型收录质量，而不是追求模型数量。评估范围覆盖当前注册表尚未充分覆盖的通用深度学习能力。最近增量评估日期为 2026-11-11；各模型的实际复核日期以复审台账为准，身份、许可证和可用状态均以对应版本为准。
 
-This pool governs admission quality for `torch_like`; it is not a model-count target. The scope covers general deep-learning capabilities not already represented adequately in the current registry. The latest incremental evaluation is dated 2026-10-31; each candidate's actual review date is recorded below, and its status is version-specific.
+This pool governs admission quality for `torch_like`; it is not a model-count target. The scope covers general deep-learning capabilities not already represented adequately in the current registry. The latest incremental evaluation is dated 2026-11-11; each candidate's actual review date is recorded below, and its status is version-specific.
 
 - Target domain: general deep-learning architecture gaps across the registered `torch_like` domains.
 - Minimum candidate count: 12.
-- Evaluation date: 2026-10-31.
+- Evaluation date: 2026-11-11.
 - Governance policy: `governance/model_admission_policy.json` version 1.0.
 
 ## Rules / 规则
@@ -40,6 +40,7 @@ The policy file is the machine-readable source of truth for scoring and state tr
 | Pyraformer (ICLR 2022) | 2026-10-31 | 2027-01-31 | maintainers | independent protocol/provenance audit, sparse graph or BN contract, local benchmark or official license change |
 | GMAN (AAAI 2020) | 2026-11-01 | 2027-02-01 | maintainers | baseline-run provenance, spatial-embedding/calendar contract, BN/source-variant parity or official license change |
 | DeepState (NeurIPS 2018) | 2026-11-01 | 2027-02-01 | maintainers | external supplement/protocol audit, numerical parity, explicit calendar/missing-data contract or source/license change |
+| HSNN-IB (Information Fusion 2026) | 2026-11-11 | 2027-02-11 | maintainers | C-MAPSS/SCADA replication, upstream code availability, graph-partition or information-bottleneck implementation change |
 | Paloma (arXiv 2610.25392v1) | 2026-11-01 | 2027-02-01 | maintainers | independent experiment, phase-index/normalization contract or source/license change |
 | SEER (ICML 2026) | 2026-11-01 | 2027-02-01 | maintainers | controlled independent robustness experiments, run provenance, replacement/routing contract or source/license change |
 | SAM 2.1 | 2026-10-19 | 2026-11-19 | maintainers | video protocol or independent latency evidence |
@@ -103,6 +104,7 @@ English: Both implementations subsequently passed model-level acceptance and are
 | Pyraformer (ICLR 2022) | yes | yes | yes | yes | yes: explicit inter-scale tree and intra-scale neighbor attention absent | Apache-2.0 | pass |
 | GMAN (AAAI 2020) | yes | yes | yes | yes | yes: embedding-conditioned spatial/temporal fusion and history-to-future transform attention absent | Apache-2.0 | pass |
 | DeepState (NeurIPS 2018) | yes | yes | yes | yes | yes: structural Gaussian posterior filtering and correlated trajectory contract absent | Apache-2.0; pinned LICENSE, NOTICE and source | pass |
+| HSNN-IB (Information Fusion 2026) | yes | yes | yes | yes | yes: representative subgraph partition and variational information bottleneck are absent from existing RUL candidates | paper-derived method; no upstream code/assets copied; independent implementation | pass with risk |
 | Paloma (arXiv 2610.25392v1) | yes | yes | yes | yes | yes: phase-conditioned directional/amplitude residual modulation absent | Apache-2.0; pinned model and loader | pass |
 | SEER (ICML 2026) | yes | yes | yes | yes | yes: learned patch-quality replacement and augmented embeddings absent | MIT; pinned model and embedding source | pass |
 | SAM 2.1 | yes | yes | yes | yes | yes | Apache-2.0 | pass |
@@ -137,6 +139,7 @@ R=相关性，P=能力/性能，U=工程实用性，E=效率/成本，I=创新�
 | Pyraformer | 23 | 11 | 12 | 7 | 8 | 8 | 7 | 76 | A | 7 | 69.0 | observation, implemented |
 | GMAN | 23 | 13 | 12 | 5 | 8 | 8 | 7 | 76 | A | 6 | 70.0 | observation, implemented |
 | DeepState | 24 | 10 | 12 | 7 | 8 | 8 | 7 | 76 | A | 8 | 68.0 | observation, implemented |
+| HSNN-IB | 24 | 15 | 14 | 6 | 8 | 5 | 8 | 80 | B | 5 | 67.0 | observation, implemented |
 | Paloma | 23 | 12 | 13 | 9 | 8 | 3 | 7 | 75 | C | 6 | 50.25 | rejected, no code |
 | SEER | 24 | 13 | 11 | 6 | 8 | 6 | 7 | 75 | B | 7 | 60.5 | rejected, no code |
 | SAM 2.1 | 23 | 18 | 13 | 7 | 9 | 10 | 9 | 89 | B | 5 | 75.1 | observation |
@@ -169,6 +172,7 @@ the cited primary and independent evidence remains mandatory.
 | Pyraformer | distinct multiresolution sparse attention despite broad forecasting coverage | weak external forecasting results limit performance value | native random-init operator, nontrivial graph and boundary contracts | sparse interactions scale favorably, total head and measured speed remain configuration-dependent | explicit parent/child plus same-scale graph attention | independent studies and public Time-Series-Library use, not proof of superiority | pinned Apache source; test-selected original checkpoints, adapted protocols and local parity unresolved |
 | GMAN | distinct spatial/temporal gated attention with calendar-driven history-to-future bridge | externally evaluated foundational baseline, newer methods improve many difficult regimes | reusable random-init operator, but supplied embeddings and raw calendar constrain inputs | dense node/time attention and expensive external compute measurements | multi-attention fusion and transform bridge, not current universal novelty | repeated external evaluation and officially linked third-party port | pinned Apache reference and two experimental papers; legacy TF, variants and unpublished baseline provenance limit replication |
 | DeepState | fills explicit structural probabilistic inference gap | limited performance justification in external studies | native reusable forecaster with caller-supplied feature/calendar burden | shared recurrent parameterization; dense covariance and float64 accumulation cost | recurrent parameters plus analytical structural inference | established GluonTS support and independent experimental use | pinned permissive source; external protocol and local parity unresolved |
+| HSNN-IB | multi-sensor graph RUL gap | paper reports C-MAPSS and wind-SCADA gains; no local replication | reuses native RULRegressor and sensor-window contract | LSTM and dynamic graph costs are unmeasured | HMGPA, HGSFU and MFIBM in one RUL model | recent journal paper; no official code located | detailed equations/pseudocode and API/gradient tests; data protocol parity unverified |
 | Paloma | concrete periodic-modeling capability | author results without independently established advantage | compact standalone operator with explicit phase contract | simple linear modulation; no local timing claim | directional/amplitude residual modulation | limited verified independent adoption | licensed model/loader available; phase and normalization parity unresolved |
 | SEER | learned patch-quality handling is a specific capability | author results and one scoped external clean-forecast report | substantial routing, loss and input contract | MoE/attention cost and incomplete large-data external runs | augmented patch/series embeddings plus replacement | experiment infrastructure and one external-use report | pinned source; independent protocol, artifacts and robustness unresolved |
 | SAM 2.1 | video segmentation gap | strong official and domain results | prompt/memory API | substantial model cost | streaming video memory | broad adoption | paper/code plus domain evaluations |
@@ -294,6 +298,24 @@ the cited primary and independent evidence remains mandatory.
 - Missing information: Appendix-L protocol and baseline revisions, upstream checkpoint/training-pipeline parity, controlled local accuracy/calibration and CPU/CUDA resource measurements. Maturity and benchmark evidence remain `unassessed`.
 - Registry: `DeepState`; integration level `paper_aligned_portable_subset`.
 
+### HSNN-IB (Information Fusion 2026)
+
+- Category: hierarchical graph-based multi-sensor remaining useful life regression.
+- Discovery: IMA paper library, `0002_Hierarchical_subgraph_neural_network_with_information_bo.pdf`; formally reviewed 2026-11-11 before public Registry admission.
+- Core value: HMGPA selects representative sensor subgraphs using connection strength and certainty; HGSFU separates local updates from gated cross-subgraph information flow; MFIBM compresses fused representations with a variational information bottleneck. This provides a bounded-subgraph alternative to whole-graph RUL message passing.
+- Evidence: [primary: Zheng et al., Information Fusion 127 (2026)](https://doi.org/10.1016/j.inffus.2025.103953), [official: Elsevier article record](https://www.sciencedirect.com/science/article/pii/S1566253525010152), [independent: DBLP publication record](https://dblp.org/rec/journals/inffus/ZhengQXQ26.html), and [independent: J-GLOBAL bibliographic record](https://jglobal.jst.go.jp/detail?JGLOBAL_ID=202602236766491654).
+- Evidence interpretation: B satisfies the policy's primary/official/independent source threshold for identity and published method. The independent records are bibliographic, not independent numerical replications. The paper reports C-MAPSS FD001–FD004 and real wind-turbine SCADA experiments; those published results are not attributed to this repository implementation.
+- Peer comparison: `THGNN` propagates information over a whole learned/prior sensor graph; `TCNRUL` is a temporal-only convolutional baseline; `PatchTSTRUL` uses channel-independent patches. HSNN-IB adds explicit representative-subgraph partitioning and variational compression rather than another generic temporal backbone.
+- Score: value 80; evidence B; risk 5; final 67.0.
+- Decision: observation, implemented.
+- Conclusion reason: the method adds a distinct multi-sensor RUL mechanism and passes implementation/API tests, but the score remains below the core threshold because the upstream implementation is unavailable and no controlled local C-MAPSS/SCADA benchmark has been completed.
+- Risk deduction: 2 for the absence of official source code and the need for an independent paper-derived implementation, 2 for non-differentiable discrete subgraph selection and the configured K×M representative-node budget, and 1 for missing local dataset and compute-cost measurements.
+- Implementation boundary: the repository implementation is paper-aligned, not a line-by-line reproduction. It provides sensor-wise LSTM encoding, cosine-thresholded graph initialization, adaptive edge recalibration, deterministic hybrid-metric partitioning, gated cross-subgraph updates and a Gaussian variational bottleneck. Data normalization, window construction, RUL clipping/labels, train/test splits and SF evaluation remain caller-owned. No NASA or SCADA data loader, author checkpoint or benchmark result is bundled.
+- Acceptance: `tests/test_hsnn_ib_rul.py` covers graph partition bounds/disjointness, isolated nodes, finite deterministic inference, nonnegative outputs, bottleneck gradients, native RUL adapter training/prediction, public model-registry construction and invalid-input boundaries. These are contract/numerical tests, not dataset benchmarks.
+- Missing information: controlled C-MAPSS FD001–FD004 and SCADA reproduction, head-to-head comparison against `THGNN`/`TCNRUL`/`PatchTSTRUL`, K/M/threshold/λ sensitivity, CPU/CUDA latency and memory, and cross-condition generalization.
+- Registry: `HSNNIBRUL`; integration level `paper_aligned_portable_subset`.
+
+
 ### GMAN (AAAI 2020)
 
 - Category: graph-informed dense spatio-temporal attention forecasting.
@@ -404,7 +426,7 @@ the cited primary and independent evidence remains mandatory.
 
 ## Candidate Record / 候选记录
 
-No unscored candidate currently remains in this formal pool. New discoveries must enter here before formal scoring; they may not jump directly from a paper announcement into implementation. Discovery ledger: on 2026-10-31, FITS and STGCN were first recorded from the two reports named in the admission review above, then promoted to the Core Inclusion section only after the source, hard-gate, independent-evidence, and score reviews were complete. Neither promotion itself marks an implementation complete.
+No unscored candidate currently remains in this formal pool. New discoveries must enter here before formal scoring; they may not jump directly from a paper announcement into implementation. Discovery ledger: on 2026-10-31, FITS and STGCN were first recorded from the two reports named in the admission review above, then promoted to the Core Inclusion section only after the source, hard-gate, independent-evidence, and score reviews were complete. On 2026-11-11, HSNN-IB was recorded from the IMA paper library, reviewed against the publisher record and independent bibliographic sources, passed the hard gates with risk, and entered Observation after implementation/API checks. Its local dataset benchmark and runtime maturity remain unassessed.
 
 ## Rejected / 淘汰
 
