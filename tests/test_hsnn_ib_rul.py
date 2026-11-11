@@ -57,6 +57,8 @@ class HSNNIBRULTests(unittest.TestCase):
         model = small_model()
         groups = model.partition_graph(torch.ones(4, 4, dtype=torch.int64))
         self.assertEqual(len(groups), 2)
+        half_groups = model.partition_graph(torch.eye(4, dtype=torch.float16))
+        self.assertEqual(len(half_groups), 2)
         with self.assertRaisesRegex(ValueError, "real-valued"):
             model.partition_graph(torch.ones(4, 4, dtype=torch.complex64))
 
