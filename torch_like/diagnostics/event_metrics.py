@@ -103,7 +103,9 @@ def compute_event_wise_metrics(
     false_positive_points = predicted_points - true_positive_points
 
     point_precision = true_positive_points / predicted_points if predicted_points else 0.0
-    normal_specificity = 1.0 - false_positive_points / normal_points if normal_points else (1.0 if false_positive_points == 0 else 0.0)
+    normal_specificity = (
+        1.0 - false_positive_points / normal_points if normal_points else (1.0 if false_positive_points == 0 else 0.0)
+    )
     precision = point_precision * normal_specificity
     recall = detected / len(true_events) if true_events else 0.0
     f1 = 2.0 * precision * recall / (precision + recall) if precision + recall else 0.0
