@@ -4,6 +4,7 @@ from torch_like.models.forecasting.rul_adapters import AutoformerRUL, InformerRU
 from torch_like.models.registry import register_model_catalog
 from torch_like.models.rul_backbones import TCNRUL, PatchTSTRUL, TransformerRUL
 from torch_like.models.thgnn import THGNN
+from torch_like.models.hsnn_ib import HSNNIBRUL
 
 model_zoo = {
     "THGNN": {
@@ -15,6 +16,22 @@ model_zoo = {
         "paper": "Temporal and Heterogeneous Graph Neural Network for Remaining Useful Life Prediction (arXiv 2024), inspired implementation",
         "description": "Graph-temporal RUL regressor with learned or prior sensor graph, temporal conv, graph propagation, and FiLM fusion",
         "complexity": "O(T * N^2 + T * N * D) depending on graph mode and sensor count",
+    },
+    "HSNNIBRUL": {
+        "cls": HSNNIBRUL,
+        "family": "hierarchical_graph_rul",
+        "layer": "RUL adapter",
+        "integration_level": "paper_aligned_portable_subset",
+        "supports": [
+            "hierarchical_subgraphs",
+            "dynamic_graph",
+            "gated_cross_subgraph",
+            "information_bottleneck",
+            "rul_regression",
+        ],
+        "paper": "Hierarchical subgraph neural network with information bottleneck for machine remaining useful life prediction (Information Fusion 127, 2026), paper-aligned implementation",
+        "description": "LSTM sensor encoding, hybrid-metric representative subgraphs, gated cross-subgraph updates, and variational information bottleneck for scalar RUL regression",
+        "complexity": "O(B * N * T * D^2 + B * L * N^2 * D) plus bounded subgraph message passing",
     },
     "InformerRUL": {
         "cls": InformerRUL,
@@ -82,6 +99,7 @@ register_model_catalog("rul", model_zoo)
 
 __all__ = [
     "THGNN",
+    "HSNNIBRUL",
     "InformerRUL",
     "AutoformerRUL",
     "LogTransRUL",
