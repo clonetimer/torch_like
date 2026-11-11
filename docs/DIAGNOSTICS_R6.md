@@ -20,7 +20,7 @@ These additions do not change the 172-model neural model catalog or the Stable p
 | Brunton, Proctor and Kutz, “Discovering governing equations from data by sparse identification of nonlinear dynamical systems”, PNAS (2016), DOI: 10.1073/pnas.1517384113 | Interpretable sparse dynamics; healthy-model residuals | Implemented as SINDyDetector |
 | Karniadakis et al., “Physics-informed machine learning”, Nature Reviews Physics (2021), DOI: 10.1038/s42254-021-00314-5 | Physics/data hybrid learning and inverse problems | Architecture direction; PINN training contract deferred |
 | “Universal Differential Equations for Scientific Machine Learning” (2021 preprint) | Known physics plus learned unknown terms | Deferred until ODE solver, residual and adjoint contracts are designed |
-| “Modality-Conditioned Conformal Fusion” (IMA local 2026 preprint) | Calibrated prediction under changing sensor/modality availability | Implemented only as a mask-conditional split-conformal calibration primitive; not a reproduction of the full fusion network |
+| “Conformal Fusion Under Missing Modalities” (MCCF, IMA local arXiv:2608.07183v1 preprint) | Calibrated prediction under changing sensor/modality availability | Implemented only as a mask-conditional split-conformal calibration primitive; not a reproduction of the full fusion network |
 | ALDM paper and official repository | Unsupervised multivariate time-series anomaly detection | Deferred pending source correction and independent reproduction |
 | AGIL paper notes | Joint graph-based fault classification and RUL estimation | High-priority follow-up; needs a multi-task batch/loss contract |
 | HSNN-IB paper notes | Hierarchical subgraph information bottleneck for RUL | Deferred: sensor grouping and external validation evidence need further audit |
@@ -51,6 +51,18 @@ reference = SignalBatch(
     channel_names=("wheel_speed", "motor_current"),
     units=("rad/s", "A"),
 )
+healthy_development = SignalBatch(
+    healthy_development_values,
+    sample_rate_hz=100.0,
+    channel_names=("wheel_speed", "motor_current"),
+    units=("rad/s", "A"),
+)
+test_batch = SignalBatch(
+    test_values,
+    sample_rate_hz=100.0,
+    channel_names=("wheel_speed", "motor_current"),
+    units=("rad/s", "A"),
+)
 detector = SINDyDetector(
     polynomial_degree=2,
     sparsity_threshold=0.05,
@@ -59,8 +71,8 @@ detector = SINDyDetector(
 
 print(detector.equations_)
 detector.calibrate(healthy_development, quantile=0.99)
-scores = detector.score(test_trajectories)
-alarms = detector.alarm_mask(test_trajectories)
+scores = detector.score(test_batch)
+alarms = detector.alarm_mask(test_batch)
 ~~~
 
 If known control inputs are available, pass them to fit, calibrate, score and predict_derivative using the same channel order.
