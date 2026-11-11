@@ -1,5 +1,6 @@
 """Detection task interfaces and models."""
 
+from torch_like.models.detection.aldm import ALDMDetector, ALDMDetectorConfig
 from torch_like.models.detection.anomaly_transformer import AnomalyTransformer, AnomalyTransformerConfig
 from torch_like.models.detection.cbam_tcn import CBAMTCNDetector, CBAMTCNDetectorConfig
 from torch_like.models.detection.common import DetectionBatch, DetectionConfig, DetectionModel
@@ -14,6 +15,24 @@ from torch_like.models.detection.usad import USAD, USADConfig
 from torch_like.models.registry import register_model_catalog
 
 model_zoo = {
+    "ALDMDetector": {
+        "cls": ALDMDetector,
+        "family": "adaptive_latent_distribution",
+        "layer": "Anomaly detection",
+        "integration_level": "paper_aligned_portable_subset",
+        "automl_default": False,
+        "supports": [
+            "sensor_graph",
+            "conditional_density",
+            "normalizing_flow",
+            "hierarchical_contrastive",
+            "adaptive_metric",
+            "unsupervised",
+        ],
+        "paper": "Adaptive Latent Distribution Modeling for Industrial Time Series Anomaly Detection (IEEE T-ASE 2026)",
+        "description": "Sensor-graph-conditioned scalar flow likelihood with adaptive-metric hierarchical contrastive training",
+        "complexity": "O(B*C*L*H^2 + B*C^2*H + B*L^2*R) with channels C, window L, hidden H and metric rank R",
+    },
     "CBAMTCNDetector": {
         "cls": CBAMTCNDetector,
         "family": "cbam_temporal_convolution",
@@ -123,6 +142,8 @@ __all__ = [
     "DetectionConfig",
     "DetectionBatch",
     "DetectionModel",
+    "ALDMDetectorConfig",
+    "ALDMDetector",
     "CBAMTCNDetectorConfig",
     "CBAMTCNDetector",
     "AnomalyTransformerConfig",
