@@ -161,7 +161,7 @@ class HSNNIBRUL(RULModel):
             weights = weights.to(dtype=torch.float32)
         row_sum = weights.sum(dim=-1)
         probabilities = torch.softmax(weights, dim=-1)
-        entropy = -(probabilities * probabilities.clamp_min(1e-12).log()).sum(dim=-1)
+        entropy = -(probabilities * probabilities.clamp_min(torch.finfo(weights.dtype).tiny).log()).sum(dim=-1)
         strength = row_sum / self.enc_in
         centrality = self.centrality_alpha * strength - (1.0 - self.centrality_alpha) * entropy
         ranking = torch.argsort(centrality, descending=True, stable=True).tolist()
