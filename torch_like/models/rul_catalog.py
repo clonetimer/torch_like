@@ -1,6 +1,7 @@
 """RUL model catalog and registration."""
 
 from torch_like.models.forecasting.rul_adapters import AutoformerRUL, InformerRUL, LogTransRUL
+from torch_like.models.knowledge_data_pinn import KnowledgeDataPINNRUL
 from torch_like.models.hsnn_ib import HSNNIBRUL
 from torch_like.models.registry import register_model_catalog
 from torch_like.models.rul_backbones import TCNRUL, PatchTSTRUL, TransformerRUL
@@ -32,6 +33,23 @@ model_zoo = {
         "paper": "Hierarchical subgraph neural network with information bottleneck for machine remaining useful life prediction (Information Fusion 127, 2026), paper-aligned implementation",
         "description": "LSTM sensor encoding, hybrid-metric representative subgraphs, gated cross-subgraph updates, and variational information bottleneck for scalar RUL regression",
         "complexity": "O(B * N * T * D^2 + B * L * N^2 * D) plus bounded subgraph message passing",
+    },
+    "KnowledgeDataPINNRUL": {
+        "cls": KnowledgeDataPINNRUL,
+        "family": "physics_informed_degradation_rul",
+        "layer": "RUL adapter",
+        "integration_level": "paper_aligned_portable_subset",
+        "supports": [
+            "learned_rate_mechanism",
+            "physics_residual",
+            "monotonicity_constraint",
+            "automatic_differentiation",
+            "rul_regression",
+        ],
+        "paper": "An intelligent tool wear monitoring model based on knowledge-data-driven physical-informed neural network for digital twin milling (Mechanical Systems and Signal Processing 232, 2025), M-PINN-inspired decreasing-RUL adaptation",
+        "description": "MLP state network Psi, positive learned-rate network Gamma, autograd governing-rate residual, and sequence monotonicity penalty for scalar RUL regression",
+        "complexity": "O(B * T * (D * H + H^2)) forward; training adds input-gradient and rate-network passes",
+        "automl_default": False,
     },
     "InformerRUL": {
         "cls": InformerRUL,
@@ -100,6 +118,7 @@ register_model_catalog("rul", model_zoo)
 __all__ = [
     "THGNN",
     "HSNNIBRUL",
+    "KnowledgeDataPINNRUL",
     "InformerRUL",
     "AutoformerRUL",
     "LogTransRUL",
