@@ -21,6 +21,7 @@ _RUL_MODELS = {
     "PatchTSTRUL": "torch_like.models.rul_backbones",
     "TransformerRUL": "torch_like.models.rul_backbones",
     "THGNN": "torch_like.models.thgnn",
+    "HSNNIBRUL": "torch_like.models.hsnn_ib",
     "InformerRUL": "torch_like.models.forecasting.rul_adapters",
     "AutoformerRUL": "torch_like.models.forecasting.rul_adapters",
     "LogTransRUL": "torch_like.models.forecasting.rul_adapters",
@@ -167,15 +168,26 @@ class RULRegressor:
                 indices = torch.randperm(len(x))
                 for start in range(0, len(indices), batch_size):
                     part = indices[start : start + batch_size].to(x.device)
-                    raw = self.model(x[part], None if marks is None else marks[part])
-                    if raw.shape != (len(part),) or not torch.isfinite(raw).all().item():
-                        raise ValueError("native RUL model must output finite (samples,) values")
-                    if loss == "mse":
-                        objective = F.mse_loss(raw, labels[part])
-                    elif loss == "mae":
-                        objective = F.l1_loss(raw, labels[part])
+                    training_loss = getattr(self.model, "training_loss", None)
+                    if callable(training_loss):
+                        objective = training_loss(
+                            x[part],
+                            labels[part],
+                            x_mark=None if marks is None else marks[part],
+                            loss=loss,
+                        )
                     else:
-                        objective = F.huber_loss(raw, labels[part])
+                        raw = self.model(x[part], None if marks is None else marks[part])
+                        if raw.shape != (len(part),) or not torch.isfinite(raw).all().item():
+                            raise ValueError("native RUL model must output finite (samples,) values")
+                        if loss == "mse":
+                            objective = F.mse_loss(raw, labels[part])
+                        elif loss == "mae":
+                            objective = F.l1_loss(raw, labels[part])
+                        else:
+                            objective = F.huber_loss(raw, labels[part])
+                    if not isinstance(objective, torch.Tensor) or objective.ndim != 0:
+                        raise ValueError("native RUL training_loss must return a scalar tensor")
                     if not torch.isfinite(objective).item():
                         raise ValueError("RUL training loss is nonfinite")
                     optimizer.zero_grad(set_to_none=True)
