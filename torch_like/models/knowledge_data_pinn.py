@@ -88,14 +88,25 @@ class KnowledgeDataPINNRUL(RULModel):
             raise ValueError("enc_in, seq_len, hidden_dim and hidden_layers must be positive integers")
         if seq_len < 2:
             raise ValueError("seq_len must be at least two for physics and monotonicity losses")
-        if not math.isfinite(physics_weight) or physics_weight < 0:
-            raise ValueError("physics_weight must be finite and nonnegative")
-        if not math.isfinite(monotonicity_weight) or monotonicity_weight < 0:
-            raise ValueError("monotonicity_weight must be finite and nonnegative")
-        if not math.isfinite(min_rate) or min_rate <= 0:
-            raise ValueError("min_rate must be finite and positive")
-        if not math.isfinite(dropout) or not 0.0 <= dropout < 1.0:
-            raise ValueError("dropout must be finite and in [0, 1)")
+        numeric_values = {
+            "physics_weight": physics_weight,
+            "monotonicity_weight": monotonicity_weight,
+            "min_rate": min_rate,
+            "dropout": dropout,
+        }
+        if any(
+            isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value)
+            for value in numeric_values.values()
+        ):
+            raise ValueError("physics weights, min_rate and dropout must be finite real numbers")
+        if physics_weight < 0:
+            raise ValueError("physics_weight must be nonnegative")
+        if monotonicity_weight < 0:
+            raise ValueError("monotonicity_weight must be nonnegative")
+        if min_rate <= 0:
+            raise ValueError("min_rate must be positive")
+        if not 0.0 <= dropout < 1.0:
+            raise ValueError("dropout must be in [0, 1)")
 
         self.enc_in = enc_in
         self.seq_len = seq_len
@@ -132,6 +143,7 @@ class KnowledgeDataPINNRUL(RULModel):
         else:
             if (
                 not isinstance(x_mark, torch.Tensor)
+                or x_mark.is_complex()
                 or x_mark.ndim != 3
                 or x_mark.shape != (x.shape[0], self.seq_len, 1)
             ):
@@ -201,8 +213,12 @@ class KnowledgeDataPINNRUL(RULModel):
     ) -> dict[str, torch.Tensor]:
         """Return data, physics, monotonicity and total training losses."""
         values, times = self._validate_inputs(x, x_mark)
-        if not isinstance(targets, torch.Tensor) or targets.shape != (values.shape[0],):
-            raise ValueError("targets must have shape (batch,) and contain final-step RUL labels")
+        if (
+            not isinstance(targets, torch.Tensor)
+            or not torch.is_floating_point(targets)
+            or targets.shape != (values.shape[0],)
+        ):
+            raise ValueError("targets must be floating-point with shape (batch,) and contain final-step RUL labels")
         labels = targets.to(device=values.device, dtype=values.dtype)
         if not torch.isfinite(labels).all().item() or torch.any(labels < 0).item():
             raise ValueError("RUL targets must be finite and nonnegative")
