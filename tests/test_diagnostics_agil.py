@@ -46,7 +46,7 @@ class AGILFeatureGraphTests(unittest.TestCase):
         )
 
     def test_zero_signal_features_are_finite(self):
-        zeros = SignalBatch.from_sequence(
+        zeros = SignalBatch(
             np.zeros((4, 32, 1)),
             sample_rate_hz=100.0,
             channel_names=("vibration",),
