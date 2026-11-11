@@ -6,11 +6,11 @@
   "target_catalog_schema_version": 2,
   "summary": {
     "domain_count": 13,
-    "model_count": 172,
-    "migration_ready_count": 172,
+    "model_count": 173,
+    "migration_ready_count": 173,
     "migration_unmapped_count": 0,
-    "maturity_unassessed_count": 153,
-    "benchmark_evidence_unassessed_count": 153,
+    "maturity_unassessed_count": 154,
+    "benchmark_evidence_unassessed_count": 154,
     "benchmarked_model_count": 19,
     "evidence_record_count": 4
   },
@@ -33,7 +33,7 @@
     },
     {
       "domain": "rul",
-      "model_count": 7
+      "model_count": 8
     },
     {
       "domain": "sequence",
@@ -107,7 +107,7 @@
     },
     {
       "value": "paper_aligned_portable_subset",
-      "model_count": 8
+      "model_count": 9
     },
     {
       "value": "paper_aligned_reference",
@@ -115,15 +115,15 @@
     }
   ],
   "api_contract_counts": {
-    "forward": 172,
-    "predict": 147,
-    "loss_step": 73,
+    "forward": 173,
+    "predict": 148,
+    "loss_step": 74,
     "fit_step": 16,
-    "config": 172,
-    "from_config": 172,
-    "param_count": 172,
-    "nn_module": 172,
-    "task_loss": 89
+    "config": 173,
+    "from_config": 173,
+    "param_count": 173,
+    "nn_module": 173,
+    "task_loss": 90
   },
   "evidence_records": {
     "ett-h1-forecasting-rolling-v1": {
@@ -3076,6 +3076,45 @@
         "maturity": "benchmarked",
         "benchmark_evidence": "single_dataset",
         "evidence_record": "xjtu-sy-rul-single-split-v1"
+      },
+      "api_contract": {
+        "forward": true,
+        "predict": true,
+        "loss_step": true,
+        "fit_step": false,
+        "config": true,
+        "from_config": true,
+        "param_count": true,
+        "nn_module": true,
+        "task_loss": true
+      },
+      "migration_status": "ready"
+    },
+    {
+      "domain": "rul",
+      "name": "HSNNIBRUL",
+      "class_path": "torch_like.models.hsnn_ib.HSNNIBRUL",
+      "family": "hierarchical_graph_rul",
+      "layer": "RUL adapter",
+      "supports": [
+        "hierarchical_subgraphs",
+        "dynamic_graph",
+        "gated_cross_subgraph",
+        "information_bottleneck",
+        "rul_regression"
+      ],
+      "paper": "Hierarchical subgraph neural network with information bottleneck for machine remaining useful life prediction (Information Fusion 127, 2026), paper-aligned implementation",
+      "description": "LSTM sensor encoding, hybrid-metric representative subgraphs, gated cross-subgraph updates, and variational information bottleneck for scalar RUL regression",
+      "complexity": "O(B * N * T * D^2 + B * L * N^2 * D) plus bounded subgraph message passing",
+      "automl_default": true,
+      "legacy_integration_level": "paper_aligned_portable_subset",
+      "catalog_v2": {
+        "implementation_fidelity": "paper_aligned",
+        "implementation_scope": "subset",
+        "execution_profile": "portable",
+        "maturity": "unassessed",
+        "benchmark_evidence": "unassessed",
+        "evidence_record": null
       },
       "api_contract": {
         "forward": true,
