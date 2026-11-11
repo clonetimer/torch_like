@@ -103,6 +103,8 @@ DOMAIN_EXPORTS = {
         "ROCKET": ("torch_like.models.diagnosis.rocket", "ROCKET"),
     },
     "detection": {
+        "ALDMDetectorConfig": ("torch_like.models.detection.aldm", "ALDMDetectorConfig"),
+        "ALDMDetector": ("torch_like.models.detection.aldm", "ALDMDetector"),
         "DetectionConfig": ("torch_like.models.detection.common", "DetectionConfig"),
         "DetectionBatch": ("torch_like.models.detection.common", "DetectionBatch"),
         "DetectionModel": ("torch_like.models.detection.common", "DetectionModel"),
@@ -485,6 +487,8 @@ DOMAIN_ALL = {
         "model_zoo",
     ],
     "detection": [
+        "ALDMDetectorConfig",
+        "ALDMDetector",
         "DetectionConfig",
         "DetectionBatch",
         "DetectionModel",

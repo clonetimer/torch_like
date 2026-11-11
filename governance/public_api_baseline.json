@@ -14,6 +14,8 @@
         "ActorCriticConfig",
         "AlexNet",
         "AlexNetConfig",
+        "ALDMDetector",
+        "ALDMDetectorConfig",
         "AnomalyTransformer",
         "AnomalyTransformerConfig",
         "AudioBatch",
@@ -1683,6 +1685,198 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 4096
+        }
+      ]
+    },
+    "torch_like.ALDMDetector": {
+      "kind": "class",
+      "target": "torch_like.models.detection.aldm.ALDMDetector",
+      "signature": [
+        {
+          "name": "input_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "threshold",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "metric_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 32
+        },
+        {
+          "name": "latent_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "flow_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "contrastive_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.01
+        },
+        {
+          "name": "instance_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "contrastive_temperature",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.2
+        },
+        {
+          "name": "metric_temperature",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "augmentation_noise",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.02
+        },
+        {
+          "name": "augmentation_mask_probability",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "metric_regularization",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.001
+        }
+      ]
+    },
+    "torch_like.ALDMDetectorConfig": {
+      "kind": "class",
+      "target": "torch_like.models.detection.aldm.ALDMDetectorConfig",
+      "signature": [
+        {
+          "name": "input_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "threshold",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "metric_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 32
+        },
+        {
+          "name": "latent_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "flow_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "contrastive_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.01
+        },
+        {
+          "name": "instance_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "contrastive_temperature",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.2
+        },
+        {
+          "name": "metric_temperature",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "augmentation_noise",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.02
+        },
+        {
+          "name": "augmentation_mask_probability",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "metric_regularization",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.001
         }
       ]
     },
@@ -33287,6 +33481,198 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 4096
+        }
+      ]
+    },
+    "torch_like.models.ALDMDetector": {
+      "kind": "class",
+      "target": "torch_like.models.detection.aldm.ALDMDetector",
+      "signature": [
+        {
+          "name": "input_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "threshold",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "metric_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 32
+        },
+        {
+          "name": "latent_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "flow_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "contrastive_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.01
+        },
+        {
+          "name": "instance_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "contrastive_temperature",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.2
+        },
+        {
+          "name": "metric_temperature",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "augmentation_noise",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.02
+        },
+        {
+          "name": "augmentation_mask_probability",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "metric_regularization",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.001
+        }
+      ]
+    },
+    "torch_like.models.ALDMDetectorConfig": {
+      "kind": "class",
+      "target": "torch_like.models.detection.aldm.ALDMDetectorConfig",
+      "signature": [
+        {
+          "name": "input_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": true,
+          "default": null
+        },
+        {
+          "name": "d_model",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "threshold",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "metric_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 32
+        },
+        {
+          "name": "latent_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 64
+        },
+        {
+          "name": "flow_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "contrastive_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.01
+        },
+        {
+          "name": "instance_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "contrastive_temperature",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.2
+        },
+        {
+          "name": "metric_temperature",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "augmentation_noise",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.02
+        },
+        {
+          "name": "augmentation_mask_probability",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.1
+        },
+        {
+          "name": "metric_regularization",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.001
         }
       ]
     },

@@ -8,11 +8,11 @@ English: This file is generated deterministically from the live registry by `too
 
 - Registry version / 注册表版本: `0.9.0`
 - Domains / 领域数: 13
-- Models / 模型数: 173
-- Schema-v2 migration ready / 可迁移: 173
+- Models / 模型数: 174
+- Schema-v2 migration ready / 可迁移: 174
 - Unmapped integration levels / 未映射值: 0
-- Maturity unassessed / 成熟度未评估: 154
-- Benchmark evidence unassessed / 基准证据未评估: 154
+- Maturity unassessed / 成熟度未评估: 155
+- Benchmark evidence unassessed / 基准证据未评估: 155
 
 ## Domain Coverage / 领域覆盖
 
@@ -20,7 +20,7 @@ English: This file is generated deterministically from the live registry by `too
 |---|---:|
 | `forecasting` | 50 |
 | `diagnosis` | 2 |
-| `detection` | 10 |
+| `detection` | 11 |
 | `graph` | 16 |
 | `rul` | 8 |
 | `sequence` | 19 |
@@ -45,7 +45,7 @@ English: This file is generated deterministically from the live registry by `too
 | `paper_aligned_mlstm_reference` | 1 |
 | `paper_aligned_portable` | 1 |
 | `paper_aligned_portable_scan` | 2 |
-| `paper_aligned_portable_subset` | 9 |
+| `paper_aligned_portable_subset` | 10 |
 | `paper_aligned_reference` | 1 |
 
 ## API Signals / API 信号
@@ -56,15 +56,15 @@ English: These counts indicate callable class attributes only. They do not prove
 
 | Signal / 信号 | Models / 模型数 |
 |---|---:|
-| `forward` | 173 |
-| `predict` | 148 |
+| `forward` | 174 |
+| `predict` | 149 |
 | `loss_step` | 74 |
-| `fit_step` | 16 |
-| `config` | 173 |
-| `from_config` | 173 |
-| `param_count` | 173 |
-| `nn_module` | 173 |
-| `task_loss` | 90 |
+| `fit_step` | 17 |
+| `config` | 174 |
+| `from_config` | 174 |
+| `param_count` | 174 |
+| `nn_module` | 174 |
+| `task_loss` | 91 |
 
 ## Complete Inventory / 完整清单
 
@@ -122,6 +122,7 @@ English: These counts indicate callable class attributes only. They do not prove
 | `forecasting` | `TimesNet` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | none | forward, predict, config, from_config, param_count, nn_module | `ready` |
 | `diagnosis` | `InceptionTime` | `paper_aligned` | `full` | `standard` | `unassessed` | `unassessed` | true | multiscale_convolution, residual_connection, time_series_classification | forward, predict, loss_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `diagnosis` | `ROCKET` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | true | random_convolution, time_series_classification, fixed_features, linear_classifier | forward, predict, loss_step, config, from_config, param_count, nn_module, task_loss | `ready` |
+| `detection` | `ALDMDetector` | `paper_aligned` | `subset` | `portable` | `unassessed` | `unassessed` | false | graph_conditioning, adaptive_spd_temporal_metric, hierarchical_contrastive_learning, conditional_flow_density, normal_only_training, event_wise_evaluation | forward, predict, fit_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `detection` | `AnomalyTransformer` | `framework_oriented` | `full` | `standard` | `benchmarked` | `single_dataset` | true | association_discrepancy, attention, reconstruction | forward, predict, fit_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `detection` | `CBAMTCNDetector` | `framework_oriented` | `full` | `standard` | `unassessed` | `unassessed` | false | channel_attention, temporal_attention, forecasting, convolution | forward, predict, fit_step, config, from_config, param_count, nn_module, task_loss | `ready` |
 | `detection` | `DCDetector` | `framework_oriented` | `full` | `standard` | `benchmarked` | `single_dataset` | true | dual_attention, contrastive_representation, reconstruction | forward, predict, fit_step, config, from_config, param_count, nn_module, task_loss | `ready` |

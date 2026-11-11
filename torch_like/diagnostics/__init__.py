@@ -15,6 +15,7 @@ from torch_like.diagnostics.classification_workflow import (
 from torch_like.diagnostics.composition import DiagnosticBundleResult, DiagnosticPipeline, DiagnosticStage
 from torch_like.diagnostics.conformal import ConformalPredictionSet, ModalityConditionedConformalClassifier
 from torch_like.diagnostics.decisions import DecisionMode, DiagnosticDecision
+from torch_like.diagnostics.event_metrics import EventWiseMetrics, compute_event_wise_metrics
 from torch_like.diagnostics.events import DiagnosticEvent, extract_anomaly_events
 from torch_like.diagnostics.fault_sources import (
     FaultSourceEvidenceMapper,
@@ -141,6 +142,8 @@ __all__ = [
     "FaultClassificationWorkflow",
     "DiagnosticEvent",
     "extract_anomaly_events",
+    "EventWiseMetrics",
+    "compute_event_wise_metrics",
     "AnomalyDiagnosticWorkflow",
     "AnomalyEvaluation",
     "AnomalyPartition",
