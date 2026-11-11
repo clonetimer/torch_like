@@ -53,6 +53,13 @@ class HSNNIBRULTests(unittest.TestCase):
         self.assertEqual(groups, ((0,), (1,)))
         self.assertEqual(len(set(node for group in groups for node in group)), 2)
 
+    def test_partition_graph_handles_integer_and_rejects_complex_weights(self):
+        model = small_model()
+        groups = model.partition_graph(torch.ones(4, 4, dtype=torch.int64))
+        self.assertEqual(len(groups), 2)
+        with self.assertRaisesRegex(ValueError, "real-valued"):
+            model.partition_graph(torch.ones(4, 4, dtype=torch.complex64))
+
     def test_eval_forward_is_finite_deterministic_and_nonnegative(self):
         model = small_model()
         model.eval()
