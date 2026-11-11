@@ -158,6 +158,8 @@ class KnowledgeDataPINNRULTests(unittest.TestCase):
             model(x, torch.zeros((6, 10, 1)))
         with self.assertRaisesRegex(ValueError, "shape"):
             model(x, torch.zeros((6, 10, 2)))
+        with self.assertRaisesRegex(ValueError, "shape"):
+            model(x, torch.zeros((6, 10, 1), dtype=torch.complex64))
         with self.assertRaisesRegex(ValueError, "features"):
             model(torch.ones((6, 10, 4)))
         with self.assertRaisesRegex(ValueError, "at least two"):
@@ -166,6 +168,7 @@ class KnowledgeDataPINNRULTests(unittest.TestCase):
     def test_rejects_invalid_weights_and_nonfinite_values(self):
         for kwargs in (
             {"physics_weight": -1.0},
+            {"physics_weight": True},
             {"monotonicity_weight": -0.1},
             {"min_rate": 0.0},
             {"dropout": 1.0},
