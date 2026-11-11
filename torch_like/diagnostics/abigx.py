@@ -49,7 +49,7 @@ class ABIGXExplanation:
         for name, value in tensors.items():
             if not torch.is_floating_point(value) or not torch.isfinite(value).all():
                 raise ValueError(f"{name} must contain finite floating-point values")
-        if not isfinite(self.norm) or self.norm not in {0.0, 1.0, 2.0, inf}:
+        if self.norm not in {0.0, 1.0, 2.0, inf}:
             raise ValueError("norm must be one of 0, 1, 2 or infinity")
         if not isfinite(self.epsilon) or self.epsilon <= 0:
             raise ValueError("epsilon must be finite and positive")
@@ -138,8 +138,8 @@ class ABIGXExplainer:
     def _validate_inputs(inputs: torch.Tensor) -> torch.Tensor:
         if not isinstance(inputs, torch.Tensor):
             raise TypeError("inputs must be a torch tensor")
-        if inputs.ndim < 2 or inputs.shape[0] < 1:
-            raise ValueError("inputs must have a nonempty batch dimension and at least one feature dimension")
+        if inputs.ndim < 2 or inputs.shape[0] < 1 or any(size < 1 for size in inputs.shape[1:]):
+            raise ValueError("inputs must have a nonempty batch dimension and nonempty feature dimensions")
         if not torch.is_floating_point(inputs) or not torch.isfinite(inputs).all():
             raise ValueError("inputs must contain finite floating-point values")
         return inputs.detach()
