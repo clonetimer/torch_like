@@ -76,6 +76,7 @@ R7（IMA RUL 文献补充）：新增 HSNNIBRUL，吸收 Information Fusion 2026
 
 R7 (IMA RUL literature intake): adds HSNNIBRUL with HMGPA-inspired subgraph partitioning, HGSFU-inspired gated cross-subgraph updates and MFIBM-inspired variational information bottleneck, trained and served through the native RULRegressor. It samples the latent during training and uses the posterior mean at inference; the model-specific training_loss includes the KL term. This remains a paper-aligned candidate, not a reproduction of the paper's C-MAPSS/SCADA scores. Caller-owned preprocessing, windowing and RUL labels are unchanged. See [R7 notes](docs/DIAGNOSTICS_R7.md).
 R8 (IMA explainability intake): adds an independent ABIGX-style explainer to `torch_like.diagnostics`. It constructs a fault-aware AFR baseline with projected gradient descent, then integrates gradients from that baseline to the explained sample. It supports L0/L1/L2/L-infinity budgets and separates the AFR objective from the IG attribution target for classification. It requires differentiable models and produces associational, not causal, attributions; no TEP/MVTec or telemetry benchmark is claimed. See [R8 notes](docs/DIAGNOSTICS_R8_ABIGX.md) and the [IMA algorithm intake review](docs/IMA_ALGORITHM_INTAKE_20261111.md).
+R9 (IMA anomaly-detection intake): adds `ALDMDetector`, a paper-aligned portable subset combining sensor-graph context, adaptive-metric hierarchical contrastive training and conditional scalar-flow likelihood scoring. It uses the native detection API and deterministic inference. The upstream data loaders and test-AUC checkpoint selection are deliberately not copied; benchmark evidence remains unassessed. See [R9 notes](docs/DIAGNOSTICS_R9_ALDM.md).
 
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
@@ -247,6 +248,7 @@ Frequency-domain forecasting:
 
 ### Detection / 异常检测
 
+- `ALDMDetector` (paper-aligned portable subset; benchmark unassessed)
 - `RTDetector`
 - `AnomalyTransformer`
 - `MEMTO`
@@ -595,6 +597,23 @@ batch = model.make_detection_batch(x)
 loss = model.fit_step(batch)
 scores = model.score_batch(batch)
 ```
+
+ALDM uses the same task contract but returns one conditional-density anomaly score per window:
+
+```python
+model = tl.ALDMDetector(
+    input_dim=8,
+    seq_len=64,
+    d_model=32,
+    metric_dim=24,
+    metric_rank=6,
+)
+batch = model.make_detection_batch(x)
+loss = model.fit_step(batch)
+scores = model.score_batch(batch, reduction="none")  # (batch,)
+```
+
+The ALDM benchmark status remains unassessed; callers must use training-only preprocessing and validation-only model/threshold selection. See [R9 implementation notes](docs/DIAGNOSTICS_R9_ALDM.md).
 
 ### RUL 预测 / RUL Prediction
 
