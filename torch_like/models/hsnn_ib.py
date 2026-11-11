@@ -160,7 +160,7 @@ class HSNNIBRUL(RULModel):
         if not weights.is_floating_point():
             weights = weights.to(dtype=torch.float32)
         row_sum = weights.sum(dim=-1)
-        probabilities = weights / row_sum.clamp_min(torch.finfo(weights.dtype).eps).unsqueeze(-1)
+        probabilities = torch.softmax(weights, dim=-1)
         entropy = -(probabilities * probabilities.clamp_min(1e-12).log()).sum(dim=-1)
         strength = row_sum / self.enc_in
         centrality = self.centrality_alpha * strength - (1.0 - self.centrality_alpha) * entropy
@@ -183,10 +183,13 @@ class HSNNIBRUL(RULModel):
             raise RuntimeError("HMGPA could not construct the configured number of nonempty subgraphs")
         return tuple(groups)
 
-    def _dynamic_edge_weights(self, hidden: torch.Tensor, initial_adjacency: torch.Tensor) -> torch.Tensor:
+    def _dynamic_edge_weights(self, hidden: torch.Tensor, previous_edge_weights: torch.Tensor) -> torch.Tensor:
         differences = hidden.unsqueeze(2) - hidden.unsqueeze(1)
         similarities = self.edge_similarity(differences).squeeze(-1)
-        return similarities * initial_adjacency
+        weighted_similarity = similarities * previous_edge_weights
+        previous_strength = previous_edge_weights.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+        mean_similarity = weighted_similarity.sum(dim=-1, keepdim=True) / previous_strength
+        return weighted_similarity / mean_similarity.clamp_min(1e-8)
 
     def _update_one_graph(
         self,
@@ -250,8 +253,9 @@ class HSNNIBRUL(RULModel):
         hidden = encoded[:, -1, :].reshape(batch_size, self.enc_in, self.hidden_dim)
 
         summary_accumulator = x.new_zeros((batch_size, self.num_subgraphs, self.hidden_dim))
+        edge_weights = initial_adjacency
         for _ in range(self.num_layers):
-            edge_weights = self._dynamic_edge_weights(hidden, initial_adjacency)
+            edge_weights = self._dynamic_edge_weights(hidden, edge_weights)
             next_hidden = []
             batch_summaries = []
             for batch_index in range(batch_size):
