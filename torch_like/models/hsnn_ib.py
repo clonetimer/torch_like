@@ -205,8 +205,7 @@ class HSNNIBRUL(RULModel):
             indices = torch.as_tensor(group, device=hidden.device, dtype=torch.long)
             group_hidden = hidden.index_select(0, indices)
             group_edges = edge_weights.index_select(0, indices).index_select(1, indices)
-            normalized_edges = group_edges / group_edges.sum(dim=-1, keepdim=True).clamp_min(1e-8)
-            aggregated = normalized_edges @ group_hidden
+            aggregated = group_edges @ group_hidden
             local = local.index_copy(0, indices, self.intra_subgraph(aggregated))
 
         updated = local.clone()
@@ -265,7 +264,7 @@ class HSNNIBRUL(RULModel):
             hidden = torch.stack(next_hidden, dim=0)
             summary_accumulator = summary_accumulator + torch.stack(batch_summaries, dim=0)
 
-        subgraph_summaries = summary_accumulator / self.num_layers
+        subgraph_summaries = summary_accumulator
         fused = subgraph_summaries.reshape(batch_size, self.num_subgraphs * self.hidden_dim)
         parameters = self.ib_encoder(fused)
         mean, raw_variance = parameters.chunk(2, dim=-1)
