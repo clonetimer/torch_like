@@ -80,7 +80,6 @@ class HSNNIBRULTests(unittest.TestCase):
 
     def test_rul_regressor_uses_model_specific_ib_training_loss(self):
         signals = make_signals(batch=6)
-        model = small_model()
         regressor = create_rul_regressor(
             "HSNNIBRUL",
             unit="cycles",
