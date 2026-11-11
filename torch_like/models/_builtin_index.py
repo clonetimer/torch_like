@@ -57,6 +57,7 @@ BUILTIN_MODEL_INDEX = {
     "PPM": ("forecasting", "torch_like.models.forecasting.ppm", "PPM"),
     "InceptionTime": ("diagnosis", "torch_like.models.diagnosis.inception_time", "InceptionTime"),
     "ROCKET": ("diagnosis", "torch_like.models.diagnosis.rocket", "ROCKET"),
+    "ALDMDetector": ("detection", "torch_like.models.detection.aldm", "ALDMDetector"),
     "CBAMTCNDetector": ("detection", "torch_like.models.detection.cbam_tcn", "CBAMTCNDetector"),
     "TranAD": ("detection", "torch_like.models.detection.tranad", "TranAD"),
     "USAD": ("detection", "torch_like.models.detection.usad", "USAD"),
