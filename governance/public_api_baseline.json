@@ -158,6 +158,7 @@
         "GraphormerConfig",
         "GroundingDINO",
         "GroundingDINOConfig",
+        "HSNNIBRUL",
         "HuBERT",
         "HuBERTConfig",
         "Hyena",
@@ -552,6 +553,7 @@
         "GraphormerConfig",
         "GroundingDINO",
         "GroundingDINOConfig",
+        "HSNNIBRUL",
         "HuBERT",
         "HuBERTConfig",
         "Hyena",
@@ -12215,6 +12217,72 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 0
+        }
+      ]
+    },
+    "torch_like.HSNNIBRUL": {
+      "kind": "class",
+      "target": "torch_like.models.hsnn_ib.HSNNIBRUL",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 14
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 60
+        },
+        {
+          "name": "hidden_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 60
+        },
+        {
+          "name": "num_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "num_subgraphs",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "max_nodes_per_subgraph",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 5
+        },
+        {
+          "name": "initial_edge_threshold",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "centrality_alpha",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "ib_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
         }
       ]
     },
@@ -43585,6 +43653,72 @@
           "kind": "POSITIONAL_OR_KEYWORD",
           "required": false,
           "default": 0
+        }
+      ]
+    },
+    "torch_like.models.HSNNIBRUL": {
+      "kind": "class",
+      "target": "torch_like.models.hsnn_ib.HSNNIBRUL",
+      "signature": [
+        {
+          "name": "enc_in",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 14
+        },
+        {
+          "name": "seq_len",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 60
+        },
+        {
+          "name": "hidden_dim",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 60
+        },
+        {
+          "name": "num_layers",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 2
+        },
+        {
+          "name": "num_subgraphs",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "max_nodes_per_subgraph",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 5
+        },
+        {
+          "name": "initial_edge_threshold",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "centrality_alpha",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.5
+        },
+        {
+          "name": "ib_weight",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 1e-05
+        },
+        {
+          "name": "dropout",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "required": false,
+          "default": 0.0
         }
       ]
     },
