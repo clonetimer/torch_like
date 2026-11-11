@@ -130,6 +130,9 @@ class AGILMultiTaskTests(unittest.TestCase):
         self.assertTrue(torch.all(first.rul_values >= 0))
         torch.testing.assert_close(first.fault_logits, second.fault_logits)
         torch.testing.assert_close(first.rul_values, second.rul_values)
+        probabilities = model.predict_proba(x, adjacency)
+        torch.testing.assert_close(probabilities.sum(dim=-1), torch.ones(3))
+        torch.testing.assert_close(model.predict_rul(x, adjacency), first.rul_values)
 
     def test_joint_loss_backpropagates_through_shared_and_task_specific_paths(self):
         model = AGILMultiTask(num_classes=4, hidden_dim=16, dropout=0.0)
