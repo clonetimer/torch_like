@@ -1,10 +1,10 @@
 """RUL model catalog and registration."""
 
 from torch_like.models.forecasting.rul_adapters import AutoformerRUL, InformerRUL, LogTransRUL
+from torch_like.models.hsnn_ib import HSNNIBRUL
 from torch_like.models.registry import register_model_catalog
 from torch_like.models.rul_backbones import TCNRUL, PatchTSTRUL, TransformerRUL
 from torch_like.models.thgnn import THGNN
-from torch_like.models.hsnn_ib import HSNNIBRUL
 
 model_zoo = {
     "THGNN": {
