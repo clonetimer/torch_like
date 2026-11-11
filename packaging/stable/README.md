@@ -30,7 +30,7 @@ from the `clonetimer/torch_like` source tree, not a rename of the full framework
 | Algorithm discovery | `DiagnosticRegistry`, opt-in registration and construction functions |
 
 The **three** RUL backbones above are the self-contained models shipped in
-this initial slim wheel. The full repository has seven registered RUL entries,
+this initial slim wheel. The full repository has eight registered RUL entries,
 including forecasting-based adapters that are intentionally omitted from
 the standalone delivery to avoid bringing in unrelated domains. Do not
 represent the slim wheel as containing every model of the full framework.
