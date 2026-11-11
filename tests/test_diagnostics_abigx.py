@@ -98,6 +98,8 @@ class ABIGXExplainerTests(unittest.TestCase):
             explainer.explain(inputs, lambda x: x.detach().sum(dim=1))
         with self.assertRaisesRegex(ValueError, "leading batch dimension"):
             explainer.explain(inputs, lambda x: torch.ones((3,), device=x.device))
+        with self.assertRaisesRegex(ValueError, "exactly one scalar"):
+            explainer.explain(inputs, lambda x: torch.ones((x.shape[0], 2), device=x.device))
         with self.assertRaisesRegex(ValueError, "nonfinite"):
             explainer.explain(inputs, lambda x: torch.full((x.shape[0],), float("nan"), device=x.device))
 
