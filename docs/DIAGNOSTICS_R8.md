@@ -15,6 +15,8 @@ The paper combines a three-layer GIN/EdgePool shared encoder, task-specific grap
 The implementation is available through torch_like.diagnostics:
 
 ~~~python
+import torch
+
 from torch_like.diagnostics import AGILFeatureGraphBuilder, AGILMultiTask
 
 # Fit normalization and the Pearson graph on training windows only.
