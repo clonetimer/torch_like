@@ -95,6 +95,12 @@ features must be finite and scaled using training-only statistics. final_window_
 
 loss_components(...) exposes the scalar data, physics, monotonicity and total terms for diagnostics. physics_residual(...) returns the residual at every time step, and predict_trajectory(...) returns the full within-window RUL trajectory.
 
+## Public registration and distribution scope
+
+The full repository registers KnowledgeDataPINNRUL in the rul model domain and exports it through torch_like.models. It can be constructed through create_model("KnowledgeDataPINNRUL", domain="rul", ...) or create_rul_regressor("KnowledgeDataPINNRUL", unit=..., ...).
+
+The separate torch-like-algorithms Stable Wheel remains on its explicit allowlist and does not include knowledge_data_pinn.py in this release. Its list_rul_models() therefore does not advertise this model. The full-framework catalog and the slim-wheel algorithm inventory intentionally differ.
+
 ## Deliberate boundaries
 
 - This is a paper-aligned M-PINN subset and a sign-adapted RUL formulation, not a line-by-line reproduction of the tool-wear implementation.
