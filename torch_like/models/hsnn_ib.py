@@ -152,11 +152,11 @@ class HSNNIBRUL(RULModel):
             raise ValueError("edge_weights must have shape (sensors, sensors)")
         if edge_weights.shape[0] != edge_weights.shape[1] or edge_weights.shape[0] != self.enc_in:
             raise ValueError(f"edge_weights must have shape ({self.enc_in}, {self.enc_in})")
+        if edge_weights.is_complex():
+            raise ValueError("edge_weights must be real-valued")
         if not torch.isfinite(edge_weights).all().item() or torch.any(edge_weights < 0).item():
             raise ValueError("edge_weights must be finite and nonnegative")
 
-        if edge_weights.is_complex():
-            raise ValueError("edge_weights must be real-valued")
         weights = edge_weights.detach()
         if not weights.is_floating_point():
             weights = weights.to(dtype=torch.float32)
@@ -199,7 +199,9 @@ class HSNNIBRUL(RULModel):
         edge_weights: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         groups = self.partition_graph(edge_weights)
-        local = torch.zeros_like(hidden)
+        # Nodes outside the bounded representative-subgraph budget retain
+        # their previous state; they do not contribute to this layer's summary.
+        local = hidden.clone()
 
         for group in groups:
             indices = torch.as_tensor(group, device=hidden.device, dtype=torch.long)
