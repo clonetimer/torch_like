@@ -132,8 +132,7 @@ class HSNNIBRUL(RULModel):
             raise ValueError("HSNNIBRUL expects x with shape (batch, seq_len, enc_in)")
         if x.shape[1:] != (self.seq_len, self.enc_in):
             raise ValueError(
-                f"HSNNIBRUL expects x with shape (batch, {self.seq_len}, {self.enc_in}), "
-                f"got {tuple(x.shape)}"
+                f"HSNNIBRUL expects x with shape (batch, {self.seq_len}, {self.enc_in}), got {tuple(x.shape)}"
             )
         if not torch.isfinite(x).all().item():
             raise ValueError("HSNNIBRUL requires finite inputs; normalize/impute signals upstream")
@@ -172,11 +171,7 @@ class HSNNIBRUL(RULModel):
         for center in ranking:
             if center not in remaining:
                 continue
-            candidates = [
-                node
-                for node in remaining
-                if node != center and float(weights[center, node].item()) > 0.0
-            ]
+            candidates = [node for node in remaining if node != center and float(weights[center, node].item()) > 0.0]
             candidates.sort(key=lambda node: float(weights[center, node].item()), reverse=True)
             selected = (center, *candidates[: self.max_nodes_per_subgraph - 1])
             groups.append(selected)
