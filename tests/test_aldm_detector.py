@@ -5,7 +5,14 @@ import unittest
 import numpy as np
 import torch
 
-from torch_like.diagnostics import EventWiseMetrics, compute_event_wise_metrics
+from torch_like.diagnostics import (
+    AnomalyDiagnosticWorkflow,
+    AnomalyPartition,
+    AnomalySplit,
+    EventWiseMetrics,
+    SignalBatch,
+    compute_event_wise_metrics,
+)
 from torch_like.models import ALDMDetector, ALDMDetectorConfig, create_model, list_models
 
 
@@ -28,6 +35,17 @@ def small_model(**kwargs):
     }
     settings.update(kwargs)
     return ALDMDetector(**settings)
+
+
+def make_signal_batch(prefix, *, batch_size=4, seq_len=12, channels=4):
+    values = make_windows(batch_size=batch_size, seq_len=seq_len, channels=channels).numpy()
+    return SignalBatch(
+        values,
+        sample_rate_hz=10.0,
+        channel_names=tuple(f"sensor_{index}" for index in range(channels)),
+        units=tuple("normalized" for _ in range(channels)),
+        sample_ids=tuple(f"{prefix}-{index}" for index in range(batch_size)),
+    )
 
 
 class ALDMDetectorTests(unittest.TestCase):
@@ -114,6 +132,34 @@ class ALDMDetectorTests(unittest.TestCase):
         batch = model.make_detection_batch(make_windows(batch_size=1))
         loss = model.fit_step(batch)
         self.assertTrue(torch.isfinite(loss))
+
+    def test_anomaly_diagnostic_workflow_uses_validation_not_test_labels(self):
+        reference = AnomalyPartition(
+            make_signal_batch("reference"),
+            recording_ids=("ref-run-0", "ref-run-0", "ref-run-1", "ref-run-1"),
+            labels=np.zeros(4, dtype=np.uint8),
+        )
+        validation = AnomalyPartition(
+            make_signal_batch("validation"),
+            recording_ids=("val-run-0", "val-run-0", "val-run-1", "val-run-1"),
+            labels=np.array([0, 0, 1, 1], dtype=np.uint8),
+        )
+        test = AnomalyPartition(
+            make_signal_batch("test"),
+            recording_ids=("test-run-0", "test-run-0", "test-run-1", "test-run-1"),
+            labels=np.array([0, 1, 0, 1], dtype=np.uint8),
+        )
+        workflow = AnomalyDiagnosticWorkflow(
+            small_model(),
+            threshold_policy="validation_f1",
+            threshold_candidates=8,
+        )
+        result = workflow.run(AnomalySplit(reference=reference, validation=validation, test=test))
+        self.assertEqual(result.algorithm_name, "ALDMDetector")
+        self.assertEqual(result.threshold_source, "validation_f1")
+        self.assertEqual(result.scores.shape, (4,))
+        self.assertTrue(np.isfinite(result.threshold))
+        self.assertTrue(np.isfinite(result.f1))
 
     def test_invalid_configuration_and_inputs_fail_closed(self):
         with self.assertRaisesRegex(ValueError, "seq_len"):
