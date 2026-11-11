@@ -68,6 +68,10 @@ R4e 验证集模型选择协议：新增 `FaultCandidateSpec` 和 `FaultSelectio
 
 R4f 封存结果聚类不确定性：新增 `bootstrap_fault_generalization`，对 R4c 已完成评估的原始记录或独立设备级混淆矩阵做整簇 Bootstrap；严格禁止逐窗口独立重采样、再次推理或模型选择，报告固定类别 Macro-F1、Accuracy 的百分位区间与稀疏来源限制。详见 [`docs/DIAGNOSTICS_R4F.md`](docs/DIAGNOSTICS_R4F.md)。
 
+R6（IMA 科研文献算法补充）：新增 `SINDyDetector`，使用稀疏动力学方程辨识与健康模型导数残差进行异常评分；新增 `ModalityConditionedConformalClassifier`，按精确的传感器/模态可用性掩码分别校准 split-conformal 分类集合。前者需要独立健康开发集校准告警阈值，后者对未见掩码明确报错、不回退全局阈值。两项均保持 `unassessed`，合成测试不等于论文基准复现；本轮不增加神经模型目录数量，也不修改 Stable 白名单。详细文献映射、接口、边界和候选淘汰理由见 [R6 文档](docs/DIAGNOSTICS_R6.md)。
+
+R6 (IMA scientific-literature intake): adds `SINDyDetector` for sparse dynamics identification and healthy-model derivative-residual scoring, plus `ModalityConditionedConformalClassifier` for split-conformal prediction sets calibrated by exact sensor/modality availability masks. SINDy alarm thresholds require an independent healthy development set; unseen conformal masks fail explicitly instead of falling back to a global threshold. Both remain `unassessed`: synthetic contract tests are not paper-benchmark reproduction. No neural model catalog count or Stable allowlist change. See [R6 notes](docs/DIAGNOSTICS_R6.md).
+
 公共 API 受确定性基线和正式弃用周期保护，详见 [`docs/API_STABILITY.md`](docs/API_STABILITY.md)。
 
 Public APIs are protected by a deterministic baseline and formal deprecation lifecycle; see [`docs/API_STABILITY.md`](docs/API_STABILITY.md).
