@@ -26,6 +26,8 @@ class ABIGXExplanation:
     baseline: torch.Tensor
     original_scores: torch.Tensor
     baseline_scores: torch.Tensor
+    original_attribution_scores: torch.Tensor
+    baseline_attribution_scores: torch.Tensor
     completeness_residual: torch.Tensor
     norm: float
     epsilon: float
@@ -36,6 +38,8 @@ class ABIGXExplanation:
             "baseline": self.baseline,
             "original_scores": self.original_scores,
             "baseline_scores": self.baseline_scores,
+            "original_attribution_scores": self.original_attribution_scores,
+            "baseline_attribution_scores": self.baseline_attribution_scores,
             "completeness_residual": self.completeness_residual,
         }
         if not all(isinstance(value, torch.Tensor) for value in tensors.values()):
@@ -43,7 +47,13 @@ class ABIGXExplanation:
         if self.attributions.shape != self.baseline.shape or self.attributions.ndim < 2:
             raise ValueError("attributions and baseline must share a batched input shape")
         batch_size = self.baseline.shape[0]
-        for name in ("original_scores", "baseline_scores", "completeness_residual"):
+        for name in (
+            "original_scores",
+            "baseline_scores",
+            "original_attribution_scores",
+            "baseline_attribution_scores",
+            "completeness_residual",
+        ):
             if tensors[name].shape != (batch_size,):
                 raise ValueError(f"{name} must contain one scalar per input sample")
         for name, value in tensors.items():
@@ -77,6 +87,8 @@ class ABIGXExplanation:
             "baseline": self.baseline.cpu().tolist(),
             "original_scores": self.original_scores.cpu().tolist(),
             "baseline_scores": self.baseline_scores.cpu().tolist(),
+            "original_attribution_scores": self.original_attribution_scores.cpu().tolist(),
+            "baseline_attribution_scores": self.baseline_attribution_scores.cpu().tolist(),
             "completeness_residual": self.completeness_residual.cpu().tolist(),
             "feature_ranking": self.feature_ranking.cpu().tolist(),
         }
@@ -243,12 +255,31 @@ class ABIGXExplainer:
 
         return best.detach(), original_scores.detach(), best_scores.detach()
 
-    def explain(self, inputs: torch.Tensor, score_fn: ScoreFunction) -> ABIGXExplanation:
-        """Explain a batch using an AFR baseline and straight-line IG integration."""
+    def explain(
+        self,
+        inputs: torch.Tensor,
+        score_fn: ScoreFunction,
+        *,
+        attribution_fn: ScoreFunction | None = None,
+    ) -> ABIGXExplanation:
+        """Explain a batch using an AFR score and a separate attribution target.
+
+        score_fn minimises the AFR objective (for classification, the
+        normal-centroid SPE). attribution_fn is the scalar FDC output whose
+        gradient is integrated (for classification, usually the explained
+        fault confidence). When omitted, score_fn serves both roles, which is
+        the natural detector-score case.
+        """
         if not callable(score_fn):
             raise TypeError("score_fn must be callable")
+        target_fn = score_fn if attribution_fn is None else attribution_fn
+        if not callable(target_fn):
+            raise TypeError("attribution_fn must be callable")
         values = self._validate_inputs(inputs)
         baseline, original_scores, baseline_scores = self._reconstruct(values, score_fn)
+        with torch.no_grad():
+            original_attribution_scores = self._scores(target_fn, values)
+            baseline_attribution_scores = self._scores(target_fn, baseline)
         difference = values - baseline
         accumulated = torch.zeros_like(values)
 
@@ -256,23 +287,25 @@ class ABIGXExplainer:
             for index in range(self.ig_steps):
                 alpha = (index + 0.5) / self.ig_steps
                 point = (baseline + alpha * difference).detach().requires_grad_(True)
-                scores = self._scores(score_fn, point)
+                scores = self._scores(target_fn, point)
                 try:
                     gradient = torch.autograd.grad(scores.sum(), point, only_inputs=True)[0]
                 except RuntimeError as exc:
-                    raise ValueError("score_fn must be differentiable along the IG path") from exc
+                    raise ValueError("attribution_fn must be differentiable along the IG path") from exc
                 if not torch.isfinite(gradient).all():
-                    raise ValueError("score_fn produced nonfinite IG gradients")
+                    raise ValueError("attribution_fn produced nonfinite IG gradients")
                 accumulated += gradient.detach()
 
         attributions = difference * (accumulated / self.ig_steps)
         attribution_sum = attributions.flatten(start_dim=1).sum(dim=1)
-        completeness_residual = (original_scores - baseline_scores) - attribution_sum
+        completeness_residual = (original_attribution_scores - baseline_attribution_scores) - attribution_sum
         return ABIGXExplanation(
             attributions=attributions,
             baseline=baseline,
             original_scores=original_scores,
             baseline_scores=baseline_scores,
+            original_attribution_scores=original_attribution_scores,
+            baseline_attribution_scores=baseline_attribution_scores,
             completeness_residual=completeness_residual,
             norm=self.norm,
             epsilon=self.epsilon,
