@@ -111,6 +111,8 @@ set_sizes = prediction_sets.set_sizes
 
 ### Statistical scope
 
+The MCCF preprint defines its nonconformity score as r(x, y, s) = 1 - π_y(x, s) + λ · u(x, s), where u is the fused evidential vacuity. This R6 utility deliberately implements the LAC-only score 1 - p_y because the current diagnostics API does not yet expose per-modality Dirichlet evidence and fused vacuity. It therefore validates mask-conditional calibration, not the paper's complete evidential score or architecture.
+
 The finite-sample coverage statement is marginal **within each calibrated availability-mask group**, assuming exchangeability between calibration and future samples conditional on that exact mask. It does not guarantee coverage under arbitrary temporal, device, class-prior or operating-condition shift. It does not estimate missing modalities, train a fusion backbone, or implement the evidential/Dempster–Shafer fusion and end-to-end set-size objective described in the local preprint.
 
 ## Deferred candidates and admission gates
