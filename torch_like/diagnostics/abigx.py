@@ -97,10 +97,10 @@ class ABIGXExplanation:
 class ABIGXExplainer:
     """Adversarial fault reconstruction followed by integrated gradients.
 
-    The score function must return one differentiable fault score per sample,
-    or a tensor whose leading dimension is the batch dimension. Lower scores
-    must represent a more normal model state. The function must be batch
-    separable: the score for one sample cannot depend on other batch members.
+    The AFR score function must return one differentiable fault score per
+    sample; lower scores represent a more normal model state. The optional IG
+    attribution function returns the scalar FDC output to explain. Both must
+    be batch-separable: one sample's output cannot depend on other batch members.
 
     Supported perturbation constraints are L0 (epsilon is a feature budget),
     L1, L2 and L-infinity. The portable implementation uses projected gradient
@@ -264,11 +264,11 @@ class ABIGXExplainer:
     ) -> ABIGXExplanation:
         """Explain a batch using an AFR score and a separate attribution target.
 
-        score_fn minimises the AFR objective (for classification, the
-        normal-centroid SPE). attribution_fn is the scalar FDC output whose
-        gradient is integrated (for classification, usually the explained
-        fault confidence). When omitted, score_fn serves both roles, which is
-        the natural detector-score case.
+        The AFR score minimises the reconstruction objective (for
+        classification, normal-centroid SPE). The optional attribution_fn is
+        the scalar FDC output whose gradient is integrated (for classification,
+        usually the explained fault confidence). When omitted, score_fn serves
+        both roles, which is the natural detector-score case.
         """
         if not callable(score_fn):
             raise TypeError("score_fn must be callable")
